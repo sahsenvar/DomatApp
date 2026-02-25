@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "ghcr.io/modelcontextprotocol/servers/github:latest"
+      ]
+    },
+    "figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-figma"
+      ],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "figd_zTmBm5P4qKSwx4Tc-x994AP1RIwsxymria63VJcl"
+      }
+    }
+  }
+}
