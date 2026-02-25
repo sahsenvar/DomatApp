@@ -13,6 +13,7 @@ kotlin {
     }
     
     listOf(
+        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -24,10 +25,9 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.core.local)
+            implementation(projects.core.remote)
             // put your Multiplatform dependencies here
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }
