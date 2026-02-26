@@ -10,6 +10,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(project(":core:domain"))
                 implementation(libs.kotlin.stdlib)
                 // Genel data sınıfları, base sınıflar ve Mapper'lar burada
                 // core:remote ve core:local'i buraya implementation ile bağlayabilirsiniz

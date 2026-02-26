@@ -35,7 +35,13 @@ DomatApp/
 │   ├── remote/            (Network layer: Ktor, Interceptors)
 │   └── resource/          (Assets, fonts, icons)
 ├── feature/               (Business Logic Layer)
-│   └── auth/              (Example feature)
+│   ├── auth/              (Authentication feature)
+│   ├── home/              (Home screen/dashboard feature)
+│   ├── notification/      (Push notifications feature)
+│   ├── onboarding/        (User onboarding feature)
+│   ├── product/           (Product catalog/details feature)
+│   ├── profile/           (User profile feature)
+│   └── wallet/            (User wallet/payment feature)
 │       ├── data/          (Implements domain interfaces, handles API/DB)
 │       ├── domain/        (100% pure Kotlin. UseCases, Models, Repository Interfaces)
 │       └── presentation/  (UI Logic: ViewModels, StateFlow, MVI intents)
@@ -64,5 +70,10 @@ DomatApp/
 When interacting with this workspace:
 1.  **Respect the Boundaries:** If modifying a feature, ensure dependencies do not leak. (e.g., a `presentation` module must never see a `data` module directly).
 2.  **SwiftUI Awareness:** When writing ViewModels in the `presentation` layer, ensure the exported flows (StateFlow/SharedFlow) are easily consumable by Swift/Combine. Avoid relying on Compose-specific libraries (like `androidx.compose.runtime.State`) in the KMP `presentation` or `shared` modules.
-3.  **Use the Convention Plugin:** If asked to create a new module, always use the `domatapp.kmp.library` plugin and ensure it follows the established `androidLibrary` configuration block (namespace, compileSdk, minSdk).
+3.  **Use the Convention Plugin:** If asked to create a new module, always use the `domatapp.kmp.library` plugin. Do **NOT** manually add the `androidLibrary` block or define `namespace`, `compileSdk`, and `minSdk`. The convention plugin dynamically generates the namespace based on the module's path (e.g., `:feature:auth:data` becomes `com.domatapp.feature.auth.data`) and sets SDK versions automatically.
 4.  **Continuous Learning (Self-Update):** If you (the Gemini CLI) learn new architectural constraints, tech stack changes, or specific user preferences during future sessions that are valuable for long-term project success, you MUST autonomously append those learnings to this `GEMINI.md` file. Keep this document as the living single source of truth.
+
+core:remote retorfit vs.
+data: repository implementasyonlar + datasource
+domain -> Usecase repository interfaceleri
+feature:chat -> UI + VM + UiState
