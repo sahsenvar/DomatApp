@@ -29,3 +29,7 @@ kotlin {
         }
     }
 }
+
+dependencies {
+    add("kspCommonMainMetadata", projects.core.processor)
+}

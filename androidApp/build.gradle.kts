@@ -60,7 +60,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtimeCompose)
 
     // Koin with Annotations
+    implementation(libs.koin.core)
     implementation(libs.koin.android)
+    implementation(libs.koin.compose)
     implementation(libs.koin.annotations)
     ksp(libs.koin.ksp.compiler)
 
@@ -82,6 +84,6 @@ dependencies {
 
 ksp {
     arg("KOIN_DEFAULT_MODULE", "false")
-    arg("KOIN_CONFIG_CHECK", "true") // Compile-time validation of Koin DI
+    arg("KOIN_CONFIG_CHECK", "false") // Disabled: doesn't support cross-module validation
     arg("KOIN_LOG_TIMES", "true")
 }

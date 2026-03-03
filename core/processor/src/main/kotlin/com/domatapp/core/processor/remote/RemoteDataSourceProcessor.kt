@@ -41,9 +41,6 @@ class RemoteDataSourceProcessor(
         logger.info("Generating $implClassName for $interfaceName")
 
         val typeSpec = TypeSpec.classBuilder(implClassName)
-            .addAnnotation(
-                ClassName("org.koin.core.annotation", "Single")
-            )
             .addSuperinterface(interfaceDeclaration.toClassName())
             .primaryConstructor(
                 FunSpec.constructorBuilder()

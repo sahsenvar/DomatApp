@@ -7,6 +7,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 class DiConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -15,8 +16,13 @@ class DiConventionPlugin : Plugin<Project> {
         pluginManager.withPlugin(KSP_PLUGIN_ID) {
             extensions.configure<KspExtension> {
                 arg("KOIN_DEFAULT_MODULE", "false")
-                arg("KOIN_CONFIG_CHECK", "true") // Compile-time validation of Koin DI
+                arg("KOIN_CONFIG_CHECK", "false") // Disabled: doesn't support cross-module validation in multi-module KMP
                 arg("KOIN_LOG_TIMES", "true")
+            }
+
+            // Add KSP compiler for commonMain metadata processing
+            dependencies {
+                add("kspCommonMainMetadata", "io.insert-koin:koin-ksp-compiler:2.3.1")
             }
         }
 
@@ -28,6 +34,8 @@ class DiConventionPlugin : Plugin<Project> {
                             implementation("io.insert-koin:koin-core:4.1.1")
                             implementation("io.insert-koin:koin-annotations:2.3.1")
                         }
+                        // Include KSP-generated code from commonMain metadata in all targets
+                        kotlin.srcDir("build/generated/ksp/metadata")
                     }
                     androidMain {
                         dependencies {
@@ -37,24 +45,10 @@ class DiConventionPlugin : Plugin<Project> {
                 }
             }
 
-            afterEvaluate {
-                val kmpExtension = extensions.getByType(KotlinMultiplatformExtension::class.java)
-                val targetNames = kmpExtension.targets.names
-
-                dependencies {
-                    add("kspCommonMainMetadata", "io.insert-koin:koin-ksp-compiler:2.3.1")
-
-                    if ("androidMain" in targetNames)
-                        add("kspAndroidMain", "io.insert-koin:koin-ksp-compiler:2.3.1")
-
-                    if ("iosX64" in targetNames)
-                        add("kspIosX64", "io.insert-koin:koin-ksp-compiler:2.3.1")
-
-                    if ("iosArm64" in targetNames)
-                        add("kspIosArm64", "io.insert-koin:koin-ksp-compiler:2.3.1")
-
-                    if ("iosSimulatorArm64" in targetNames)
-                        add("kspIosSimulatorArm64", "io.insert-koin:koin-ksp-compiler:2.3.1")
+            // Ensure all compilation tasks depend on KSP metadata generation
+            project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
+                if (name != "kspCommonMainKotlinMetadata") {
+                    dependsOn("kspCommonMainKotlinMetadata")
                 }
             }
         }
