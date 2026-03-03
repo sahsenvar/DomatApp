@@ -1,0 +1,7 @@
+package com.domatapp.shared
+
+interface Platform {
+    val name: String
+}
+
+expect fun getPlatform(): Platform

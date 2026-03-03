@@ -11,6 +11,13 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
+
+                // Moko MVVM for KMP ViewModel support
+                implementation(libs.moko.mvvm.core)
+                implementation(libs.moko.mvvm.flow)
+
+                // Coroutines
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
         androidMain {

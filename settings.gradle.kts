@@ -32,11 +32,13 @@ dependencyResolutionManagement {
 
 includeBuild("build-logic")
 
+include(":androidApp")
 include(":composeApp")
 include(":shared")
 
 // Core Modules
 include(":core:remote")
+include(":core:processor")
 include(":core:local")
 include(":core:resource")
 include(":core:localization")
@@ -44,6 +46,8 @@ include(":core:common")
 include(":core:navigation")
 include(":core:domain")
 include(":core:data")
+include(":core:resulting")
+include(":core:serialization")
 
 // Features Modules
 include(":feature:auth:domain")

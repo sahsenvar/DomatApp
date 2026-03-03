@@ -1,5 +1,8 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.domatapp.kmp.di)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -10,22 +13,19 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(libs.kotlin.stdlib)
-                
-                // Data modülü, kendi domain modülündeki Interface'leri implement eder
+                // Projects ========================================================================
                 implementation(projects.feature.auth.domain)
-                
-                // İhtiyaca göre altyapı servisleri çekilebilir
                 implementation(projects.core.remote)
                 implementation(projects.core.local)
                 implementation(projects.core.data)
+
+                // Libraries =======================================================================
+                // Core
+                implementation(libs.kotlin.stdlib)
+
+                // Serialization
+                implementation(libs.kotlinx.serialization.json)
             }
-        }
-        androidMain {
-            dependencies {}
-        }
-        iosMain {
-            dependencies {}
         }
     }
 }

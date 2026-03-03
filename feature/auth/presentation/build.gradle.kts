@@ -1,5 +1,8 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.domatapp.kmp.di)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -11,17 +14,24 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
-                
-                // UI Logic (ViewModel / StateFlow) buradan domain UseCase'lerine ulaşır
+
+                // Presentation layer only depends on domain
                 implementation(projects.feature.auth.domain)
-                
-                // String formatlama, UI Event yönetimi için ortak yapılar
+
+                // Core common (for BaseViewModel)
                 implementation(projects.core.common)
-                implementation(projects.core.navigation)
+                implementation(projects.core.resulting)
+
+                // Coroutines
+                implementation(libs.kotlinx.coroutines.core)
+
             }
         }
         androidMain {
-            dependencies {}
+            dependencies {
+                // Moko MVVM Compose integration for Android
+                implementation(libs.moko.mvvm.compose)
+            }
         }
         iosMain {
             dependencies {}

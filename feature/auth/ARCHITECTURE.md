@@ -35,26 +35,45 @@ KMP projelerinde UI işlemleri (modal açmak, Activity Context kullanmak) `share
                                                                              v
                                                                  +------------------------+
                                                                  |                        |
-                                                                 |  Data Layer (Ktor)     |
-                                                                 |  API / Local DB        |
+                                                                 |  Data Layer            |
+                                                                 |  (Repo & DataSources)  |
                                                                  |                        |
                                                                  +------------------------+
 ```
 
 ---
 
-## 📝 Kod Akışı (Referans Örnek)
+## 💎 Ortak Katmanlar (Domain & Presentation)
 
-### 1. Presentation Katmanı (MVI Contract) - `shared`
+Bu katmanlar, backend'den bağımsız olarak projenin `shared` kısmında yer alır.
 
-State (Data Class), Intent ve Effect olarak üç ana yapıya bölünür.
+### 1. Domain Layer (`:feature:auth:domain`)
+%100 Pure Kotlin. Hiçbir kütüphane bağımlılığı yoktur.
 
 ```kotlin
-// feature/auth/presentation/src/commonMain/kotlin/.../AuthContract.kt
+// Model
+data class AuthSession(val uid: String, val email: String)
 
+// Repository Interface
+interface AuthRepository {
+    suspend fun loginWithGoogle(idToken: String): Result<AuthSession>
+}
+
+// UseCase
+class LoginWithGoogleUseCase(private val repository: AuthRepository) {
+    suspend operator fun invoke(idToken: String) = repository.loginWithGoogle(idToken)
+}
+```
+
+### 2. Presentation Layer (`:feature:auth:presentation`)
+MVI Contract ve ViewModel. her iki platform tarafından ortak kullanılır.
+
+```kotlin
+// Contract
 data class AuthUiState(
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val session: AuthSession? = null
 )
 
 sealed interface AuthIntent {
@@ -66,140 +85,172 @@ sealed interface AuthIntent {
 sealed interface AuthEffect {
     data object LaunchGoogleSignIn : AuthEffect
     data object NavigateToHome : AuthEffect
-    data class ShowSnackbar(val message: String) : AuthEffect
 }
-```
 
-### 2. ViewModel - `shared`
-
-ViewModel işletim sistemini bilmez. Sadece Intent alır, Effect fırlatır ve Domain'i tetikler.
-
-```kotlin
-// feature/auth/presentation/src/commonMain/kotlin/.../AuthViewModel.kt
-
-class AuthViewModel(
-    private val loginWithGoogleUseCase: LoginWithGoogleUseCase 
-) : BaseViewModel() {
-
+// ViewModel
+class AuthViewModel(private val loginUseCase: LoginWithGoogleUseCase) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
-    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+    val uiState = _uiState.asStateFlow()
 
     private val _effect = MutableSharedFlow<AuthEffect>()
     val effect = _effect.asSharedFlow()
 
     fun onIntent(intent: AuthIntent) {
         when (intent) {
-            is AuthIntent.OnGoogleLoginClicked -> {
-                viewModelScope.launch { _effect.emit(AuthEffect.LaunchGoogleSignIn) }
-            }
-            is AuthIntent.OnGoogleTokenReceived -> {
-                authenticateWithBackend(intent.idToken)
-            }
-            is AuthIntent.OnGoogleAuthFailed -> {
-                _uiState.value = _uiState.value.copy(error = intent.errorMessage)
-            }
+            is AuthIntent.OnGoogleLoginClicked -> viewModelScope.launch { _effect.emit(AuthEffect.LaunchGoogleSignIn) }
+            is AuthIntent.OnGoogleTokenReceived -> login(intent.idToken)
+            is AuthIntent.OnGoogleAuthFailed -> _uiState.update { it.copy(error = intent.errorMessage) }
         }
     }
 
-    private fun authenticateWithBackend(idToken: String) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            
-            // Domain katmanına saf String gönderiyoruz, Context yok!
-            val result = loginWithGoogleUseCase(idToken) 
-            
-            result.fold(
-                onSuccess = { 
-                    _uiState.value = _uiState.value.copy(isLoading = false)
-                    _effect.emit(AuthEffect.NavigateToHome)
-                },
-                onFailure = { error ->
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = error.message)
-                    _effect.emit(AuthEffect.ShowSnackbar("Giriş başarısız"))
-                }
-            )
-        }
+    private fun login(idToken: String) = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true) }
+        loginUseCase(idToken).fold(
+            onSuccess = { session ->
+                _uiState.update { it.copy(isLoading = false, session = session) }
+                _effect.emit(AuthEffect.NavigateToHome)
+            },
+            onFailure = { error ->
+                _uiState.update { it.copy(isLoading = false, error = error.message) }
+            }
+        )
     }
 }
 ```
 
-### 3. Native UI Helper (Android) - `composeApp`
+---
 
-Android Context'i ve CredentialManager'ı sadece Compose tarafında (veya Android'e özel helper sınıflarında) tutulur.
+## 🛠️ Yaklaşım 1: Özel Backend (Ktor API)
+Kendi sunucunuza `idToken` gönderip JWT aldığınız senaryo.
 
 ```kotlin
-// composeApp/src/main/kotlin/com/domatapp/android/auth/GoogleAuthClient.kt
+// 1. Remote DataSource Interface
+interface AuthRemoteDataSource {
+    suspend fun authenticate(idToken: String): AuthResponseDto
+}
 
+// 2. Ktor Implementation
+class KtorAuthRemoteDataSource(private val client: HttpClient) : AuthRemoteDataSource {
+    override suspend fun authenticate(idToken: String): AuthResponseDto {
+        return client.post("auth/google") {
+            setBody(AuthRequestDto(idToken))
+        }.body()
+    }
+}
+
+// 3. Repository Impl
+class AuthRepositoryImpl(
+    private val remote: AuthRemoteDataSource,
+    private val local: AuthLocalDataSource
+) : AuthRepository {
+    override suspend fun loginWithGoogle(idToken: String): Result<AuthSession> = runCatching {
+        val response = remote.authenticate(idToken)
+        local.saveToken(response.token)
+        AuthSession(response.userId, response.email)
+    }
+}
+```
+
+---
+
+## 🛠️ Yaklaşım 2: Firebase Backend (Hızlı Çözüm / Mevcut Strateji)
+Firebase Authentication SDK'sını (GitLive KMP) kullandığınız senaryo.
+
+```kotlin
+// 1. Remote DataSource Interface (Aynı kalır, KMP gücü!)
+interface AuthRemoteDataSource {
+    suspend fun signInWithGoogle(idToken: String): RemoteUserDto
+}
+
+// 2. Firebase Implementation (GitLive SDK)
+class FirebaseAuthRemoteDataSource(private val firebaseAuth: FirebaseAuth) : AuthRemoteDataSource {
+    override suspend fun signInWithGoogle(idToken: String): RemoteUserDto {
+        val credential = GoogleAuthProvider.credential(idToken, null)
+        val result = firebaseAuth.signInWithCredential(credential)
+        val user = result.user ?: throw Exception("Login failed")
+        return RemoteUserDto(user.uid, user.email ?: "")
+    }
+}
+
+// 3. Repository Impl
+class AuthRepositoryImpl(
+    private val remote: AuthRemoteDataSource,
+    private val local: AuthLocalDataSource
+) : AuthRepository {
+    override suspend fun loginWithGoogle(idToken: String): Result<AuthSession> = runCatching {
+        val remoteUser = remote.signInWithGoogle(idToken)
+        local.saveSession(remoteUser.toLocal()) // DataStore'a kaydet
+        AuthSession(remoteUser.uid, remoteUser.email)
+    }
+}
+```
+
+---
+
+## 📱 Native UI Katmanı (Aksiyonun Başladığı Yer)
+
+### Android (`composeApp`)
+```kotlin
+// UI Helper
 class GoogleAuthClient(private val context: Context) {
     suspend fun signIn(): String? {
-        val googleIdOption = GetGoogleIdOption.Builder()
-            .setFilterByAuthorizedAccounts(false)
-            .setServerClientId("SENIN_WEB_CLIENT_ID.apps.googleusercontent.com")
-            .build()
-
         val request = GetCredentialRequest.Builder()
-            .addCredentialOption(googleIdOption)
+            .addCredentialOption(GetGoogleIdOption.Builder().setServerClientId("CLIENT_ID").build())
             .build()
-
-        return try {
-            val result = CredentialManager.create(context).getCredential(context, request)
-            val credential = result.credential
-
-            if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                GoogleIdTokenCredential.createFrom(credential.data).idToken
-            } else null
-        } catch (e: Exception) {
-            null
+        val result = CredentialManager.create(context).getCredential(context, request)
+        return (result.credential as? CustomCredential)?.let { 
+            GoogleIdTokenCredential.createFrom(it.data).idToken 
         }
     }
 }
-```
 
-### 4. Compose Ekranı - `composeApp`
-
-Compose ekranı mümkün olan en "aptal" (dumb) haliyle bırakılır. İş mantığı bilmez, sadece Effect dinler ve Intent basar.
-
-```kotlin
-// composeApp/src/main/kotlin/com/domatapp/android/auth/LoginScreen.kt
-
+// Compose Screen
 @Composable
-fun LoginScreen(viewModel: AuthViewModel = koinViewModel()) {
+fun LoginScreen(viewModel: AuthViewModel) {
     val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
-    val googleAuthClient = remember { GoogleAuthClient(context) }
+    val googleClient = remember { GoogleAuthClient(context) }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
-            when (effect) {
-                is AuthEffect.LaunchGoogleSignIn -> {
-                    // Effect geldiğinde helper üzerinden native UI'ı tetikle
-                    val idToken = googleAuthClient.signIn()
-                    if (idToken != null) {
-                        viewModel.onIntent(AuthIntent.OnGoogleTokenReceived(idToken))
-                    } else {
-                        viewModel.onIntent(AuthIntent.OnGoogleAuthFailed("Giriş iptal edildi"))
-                    }
-                }
-                is AuthEffect.NavigateToHome -> { /* Navigasyon */ }
-                is AuthEffect.ShowSnackbar -> { /* Snackbar göster */ }
+            if (effect is AuthEffect.LaunchGoogleSignIn) {
+                val token = googleClient.signIn()
+                if (token != null) viewModel.onIntent(AuthIntent.OnGoogleTokenReceived(token))
             }
         }
     }
+    
+    Button(onClick = { viewModel.onIntent(AuthIntent.OnGoogleLoginClicked) }) {
+        Text("Google Sign In")
+    }
+}
+```
 
-    Column {
-        if (uiState.isLoading) CircularProgressIndicator()
-        
-        Button(onClick = { viewModel.onIntent(AuthIntent.OnGoogleLoginClicked) }) {
-            Text("Google İle Giriş Yap")
+### iOS (`iosApp`)
+```swift
+struct LoginView: View {
+    @StateObject var viewModel: AuthViewModel // KMP ViewModel Wrapper
+
+    var body: some View {
+        Button("Google Sign In") {
+            GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { result, _ in
+                if let token = result?.user.idToken?.tokenString {
+                    viewModel.onIntent(AuthIntent.OnGoogleTokenReceived(idToken: token))
+                }
+            }
+        }.onReceive(viewModel.effect) { effect in
+            if effect is AuthEffectLaunchGoogleSignIn {
+                // iOS'ta butona basınca direkt tetiklenebilir veya buradan fırlatılabilir
+            }
         }
     }
 }
 ```
 
-## Neden Bu Yaklaşımı Seçtik?
+---
 
-1. **Temiz Compose:** İş mantığı ve CredentialManager karmaşası UI bileşeninden uzaklaştırıldı. Compose sadece State çizer ve Intent fırlatır.
-2. **KMP Prensipleri Korundu:** KMP modülü olan `:feature:auth` içerisinde `Context`, `Activity` vb. Android'e özel hiçbir bağımlılık (Dependency) tutulmaz.
-3. **MVI Uyumu:** Tek yönlü veri akışı (Unidirectional Data Flow) sayesinde uygulamanın state'i öngörülebilir hale geldi.
-4. **iOS Hazır:** SwiftUI tarafı hiçbir ViewModel (KMP) değişikliğine ihtiyaç duymadan aynı `AuthEffect`leri dinleyip iOS'un native Google SignIn SDK'sını tetikleyebilir.
+## 🏆 Neden Bu Mimari?
+
+1.  **Backend Agnostic:** Repository sadece `AuthRemoteDataSource` interface'ini görür. Backend yarın Firebase'den Ktor'a geçtiğinde Repository kodu değişmez.
+2.  **MVI & Side Effects:** Google penceresini açmak bir "yan etki"dir. ViewModel sadece "Pencereyi aç" emri fırlatır, sonucu UI'dan geri bekler.
+3.  **Test Edilebilirlik:** DataSource'lar mock'lanarak tüm iş mantığı %100 test edilebilir.
+4.  **Platform Saflığı:** `shared` modülünde hiçbir Android veya iOS kütüphanesi (Context, Activity vb.) bulunmaz.

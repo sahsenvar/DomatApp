@@ -11,6 +11,12 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
+                api(libs.arrow.core)
+                api(libs.arrow.fx.coroutines)
+                api(libs.kotlinx.coroutines.core)
+
+                // Koin for dependency injection
+                implementation(libs.koin.core)
             }
         }
         androidMain {

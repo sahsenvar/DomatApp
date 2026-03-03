@@ -65,6 +65,13 @@ DomatApp/
     *   The `build-logic` contains a `buildSrc` directory for managing precompiled script plugins, dependency definitions, or common build functions.
 *   **Testing:** Test source sets (`commonTest`, `androidInstrumentedTest`, etc.) are currently disabled/removed across the core and feature modules. Do not automatically generate test files or test dependencies unless explicitly requested.
 
+### 4. Data Layer Strategy (DataSource Pattern)
+To ensure long-term maintainability and easy backend transitions:
+*   **Repository Orchestration:** Repositories in the `data` layer MUST NOT contain implementation details of specific SDKs (like Firebase or Ktor). They should only orchestrate between `RemoteDataSource` and `LocalDataSource`.
+*   **DataSource Abstraction:** Always define `RemoteDataSource` and `LocalDataSource` interfaces.
+*   **Firebase Integration:** For the initial phase, **Firebase Authentication (GitLive KMP SDK)** is used as the backend. Implementation details MUST be encapsulated within `FirebaseAuthRemoteDataSource`.
+*   **KMP Purity:** DataSources and Repositories in the KMP `data` modules MUST remain platform-independent. Avoid enjecting `Context` or any Android/iOS specific classes.
+
 ## 🛠️ Operating Instructions for Gemini CLI
 
 When interacting with this workspace:

@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.domatapp.kmp.di)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -10,10 +12,17 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(libs.kotlin.stdlib)
-                // Bu modül %100 saf Kotlin'dir. 
-                // Ortak (Global) domain modelleri gerekirse core:domain'den alınır.
+                // Projects ========================================================================
                 implementation(projects.core.domain)
+                api(projects.core.resulting)
+                api(projects.core.common)
+
+                // Libraries =======================================================================
+                // Core
+                implementation(libs.kotlin.stdlib)
+
+                // Serialization
+                implementation(libs.kotlinx.serialization.json)
             }
         }
         androidMain {
