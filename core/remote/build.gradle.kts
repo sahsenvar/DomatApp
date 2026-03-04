@@ -29,6 +29,10 @@ kotlin {
                 // Coroutines
                 implementation(libs.kotlinx.coroutines.core)
 
+                // Firebase
+                implementation(libs.firebase.config)
+                implementation(libs.firebase.firestore)
+
                 // Koin for KMP
                 implementation(libs.koin.core)
                 implementation(libs.koin.annotations)
@@ -37,6 +41,7 @@ kotlin {
 
         androidMain {
             dependencies {
+                implementation(project.dependencies.platform(libs.firebase.bom))
                 // Ktor Engine for Android
                 implementation(libs.ktor.client.okhttp)
             }

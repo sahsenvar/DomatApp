@@ -100,7 +100,12 @@ class RemoteDataSourceProcessor(
         // Find HTTP method annotation
         val httpAnnotation = function.annotations.firstOrNull { annotation ->
             val annotationName = annotation.shortName.asString()
-            annotationName in setOf("GET", "POST", "PUT", "PATCH", "DELETE", "Subscribe", "Send")
+            annotationName in setOf(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "Subscribe", "Send",
+                "FetchRemoteConfig", "GetRemoteConfig", "ObserveRemoteConfig",
+                "GetDocument", "AddDocument", "SetDocument", "UpdateDocument",
+                "DeleteDocument", "QueryCollection", "ObserveDocument", "ObserveCollection"
+            )
         }
 
         if (httpAnnotation == null) {
@@ -108,8 +113,14 @@ class RemoteDataSourceProcessor(
         }
 
         val httpMethod = httpAnnotation.shortName.asString()
-        val path = httpAnnotation.arguments.firstOrNull()?.value as? String
-            ?: throw IllegalArgumentException("HTTP annotation must have a path parameter")
+        val path = when (httpMethod) {
+            "FetchRemoteConfig" -> ""
+            else -> {
+                // For Firestore annotations the parameter is named "collection", for others it's "path" or "key"
+                val firstArg = httpAnnotation.arguments.firstOrNull()?.value as? String
+                firstArg ?: throw IllegalArgumentException("Annotation $httpMethod must have a path/key/collection parameter")
+            }
+        }
 
         return FunSpec.builder(functionName)
             .addModifiers(KModifier.OVERRIDE)
@@ -134,7 +145,7 @@ class RemoteDataSourceProcessor(
                 }
 
                 // Generate method body
-                addCode(generateMethodBody(httpMethod, path, function))
+                addCode(generateMethodBody(httpMethod, path, function, httpAnnotation))
             }
             .build()
     }
@@ -142,7 +153,8 @@ class RemoteDataSourceProcessor(
     private fun generateMethodBody(
         httpMethod: String,
         path: String,
-        function: KSFunctionDeclaration
+        function: KSFunctionDeclaration,
+        annotation: KSAnnotation
     ): CodeBlock {
         val codeBuilder = CodeBlock.builder()
 
@@ -304,10 +316,300 @@ class RemoteDataSourceProcessor(
                 codeBuilder.unindent()
                 codeBuilder.add(")\n")
             }
+            
+            "FetchRemoteConfig" -> {
+                codeBuilder.addStatement("return remoteApi.fetchAndActivate()")
+            }
+
+            "GetRemoteConfig" -> {
+                val returnType = function.returnType?.resolve()
+                val returnTypeName = returnType?.declaration?.simpleName?.asString()
+
+                when (returnTypeName) {
+                    "Boolean" -> codeBuilder.addStatement("return remoteApi.getBoolean(%S)", finalPath)
+                    "String" -> codeBuilder.addStatement("return remoteApi.getString(%S)", finalPath)
+                    "Long" -> codeBuilder.addStatement("return remoteApi.getLong(%S)", finalPath)
+                    "Double" -> codeBuilder.addStatement("return remoteApi.getDouble(%S)", finalPath)
+                    else -> codeBuilder.addStatement("return remoteApi.getSerializable(%S, %T::class)", finalPath, returnType?.toClassName())
+                }
+            }
+
+            "ObserveRemoteConfig" -> {
+                val returnType = function.returnType?.resolve()
+                val flowType = returnType?.arguments?.firstOrNull()?.type?.resolve()
+                val flowTypeName = flowType?.declaration?.simpleName?.asString()
+
+                when (flowTypeName) {
+                    "Boolean" -> codeBuilder.addStatement("return remoteApi.observeBoolean(%S)", finalPath)
+                    "String" -> codeBuilder.addStatement("return remoteApi.observeString(%S)", finalPath)
+                    "Long" -> codeBuilder.addStatement("return remoteApi.observeLong(%S)", finalPath)
+                    "Double" -> codeBuilder.addStatement("return remoteApi.observeDouble(%S)", finalPath)
+                    else -> codeBuilder.addStatement("return remoteApi.observeSerializable(%S, %T::class)", finalPath, flowType?.toClassName())
+                }
+            }
+
+            "GetDocument" -> {
+                val documentIdParam = findDocumentIdParam(function)
+                val returnType = function.returnType?.resolve()
+                codeBuilder.add("return remoteApi.getDocument(\n")
+                codeBuilder.indent()
+                codeBuilder.addStatement("collection = %S,", finalPath)
+                codeBuilder.addStatement("documentId = %L,", documentIdParam)
+                codeBuilder.add("responseType = %T::class\n", returnType?.toClassName())
+                codeBuilder.unindent()
+                codeBuilder.add(")\n")
+            }
+
+            "AddDocument" -> {
+                val bodyParam = findBodyParam(function)
+                codeBuilder.add("return remoteApi.addDocument(\n")
+                codeBuilder.indent()
+                codeBuilder.addStatement("collection = %S,", finalPath)
+                codeBuilder.add("data = %L\n", bodyParam)
+                codeBuilder.unindent()
+                codeBuilder.add(")\n")
+            }
+
+            "SetDocument" -> {
+                val documentIdParam = findDocumentIdParam(function)
+                val bodyParam = findBodyParam(function)
+                val mergeArg = annotation.arguments
+                    .firstOrNull { it.name?.asString() == "merge" }
+                    ?.value as? Boolean ?: false
+                codeBuilder.add("return remoteApi.setDocument(\n")
+                codeBuilder.indent()
+                codeBuilder.addStatement("collection = %S,", finalPath)
+                codeBuilder.addStatement("documentId = %L,", documentIdParam)
+                codeBuilder.addStatement("data = %L,", bodyParam)
+                codeBuilder.add("merge = %L\n", mergeArg)
+                codeBuilder.unindent()
+                codeBuilder.add(")\n")
+            }
+
+            "UpdateDocument" -> {
+                val documentIdParam = findDocumentIdParam(function)
+                val fieldParams = findFieldParams(function)
+                codeBuilder.add("return remoteApi.updateDocument(\n")
+                codeBuilder.indent()
+                codeBuilder.addStatement("collection = %S,", finalPath)
+                codeBuilder.addStatement("documentId = %L,", documentIdParam)
+                codeBuilder.add("fields = mapOf(")
+                fieldParams.forEachIndexed { index, (fieldName, paramName) ->
+                    if (index > 0) codeBuilder.add(", ")
+                    codeBuilder.add("%S to %L", fieldName, paramName)
+                }
+                codeBuilder.add(")\n")
+                codeBuilder.unindent()
+                codeBuilder.add(")\n")
+            }
+
+            "DeleteDocument" -> {
+                val documentIdParam = findDocumentIdParam(function)
+                codeBuilder.add("return remoteApi.deleteDocument(\n")
+                codeBuilder.indent()
+                codeBuilder.addStatement("collection = %S,", finalPath)
+                codeBuilder.add("documentId = %L\n", documentIdParam)
+                codeBuilder.unindent()
+                codeBuilder.add(")\n")
+            }
+
+            "QueryCollection" -> {
+                val returnType = function.returnType?.resolve()
+                val listElementType = returnType?.arguments?.firstOrNull()?.type?.resolve()
+                val whereParams = findWhereParams(function)
+                val orderByClauses = findOrderByClauses(function)
+                val limitValue = findLimitValue(function)
+
+                codeBuilder.add("return remoteApi.queryCollection(\n")
+                codeBuilder.indent()
+                codeBuilder.addStatement("collection = %S,", finalPath)
+
+                // Filters
+                generateWhereFilters(codeBuilder, whereParams)
+
+                // OrderBy
+                generateOrderByClauses(codeBuilder, orderByClauses)
+
+                // Limit
+                codeBuilder.addStatement("limit = %L,", limitValue)
+
+                codeBuilder.add("responseType = %T::class\n", listElementType?.toClassName())
+                codeBuilder.unindent()
+                codeBuilder.add(")\n")
+            }
+
+            "ObserveDocument" -> {
+                val documentIdParam = findDocumentIdParam(function)
+                val returnType = function.returnType?.resolve()
+                val flowType = returnType?.arguments?.firstOrNull()?.type?.resolve()
+                codeBuilder.add("return remoteApi.observeDocument(\n")
+                codeBuilder.indent()
+                codeBuilder.addStatement("collection = %S,", finalPath)
+                codeBuilder.addStatement("documentId = %L,", documentIdParam)
+                codeBuilder.add("responseType = %T::class\n", flowType?.toClassName())
+                codeBuilder.unindent()
+                codeBuilder.add(")\n")
+            }
+
+            "ObserveCollection" -> {
+                val returnType = function.returnType?.resolve()
+                val listType = returnType?.arguments?.firstOrNull()?.type?.resolve()
+                val elementType = listType?.arguments?.firstOrNull()?.type?.resolve()
+                val whereParams = findWhereParams(function)
+                val orderByClauses = findOrderByClauses(function)
+                val limitValue = findLimitValue(function)
+
+                codeBuilder.add("return remoteApi.observeCollection(\n")
+                codeBuilder.indent()
+                codeBuilder.addStatement("collection = %S,", finalPath)
+
+                // Filters
+                generateWhereFilters(codeBuilder, whereParams)
+
+                // OrderBy
+                generateOrderByClauses(codeBuilder, orderByClauses)
+
+                // Limit
+                codeBuilder.addStatement("limit = %L,", limitValue)
+
+                codeBuilder.add("responseType = %T::class\n", elementType?.toClassName())
+                codeBuilder.unindent()
+                codeBuilder.add(")\n")
+            }
         }
 
         return codeBuilder.build()
     }
+
+    // --- Firestore helper methods ---
+
+    private fun findDocumentIdParam(function: KSFunctionDeclaration): String {
+        val param = function.parameters.find { param ->
+            param.annotations.any { it.shortName.asString() == "DocumentId" }
+        } ?: throw IllegalArgumentException("Function ${function.simpleName.asString()} requires a @DocumentId parameter")
+        return param.name!!.asString()
+    }
+
+    private fun findBodyParam(function: KSFunctionDeclaration): String {
+        val param = function.parameters.find { param ->
+            param.annotations.any { it.shortName.asString() == "Body" }
+        } ?: throw IllegalArgumentException("Function ${function.simpleName.asString()} requires a @Body parameter")
+        return param.name!!.asString()
+    }
+
+    private fun findFieldParams(function: KSFunctionDeclaration): List<Pair<String, String>> {
+        return function.parameters.filter { param ->
+            param.annotations.any { it.shortName.asString() == "Field" }
+        }.map { param ->
+            val fieldAnnotation = param.annotations.first { it.shortName.asString() == "Field" }
+            val fieldName = fieldAnnotation.arguments.first().value as String
+            fieldName to param.name!!.asString()
+        }
+    }
+
+    private data class WhereParam(
+        val operator: String,
+        val field: String,
+        val paramName: String
+    )
+
+    private fun findWhereParams(function: KSFunctionDeclaration): List<WhereParam> {
+        val whereAnnotations = setOf(
+            "WhereEqualTo", "WhereNotEqualTo",
+            "WhereLessThan", "WhereLessThanOrEqualTo",
+            "WhereGreaterThan", "WhereGreaterThanOrEqualTo",
+            "WhereArrayContains", "WhereIn", "WhereNotIn"
+        )
+
+        return function.parameters.flatMap { param ->
+            param.annotations
+                .filter { it.shortName.asString() in whereAnnotations }
+                .map { annotation ->
+                    val annotName = annotation.shortName.asString()
+                    val field = annotation.arguments.first().value as String
+                    val operator = when (annotName) {
+                        "WhereEqualTo" -> "EQUAL_TO"
+                        "WhereNotEqualTo" -> "NOT_EQUAL_TO"
+                        "WhereLessThan" -> "LESS_THAN"
+                        "WhereLessThanOrEqualTo" -> "LESS_THAN_OR_EQUAL_TO"
+                        "WhereGreaterThan" -> "GREATER_THAN"
+                        "WhereGreaterThanOrEqualTo" -> "GREATER_THAN_OR_EQUAL_TO"
+                        "WhereArrayContains" -> "ARRAY_CONTAINS"
+                        "WhereIn" -> "IN"
+                        "WhereNotIn" -> "NOT_IN"
+                        else -> throw IllegalArgumentException("Unknown where annotation: $annotName")
+                    }
+                    WhereParam(operator, field, param.name!!.asString())
+                }
+        }
+    }
+
+    private data class OrderByInfo(val field: String, val direction: String)
+
+    private fun findOrderByClauses(function: KSFunctionDeclaration): List<OrderByInfo> {
+        return function.annotations
+            .filter { it.shortName.asString() == "OrderBy" }
+            .map { annotation ->
+                val field = annotation.arguments.first { it.name?.asString() == "field" }.value as String
+                val direction = (annotation.arguments.firstOrNull { it.name?.asString() == "direction" }?.value as? String) ?: "ASCENDING"
+                OrderByInfo(field, direction)
+            }
+            .toList()
+    }
+
+    private fun findLimitValue(function: KSFunctionDeclaration): String {
+        val limitAnnotation = function.annotations.firstOrNull { it.shortName.asString() == "Limit" }
+        return if (limitAnnotation != null) {
+            (limitAnnotation.arguments.first().value as Int).toString()
+        } else {
+            "null"
+        }
+    }
+
+    private val whereClauseClass = ClassName("com.domatapp.core.remote.firestore.model", "WhereClause")
+    private val whereOperatorClass = ClassName("com.domatapp.core.remote.firestore.model", "WhereOperator")
+    private val orderByClauseClass = ClassName("com.domatapp.core.remote.firestore.model", "OrderByClause")
+    private val directionClass = ClassName("com.domatapp.core.remote.firestore.model", "Direction")
+
+    private fun generateWhereFilters(codeBuilder: CodeBlock.Builder, whereParams: List<WhereParam>) {
+        if (whereParams.isEmpty()) {
+            codeBuilder.add("filters = emptyList(),\n")
+        } else {
+            codeBuilder.add("filters = listOf(\n")
+            codeBuilder.indent()
+            whereParams.forEachIndexed { index, wp ->
+                codeBuilder.add(
+                    "%T(%S, %T.%L, %L)",
+                    whereClauseClass, wp.field, whereOperatorClass, wp.operator, wp.paramName
+                )
+                if (index < whereParams.size - 1) codeBuilder.add(",")
+                codeBuilder.add("\n")
+            }
+            codeBuilder.unindent()
+            codeBuilder.add("),\n")
+        }
+    }
+
+    private fun generateOrderByClauses(codeBuilder: CodeBlock.Builder, orderByClauses: List<OrderByInfo>) {
+        if (orderByClauses.isEmpty()) {
+            codeBuilder.add("orderBy = emptyList(),\n")
+        } else {
+            codeBuilder.add("orderBy = listOf(\n")
+            codeBuilder.indent()
+            orderByClauses.forEachIndexed { index, ob ->
+                codeBuilder.add(
+                    "%T(%S, %T.%L)",
+                    orderByClauseClass, ob.field, directionClass, ob.direction
+                )
+                if (index < orderByClauses.size - 1) codeBuilder.add(",")
+                codeBuilder.add("\n")
+            }
+            codeBuilder.unindent()
+            codeBuilder.add("),\n")
+        }
+    }
+
+    // --- REST/Socket helper methods ---
 
     private fun generateHeaders(
         codeBuilder: CodeBlock.Builder,

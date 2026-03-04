@@ -1,16 +1,17 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.domatapp.kmp.di)
+    alias(libs.plugins.mokoResources)
 }
 
 kotlin {
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
     sourceSets {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
+                api(libs.moko.resources)
+                api(libs.moko.resources.compose)
             }
         }
         androidMain {
@@ -20,4 +21,9 @@ kotlin {
             dependencies {}
         }
     }
+}
+
+multiplatformResources {
+    resourcesPackage.set("com.domatapp.core.resource")
+    resourcesClassName.set("MR")
 }

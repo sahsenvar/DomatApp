@@ -20,7 +20,7 @@ interface AuthRemoteDataSource {
     ): RemoteUserDto
 
     /**
-     * Get current session.
+     * Retrieve current session.
      */
     @GET("auth/session")
     suspend fun getSession(

@@ -13,8 +13,7 @@ package com.domatapp.core.remote.annotations
  * }
  * ```
  *
- * Generated implementation will be annotated with @Single from Koin.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class RemoteDataSource()
+annotation class RemoteDataSource

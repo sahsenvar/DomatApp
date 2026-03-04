@@ -16,6 +16,7 @@ appcompat = "1.7.1"
 material = "1.13.0"
 arrow = "2.2.1.1"
 firebase-gitlive = "2.4.0"
+firebase-bom = "33.10.0"
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.10.0"
 koin = "4.1.1"
@@ -24,7 +25,10 @@ ktor = "3.4.0"
 ksp = "2.3.6"
 kotlinpoet = "1.18.1"
 moko-mvvm = "0.16.1"
-
+moko-resources = "0.26.0"
+moko-graphics = "0.10.0"
+multiplatformSettings = "1.1.1"
+dataStoreVersion = "1.2.0"
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
@@ -42,6 +46,9 @@ arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref 
 firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebase-gitlive" }
 firebase-auth-android = { module = "dev.gitlive:firebase-auth-android", version.ref = "firebase-gitlive" }
 firebase-common = { module = "dev.gitlive:firebase-common", version.ref = "firebase-gitlive" }
+firebase-config = { module = "dev.gitlive:firebase-config", version.ref = "firebase-gitlive" }
+firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebase-gitlive" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -62,6 +69,13 @@ kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlin
 moko-mvvm-core = { module = "dev.icerock.moko:mvvm-core", version.ref = "moko-mvvm" }
 moko-mvvm-flow = { module = "dev.icerock.moko:mvvm-flow", version.ref = "moko-mvvm" }
 moko-mvvm-compose = { module = "dev.icerock.moko:mvvm-flow-compose", version.ref = "moko-mvvm" }
+moko-resources = { module = "dev.icerock.moko:resources", version.ref = "moko-resources" }
+moko-resources-compose = { module = "dev.icerock.moko:resources-compose", version.ref = "moko-resources" }
+moko-graphics = { module = "dev.icerock.moko:graphics", version.ref = "moko-graphics" }
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
+kvStore-datastore = { group = "androidx.datastore", name = "datastore", version.ref = "dataStoreVersion" }
+kvStore-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStoreVersion" }
+
 
 # Plugin dependencies for build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -87,3 +101,4 @@ domatapp-kmp-library = { id = "domatapp.kmp.library" }
 domatapp-kmp-di = { id = "domatapp.kmp.di" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+mokoResources = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko-resources" }

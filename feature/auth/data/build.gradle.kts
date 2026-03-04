@@ -19,9 +19,11 @@ kotlin {
                 implementation(projects.core.local)
                 implementation(projects.core.data)
 
+
                 // Libraries =======================================================================
                 // Core
                 implementation(libs.kotlin.stdlib)
+                implementation(libs.kotlinx.coroutines.core)
 
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)

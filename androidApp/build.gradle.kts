@@ -42,6 +42,7 @@ dependencies {
     implementation(projects.core.common)
     implementation(projects.core.serialization)
     implementation(projects.core.remote)
+    implementation(projects.core.local)
     implementation(projects.core.resulting)
 
     // Feature modules

@@ -48,13 +48,13 @@ class AuthRepositoryImpl(
     }
 
     override fun logout(): Flow<Unit> = flow {
-        // TODO: Get current token
+        // TODO: Retrieve current token
         val token = "dummy-token"
 
         // Call remote logout
         remoteDataSource.logout(token)
 
-        // TODO: Clear local session
+        // TODO: ClearAll local session
         // localDataSource.clearSession()
 
         emit(Unit)

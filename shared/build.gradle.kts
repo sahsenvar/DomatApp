@@ -12,6 +12,8 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            export(libs.moko.resources)
+            export(libs.moko.graphics)
         }
     }
     
@@ -21,6 +23,7 @@ kotlin {
             api(projects.core.local)
             api(projects.core.remote)
             api(projects.core.common)
+            api(projects.core.resource)
             api(projects.core.resulting)
 
             // Feature modules

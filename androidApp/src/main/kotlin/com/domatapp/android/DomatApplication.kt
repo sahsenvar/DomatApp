@@ -2,6 +2,8 @@ package com.domatapp.android
 
 import android.app.Application
 import com.domatapp.android.di.AndroidAppModule
+import com.domatapp.core.local.di.CoreLocalModule
+import com.domatapp.core.local.factory.DataStoreContextHolder
 import com.domatapp.core.remote.di.CoreRemoteModule
 import com.domatapp.core.serialization.di.CoreSerializationModule
 import com.domatapp.feature.auth.data.di.AuthDataModule
@@ -21,6 +23,7 @@ class DomatApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        DataStoreContextHolder.context = this
         initKoin()
     }
 
@@ -34,6 +37,7 @@ class DomatApplication : Application() {
                 AndroidAppModule().module,
                 CoreSerializationModule().module,
                 CoreRemoteModule().module,
+                CoreLocalModule().module,
                 AuthDomainModule().module,
                 AuthDataModule().module,
                 AuthPresentationModule().module,
