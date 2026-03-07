@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.domatapp.app.auth.AuthScreen
+import com.domatapp.app.ui.auth.AuthScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,4 +37,3 @@ fun App() {
 fun AppAndroidPreview() {
     App()
 }
-
