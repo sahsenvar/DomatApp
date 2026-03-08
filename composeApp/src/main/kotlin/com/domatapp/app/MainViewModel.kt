@@ -4,21 +4,6 @@ import com.domatapp.core.navigation.Navigator
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.presentation.base.BaseViewModel
 
-data class MainUiState(
-    val backStack: List<Route> = listOf(Route.Auth.Login)
-) {
-    val currentRoute: Route get() = backStack.last()
-}
-
-sealed interface MainIntent {
-    data class Navigate(val route: Route) : MainIntent
-    data object PopBack : MainIntent
-    data class PopBackTo(val route: Route, val inclusive: Boolean = false) : MainIntent
-    data class ReplaceAll(val route: Route) : MainIntent
-}
-
-sealed interface MainEffect
-
 class MainViewModel : BaseViewModel<MainUiState, MainIntent, MainEffect>(
     initialState = MainUiState()
 ), Navigator {
