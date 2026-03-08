@@ -12,8 +12,6 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.stdlib)
                 api(libs.kotlinx.coroutines.core)
-                // Arrow for Either/Result patterns (future use)
-                api(libs.arrow.core)
             }
         }
         androidMain {

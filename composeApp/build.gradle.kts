@@ -35,17 +35,23 @@ android {
 dependencies {
     implementation(projects.shared)
 
-    // Explicitly depend on features to expose KSP extensions and viewmodels to ComposeApp
+    // Core modules
+    implementation(projects.core.navigation)
+    implementation(projects.core.presentation)
     implementation(projects.core.serialization)
     implementation(projects.core.remote)
+
+    // Feature modules
     implementation(projects.feature.auth.domain)
     implementation(projects.feature.auth.data)
     implementation(projects.feature.auth.presentation)
+    implementation(projects.feature.home.presentation)
 
     // UI & Compose
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
+    implementation(compose.materialIconsExtended)
     implementation(libs.compose.ui)
     implementation(libs.compose.components.resources)
     implementation(libs.compose.uiToolingPreview)
@@ -60,9 +66,6 @@ dependencies {
     implementation(libs.koin.annotations)
     ksp(libs.koin.ksp.compiler)
 
-    // Moko MVVM for Compose
-    implementation(libs.moko.mvvm.compose)
-
     // Ktor (needed for HttpClient configuration)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
@@ -72,6 +75,10 @@ dependencies {
 
     // Kotlinx Serialization
     implementation(libs.kotlinx.serialization.json)
+
+    // Navigation 3
+    implementation(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
 
     api(libs.compose.uiTooling)
 }

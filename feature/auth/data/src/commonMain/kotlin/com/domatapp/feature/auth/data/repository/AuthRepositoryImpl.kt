@@ -39,6 +39,7 @@ class AuthRepositoryImpl(
                 false
             }
         }
+        .catch { throw it.toAuthError() }
 
     override fun observeAuthSession(): Flow<AuthSession?> = flow {
         // TODO: Observe from local data source
@@ -46,6 +47,7 @@ class AuthRepositoryImpl(
         //     .map { it?.toDomain() }
         emit(null)
     }
+        .catch { throw it.toAuthError() }
 
     override fun logout(): Flow<Unit> = flow {
         // TODO: Retrieve current token
@@ -59,4 +61,5 @@ class AuthRepositoryImpl(
 
         emit(Unit)
     }
+        .catch { throw it.toAuthError() }
 }

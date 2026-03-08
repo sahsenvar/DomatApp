@@ -1,6 +1,8 @@
 package com.domatapp.feature.auth.presentation.viewmodel
 
-import com.domatapp.core.common.presentation.BaseViewModel
+import com.domatapp.core.presentation.base.BaseViewModel
+import com.domatapp.core.resource.MR
+import com.domatapp.core.resource.api.StringResourceApi
 import com.domatapp.core.resulting.error.DomainError
 import com.domatapp.core.resulting.error.RemoteError
 import com.domatapp.feature.auth.domain.error.AuthError
@@ -10,17 +12,19 @@ import com.domatapp.feature.auth.presentation.model.AuthIntent
 import com.domatapp.feature.auth.presentation.model.AuthUiState
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
 
 /**
  * ViewModel for Authentication screen.
  * Implements MVI pattern with exception-based error handling.
- * Uses Moko MVVM's automatic viewModelScope and lifecycle management.
+ * Uses Lifecycle ViewModel's viewModelScope and lifecycle management.
  */
 @Factory
 class AuthViewModel(
-    private val loginWithGoogleUseCase: LoginWithGoogleUseCase
+    private val loginWithGoogleUseCase: LoginWithGoogleUseCase,
+    private val stringResource: StringResourceApi
 ) : BaseViewModel<AuthUiState, AuthIntent, AuthEffect>(
     initialState = AuthUiState()
 ) {
@@ -103,14 +107,14 @@ class AuthViewModel(
      * Convert DomainError to user-friendly UI message.
      */
     private fun DomainError.toUiMessage(): String = when (this) {
-        is AuthError.InvalidCredentials -> "Giriş bilgileri geçersiz"
-        is AuthError.UserNotFound -> "Kullanıcı bulunamadı"
-        is AuthError.EmailAlreadyInUse -> "Bu e-posta adresi zaten kullanımda"
-        is AuthError.AccountDisabled -> "Hesabınız devre dışı bırakılmış"
-        is RemoteError.NoConnection -> "İnternet bağlantısı yok"
-        is RemoteError.Timeout -> "İstek zaman aşımına uğradı"
-        is RemoteError.ServerError -> "Sunucu hatası (${this.code})"
-        is RemoteError.ClientError -> "İstek hatası (${this.code})"
-        else -> message ?: "Bilinmeyen bir hata oluştu"
+        is AuthError.InvalidCredentials -> stringResource.getString(MR.strings.error_invalid_credentials)
+        is AuthError.UserNotFound -> stringResource.getString(MR.strings.error_user_not_found)
+        is AuthError.EmailAlreadyInUse -> stringResource.getString(MR.strings.error_email_already_in_use)
+        is AuthError.AccountDisabled -> stringResource.getString(MR.strings.error_account_disabled)
+        is RemoteError.NoConnection -> stringResource.getString(MR.strings.error_no_connection)
+        is RemoteError.Timeout -> stringResource.getString(MR.strings.error_timeout)
+        is RemoteError.ServerError -> stringResource.getString(MR.strings.error_server, code)
+        is RemoteError.ClientError -> stringResource.getString(MR.strings.error_client, code)
+        else -> message ?: stringResource.getString(MR.strings.error_unknown)
     }
 }

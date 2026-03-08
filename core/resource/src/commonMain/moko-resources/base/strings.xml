@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DomatApp</string>
+    <string name="error_invalid_credentials">Giriş bilgileri geçersiz</string>
+    <string name="error_user_not_found">Kullanıcı bulunamadı</string>
+    <string name="error_email_already_in_use">Bu e-posta adresi zaten kullanımda</string>
+    <string name="error_account_disabled">Hesabınız devre dışı bırakılmış</string>
+    <string name="error_no_connection">İnternet bağlantısı yok</string>
+    <string name="error_timeout">İstek zaman aşımına uğradı</string>
+    <string name="error_server">Sunucu hatası (%d)</string>
+    <string name="error_client">İstek hatası (%d)</string>
+    <string name="error_unknown">Bilinmeyen bir hata oluştu</string>
 </resources>

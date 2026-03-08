@@ -24,7 +24,7 @@ fun RemoteUserDto.toDomain(): AuthSession {
  * Map exceptions to AuthError domain errors.
  * RemoteError from core:remote is already mapped, we just need to handle feature-specific cases.
  */
-fun Exception.toAuthError(): AuthError {
+fun Throwable.toAuthError(): AuthError {
     return when (this) {
         // Already an AuthError
         is AuthError -> this

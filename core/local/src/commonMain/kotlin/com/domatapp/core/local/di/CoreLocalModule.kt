@@ -1,8 +1,9 @@
 package com.domatapp.core.local.di
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
+import app.cash.sqldelight.db.SqlDriver
 import com.domatapp.core.local.api.KeyValueApi
+import com.domatapp.core.local.database.DomatAppDatabase
+import com.domatapp.core.local.database.factory.createSqlDriver
 import com.domatapp.core.local.factory.createDataStore
 import com.domatapp.core.local.impl.DataStoreKeyValueApiImpl
 import com.domatapp.core.serialization.api.SerializationApi
@@ -14,7 +15,11 @@ import org.koin.core.annotation.Single
 @Module
 class CoreLocalModule {
 
+    @Single
+    fun provideSqlDriver(): SqlDriver = createSqlDriver("domatapp")
 
+    @Single
+    fun provideDatabase(driver: SqlDriver): DomatAppDatabase = DomatAppDatabase(driver)
 
     @Factory
     @Named("auth")

@@ -12,7 +12,6 @@ sealed class AuthIntent {
 
     /**
      * Native UI received Google ID token after successful sign-in.
-     * VM will call LoginWithGoogleUseCase.
      */
     data class OnGoogleTokenReceived(val idToken: String) : AuthIntent()
 

@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -11,13 +12,8 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
+                implementation(libs.kotlinx.serialization.json)
             }
-        }
-        androidMain {
-            dependencies {}
-        }
-        iosMain {
-            dependencies {}
         }
     }
 }

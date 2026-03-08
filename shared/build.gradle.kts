@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.skie)
 }
 
 kotlin {
@@ -12,6 +13,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            export(projects.core.navigation)
             export(libs.moko.resources)
             export(libs.moko.graphics)
         }
@@ -20,11 +22,13 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // Core modules
+            api(projects.core.navigation)
             api(projects.core.local)
             api(projects.core.remote)
             api(projects.core.common)
             api(projects.core.resource)
             api(projects.core.resulting)
+            api(projects.core.serialization)
 
             // Feature modules
             api(projects.feature.auth.domain)
