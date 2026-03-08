@@ -22,7 +22,6 @@ import com.domatapp.app.navigation.authEntries
 import com.domatapp.app.navigation.homeEntries
 import com.domatapp.app.scaffold.DomatBottomBar
 import com.domatapp.app.scaffold.DomatFab
-import com.domatapp.app.scaffold.DomatTopBar
 import com.domatapp.app.scaffold.scaffoldConfig
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.presentation.compose.LocalNavigator
@@ -52,11 +51,6 @@ fun DomatApp() {
         LocalSnackbarHostState provides snackbarHostState
     ) {
         Scaffold(
-            topBar = {
-                if (scaffoldConfig.showTopBar) {
-                    DomatTopBar(title = scaffoldConfig.topBarTitle)
-                }
-            },
             bottomBar = {
                 if (scaffoldConfig.showBottomBar) {
                     DomatBottomBar(currentRoute = currentRoute)
