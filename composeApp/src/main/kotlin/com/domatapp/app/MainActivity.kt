@@ -18,12 +18,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.app.navigation.authEntries
 import com.domatapp.app.navigation.homeEntries
 import com.domatapp.app.scaffold.DomatBottomBar
 import com.domatapp.app.scaffold.DomatFab
 import com.domatapp.app.scaffold.scaffoldConfig
-import com.domatapp.core.navigation.Route
 import com.domatapp.core.presentation.compose.LocalNavigator
 import com.domatapp.core.presentation.compose.LocalSnackbarHostState
 
@@ -32,7 +32,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            DomatApp()
+            DomatTheme {
+                DomatApp()
+            }
         }
     }
 }

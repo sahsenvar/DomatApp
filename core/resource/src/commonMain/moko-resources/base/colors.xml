@@ -1,4 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#FF6750A4</color>
+    <!-- Green -->
+    <color name="green_900">#FF002204</color>
+    <color name="green_800">#FF00390A</color>
+    <color name="green_700">#FF1B5E20</color>
+    <color name="green_300">#FF81C784</color>
+    <color name="green_200">#FFA5D6A7</color>
+
+    <!-- Sage -->
+    <color name="sage_900">#FF0B1F13</color>
+    <color name="sage_800">#FF203527</color>
+    <color name="sage_700">#FF374B3C</color>
+    <color name="sage_600">#FF4E6352</color>
+    <color name="sage_500">#FF717970</color>
+    <color name="sage_400">#FF8B938A</color>
+    <color name="sage_300">#FFB5CCB7</color>
+    <color name="sage_200">#FFD0E8D2</color>
+    <color name="sage_100">#FFDDE5DB</color>
+
+    <!-- Neutral -->
+    <color name="neutral_900">#FF191C19</color>
+    <color name="neutral_700">#FF414941</color>
+    <color name="neutral_300">#FFC1C9BF</color>
+    <color name="neutral_100">#FFE1E3DE</color>
+    <color name="neutral_50">#FFF8FAF5</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Teal -->
+    <color name="teal_900">#FF00201D</color>
+    <color name="teal_800">#FF013733</color>
+    <color name="teal_700">#FF1F4B47</color>
+    <color name="teal_600">#FF3A635E</color>
+    <color name="teal_300">#FFA0D0CA</color>
+    <color name="teal_200">#FFBCECE6</color>
+
+    <!-- Red -->
+    <color name="red_900">#FF410002</color>
+    <color name="red_800">#FF690005</color>
+    <color name="red_700">#FF93000A</color>
+    <color name="red_600">#FFBA1A1A</color>
+    <color name="red_200">#FFFFB4AB</color>
+    <color name="red_100">#FFFFDAD6</color>
 </resources>
