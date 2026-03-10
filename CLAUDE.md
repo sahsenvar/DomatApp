@@ -38,7 +38,7 @@ The project follows a strict layered architecture:
   :core:domain/           → Shared domain models across features
   :core:resulting/        → Error handling (DomainError, RemoteError, ValidationError, SerializationError)
   :core:serialization/    → Serialization abstraction (SerializationApi, custom serializers)
-  :core:remote/           → Network layer (Ktor REST/WebSocket, RemoteApi)
+  :core:remote/           → Network layer (Ktor REST/WebSocket, Firebase Firestore/RemoteConfig)
   :core:local/            → Local storage abstractions
   :core:navigation/       → Navigation definitions
   :core:resource/         → Shared resources
@@ -139,10 +139,10 @@ ViewModel.catch { }
 
 ### Implementation Pattern
 
-**core:remote** (Infrastructure Layer):
+**core:remote** (Infrastructure Layer - `KtorRestClient`):
 ```kotlin
 // Automatically maps Ktor exceptions to RemoteError
-override suspend fun <T> get(/*...*/): T = try {
+suspend fun <T> get(/*...*/): T = try {
     client.get(/*...*/)
 } catch (e: Exception) {
     throw e.toRemoteError() // ConnectTimeoutException → RemoteError.Timeout
@@ -184,20 +184,42 @@ sealed class AuthError : DomainError {
 
 ## Remote DataSource Code Generation (KSP Annotations)
 
-The project uses **KSP annotations** to automatically generate RemoteApi-based DataSource implementations.
+The project uses **KSP annotations** to automatically generate DataSource implementations. The KSP processor analyzes which backend types each DataSource uses and injects only the required concrete clients.
+
+### Concrete Clients (core:remote)
+
+- **`KtorRestClient`**: Ktor HttpClient for REST (GET, POST, PUT, PATCH, DELETE)
+- **`KtorSocketClient`**: Ktor WebSocket for real-time communication
+- **`FirebaseFirestoreClient`**: Firebase Firestore for document CRUD and realtime observation
+- **`FirebaseRemoteConfigClient`**: Firebase Remote Config for feature flags and configuration
 
 ### Annotations
 
-**HTTP Methods:**
+**HTTP Methods (→ `KtorRestClient`):**
 - `@GET(path)` - HTTP GET request
 - `@POST(path)` - HTTP POST request
 - `@PUT(path)` - HTTP PUT request
 - `@PATCH(path)` - HTTP PATCH request
 - `@DELETE(path)` - HTTP DELETE request
 
-**WebSocket Methods:**
+**WebSocket Methods (→ `KtorSocketClient`):**
 - `@Subscribe(path)` - WebSocket subscription (returns Flow)
 - `@Send(path)` - WebSocket send/receive
+
+**Firestore Methods (→ `FirebaseFirestoreClient`):**
+- `@GetDocument(collection)` - Get a single document
+- `@AddDocument(collection)` - Add a new document
+- `@SetDocument(collection)` - Set/overwrite a document
+- `@UpdateDocument(collection)` - Update specific fields
+- `@DeleteDocument(collection)` - Delete a document
+- `@QueryCollection(collection)` - Query with filters
+- `@ObserveDocument(collection)` - Realtime document observation
+- `@ObserveCollection(collection)` - Realtime collection observation
+
+**Remote Config Methods (→ `FirebaseRemoteConfigClient`):**
+- `@FetchRemoteConfig` - Fetch and activate remote config
+- `@GetRemoteConfig(key)` - Get a config value
+- `@ObserveRemoteConfig(key)` - Observe config changes
 
 **Parameters:**
 - `@Body` - Request body (will be serialized)
@@ -205,6 +227,11 @@ The project uses **KSP annotations** to automatically generate RemoteApi-based D
 - `@Header(name)` - Single header
 - `@HeaderMap` - Map of headers
 - `@Path(name)` - Path parameter (replaces {name} in path)
+- `@DocumentId` - Firestore document ID
+- `@Field(name)` - Firestore field for updates
+- `@WhereEqualTo(field)`, `@WhereIn(field)`, etc. - Firestore query filters
+- `@OrderBy(field, direction)` - Firestore ordering
+- `@Limit(value)` - Firestore query limit
 
 ### Usage Example
 
@@ -232,13 +259,13 @@ interface AuthRemoteDataSource {
     fun subscribeToAuthEvents(): Flow<AuthEvent>
 }
 
-// KSP automatically generates:
-@Single
+// KSP automatically generates (only REST + Socket clients injected based on usage):
 class AuthRemoteDataSourceImpl(
-    private val remoteApi: RemoteApi
+    private val restClient: KtorRestClient,
+    private val socketClient: KtorSocketClient,
 ) : AuthRemoteDataSource {
     override suspend fun signInWithGoogle(request: GoogleSignInRequest): RemoteUserDto {
-        return remoteApi.post(
+        return restClient.post(
             path = "auth/google",
             body = request,
             headers = emptyMap(),
@@ -249,66 +276,68 @@ class AuthRemoteDataSourceImpl(
 }
 ```
 
+**Mixed Backend DataSource (REST + Firestore):**
+```kotlin
+@RemoteDataSource
+interface ProductRemoteDataSource {
+    @GET("products/{id}")
+    suspend fun getProductFromApi(@Path("id") id: String): ProductDto
+
+    @GetDocument("products")
+    suspend fun getProductFromFirestore(@DocumentId id: String): ProductDto
+}
+
+// Generated with both clients:
+class ProductRemoteDataSourceImpl(
+    private val restClient: KtorRestClient,
+    private val firestoreClient: FirebaseFirestoreClient,
+) : ProductRemoteDataSource { ... }
+```
+
 **Benefits:**
 - ✅ **No Boilerplate**: Implementation automatically generated
 - ✅ **Type-Safe**: Compile-time validation
-- ✅ **RemoteApi Abstraction**: Not coupled to Ktor - can switch HTTP clients
-- ✅ **Koin Integration**: Generated classes are `@Single` annotated
+- ✅ **Minimal Dependencies**: Only required clients are injected per DataSource
+- ✅ **Mixed Backends**: REST, WebSocket, Firestore, and RemoteConfig can coexist in one DataSource
 
-## Backend Strategy (RemoteApi + DataSource Pattern)
+## Backend Strategy (Concrete Clients + DataSource Pattern)
 
-### RemoteApi Delegation Pattern
+### Concrete Client Architecture
 
-The `core:remote` module provides a unified `RemoteApi` interface using Kotlin delegation to separate protocol-specific implementations:
+The `core:remote` module provides concrete client classes for each backend type. There are no abstraction interfaces - each client is used directly:
 
-```kotlin
-// Protocol-specific interfaces
-interface RestApi { suspend fun <T> get(/*...*/): T }
-interface SocketApi { fun <T> subscribe(/*...*/): Flow<T> }
+- **`KtorRestClient`** (`core:remote/rest/`): Ktor HttpClient for REST (GET, POST, PUT, PATCH, DELETE)
+- **`KtorSocketClient`** (`core:remote/socket/`): Ktor WebSocket for real-time communication
+- **`FirebaseFirestoreClient`** (`core:remote/firestore/`): Firebase Firestore CRUD and realtime
+- **`FirebaseRemoteConfigClient`** (`core:remote/remoteconfig/`): Firebase Remote Config
 
-// Unified interface
-interface RemoteApi : RestApi, SocketApi
-
-// Delegation implementation
-@Single
-class RemoteApiImpl(
-    restApi: RestApi,
-    socketApi: SocketApi
-) : RemoteApi,
-    RestApi by restApi,      // Delegates REST calls to KtorRestApi
-    SocketApi by socketApi   // Delegates WebSocket calls to KtorSocketApi
-```
-
-**Implementations:**
-- **KtorRestApi**: Ktor HttpClient for REST (GET, POST, PUT, PATCH, DELETE)
-- **KtorSocketApi**: Ktor WebSocket for real-time communication
-- **Future**: GraphQLApi can be added without breaking existing code
+All clients are `@Single` annotated and discovered by Koin via `@ComponentScan`.
 
 ### DataSource Pattern (Feature Layer)
 
-Each feature defines its own DataSource interface:
+Each feature defines its own DataSource interface with `@RemoteDataSource` annotation:
 
 - **Interface**: `AuthRemoteDataSource` (in `feature:auth:data`)
-- **Implementation**: `AuthRemoteDataSourceImpl` uses `RemoteApi` from `core:remote`
-- **Future**: KSP code generation from OpenAPI specs
+- **Implementation**: `AuthRemoteDataSourceImpl` is KSP-generated, injecting only the concrete clients it needs
 
 **Example:**
 ```kotlin
-@Single
+// KSP-generated implementation injects only KtorRestClient (since only REST annotations are used)
 class AuthRemoteDataSourceImpl(
-    private val remoteApi: RemoteApi
+    private val restClient: KtorRestClient
 ) : AuthRemoteDataSource {
-    override suspend fun signInWithGoogle(idToken: String): RemoteUserDto {
-        return remoteApi.post(
+    override suspend fun signInWithGoogle(request: GoogleSignInRequest): RemoteUserDto {
+        return restClient.post(
             path = "auth/google",
-            body = mapOf("idToken" to idToken),
+            body = request,
+            headers = emptyMap(),
             responseType = RemoteUserDto::class
         )
     }
 }
 ```
 
-Repository implementations MUST only orchestrate between `RemoteDataSource` and `LocalDataSource` interfaces. Never use `RemoteApi` directly in repositories.
+Repository implementations MUST only orchestrate between `RemoteDataSource` and `LocalDataSource` interfaces. Never use concrete clients directly in repositories.
 
 ## Version Catalog
 
@@ -346,10 +375,10 @@ class CoreRemoteModule {
 **Example:**
 ```kotlin
 @Single
-class KtorRestApi(
+class KtorRestClient(
     private val client: HttpClient,
     private val serializer: SerializationApi
-) : RestApi { /*...*/ }
+) { /*...*/ }
 
 @Factory
 class LoginWithGoogleUseCase(

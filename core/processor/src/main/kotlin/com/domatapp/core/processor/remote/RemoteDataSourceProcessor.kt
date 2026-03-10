@@ -6,14 +6,33 @@ import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
+import kotlin.reflect.KClass
 
 /**
- * KSP Processor that generates RemoteApi-based implementations for @RemoteDataSource interfaces.
+ * KSP Processor that generates concrete client-based implementations for @RemoteDataSource interfaces.
+ *
+ * Analyzes which backend types (REST, WebSocket, Firestore, RemoteConfig) each DataSource uses
+ * and injects only the required concrete clients (KtorRestClient, KtorSocketClient, etc.).
  */
 class RemoteDataSourceProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger
 ) : SymbolProcessor {
+
+    // Annotation groupings per backend type
+    private val restAnnotations = setOf("GET", "POST", "PUT", "PATCH", "DELETE")
+    private val socketAnnotations = setOf("Subscribe", "Send")
+    private val firestoreAnnotations = setOf(
+        "GetDocument", "AddDocument", "SetDocument", "UpdateDocument",
+        "DeleteDocument", "QueryCollection", "ObserveDocument", "ObserveCollection"
+    )
+    private val remoteConfigAnnotations = setOf("FetchRemoteConfig", "GetRemoteConfig", "ObserveRemoteConfig")
+
+    // Concrete client class names
+    private val restClientClass = ClassName("com.domatapp.core.remote.rest", "KtorRestClient")
+    private val socketClientClass = ClassName("com.domatapp.core.remote.socket", "KtorSocketClient")
+    private val firestoreClientClass = ClassName("com.domatapp.core.remote.firestore", "FirebaseFirestoreClient")
+    private val remoteConfigClientClass = ClassName("com.domatapp.core.remote.remoteconfig", "FirebaseRemoteConfigClient")
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val remoteDataSourceAnnotation = "com.domatapp.core.remote.annotations.RemoteDataSource"
@@ -33,6 +52,39 @@ class RemoteDataSourceProcessor(
         return emptyList()
     }
 
+    /**
+     * Determines which backend types are used by scanning all method annotations.
+     */
+    private data class BackendDependencies(
+        val needsRest: Boolean,
+        val needsSocket: Boolean,
+        val needsFirestore: Boolean,
+        val needsRemoteConfig: Boolean
+    )
+
+    private fun analyzeBackendDependencies(interfaceDeclaration: KSClassDeclaration): BackendDependencies {
+        var needsRest = false
+        var needsSocket = false
+        var needsFirestore = false
+        var needsRemoteConfig = false
+
+        interfaceDeclaration.getAllFunctions()
+            .filter { it.parentDeclaration == interfaceDeclaration }
+            .forEach { function ->
+                function.annotations.forEach { annotation ->
+                    val name = annotation.shortName.asString()
+                    when {
+                        name in restAnnotations -> needsRest = true
+                        name in socketAnnotations -> needsSocket = true
+                        name in firestoreAnnotations -> needsFirestore = true
+                        name in remoteConfigAnnotations -> needsRemoteConfig = true
+                    }
+                }
+            }
+
+        return BackendDependencies(needsRest, needsSocket, needsFirestore, needsRemoteConfig)
+    }
+
     private fun generateImplementation(interfaceDeclaration: KSClassDeclaration) {
         val packageName = interfaceDeclaration.packageName.asString()
         val interfaceName = interfaceDeclaration.simpleName.asString()
@@ -40,19 +92,53 @@ class RemoteDataSourceProcessor(
 
         logger.info("Generating $implClassName for $interfaceName")
 
-        val typeSpec = TypeSpec.classBuilder(implClassName)
-            .addSuperinterface(interfaceDeclaration.toClassName())
-            .primaryConstructor(
-                FunSpec.constructorBuilder()
-                    .addParameter("remoteApi", ClassName("com.domatapp.core.remote.api", "RemoteApi"))
-                    .build()
-            )
-            .addProperty(
-                PropertySpec.builder("remoteApi", ClassName("com.domatapp.core.remote.api", "RemoteApi"))
-                    .initializer("remoteApi")
+        val deps = analyzeBackendDependencies(interfaceDeclaration)
+
+        // Build constructor with only needed dependencies
+        val constructorBuilder = FunSpec.constructorBuilder()
+        val properties = mutableListOf<PropertySpec>()
+
+        if (deps.needsRest) {
+            constructorBuilder.addParameter("restClient", restClientClass)
+            properties.add(
+                PropertySpec.builder("restClient", restClientClass)
+                    .initializer("restClient")
                     .addModifiers(KModifier.PRIVATE)
                     .build()
             )
+        }
+        if (deps.needsSocket) {
+            constructorBuilder.addParameter("socketClient", socketClientClass)
+            properties.add(
+                PropertySpec.builder("socketClient", socketClientClass)
+                    .initializer("socketClient")
+                    .addModifiers(KModifier.PRIVATE)
+                    .build()
+            )
+        }
+        if (deps.needsFirestore) {
+            constructorBuilder.addParameter("firestoreClient", firestoreClientClass)
+            properties.add(
+                PropertySpec.builder("firestoreClient", firestoreClientClass)
+                    .initializer("firestoreClient")
+                    .addModifiers(KModifier.PRIVATE)
+                    .build()
+            )
+        }
+        if (deps.needsRemoteConfig) {
+            constructorBuilder.addParameter("remoteConfigClient", remoteConfigClientClass)
+            properties.add(
+                PropertySpec.builder("remoteConfigClient", remoteConfigClientClass)
+                    .initializer("remoteConfigClient")
+                    .addModifiers(KModifier.PRIVATE)
+                    .build()
+            )
+        }
+
+        val typeSpec = TypeSpec.classBuilder(implClassName)
+            .addSuperinterface(interfaceDeclaration.toClassName())
+            .primaryConstructor(constructorBuilder.build())
+            .addProperties(properties)
             .apply {
                 // Generate method implementations
                 interfaceDeclaration.getAllFunctions()
@@ -100,12 +186,8 @@ class RemoteDataSourceProcessor(
         // Find HTTP method annotation
         val httpAnnotation = function.annotations.firstOrNull { annotation ->
             val annotationName = annotation.shortName.asString()
-            annotationName in setOf(
-                "GET", "POST", "PUT", "PATCH", "DELETE", "Subscribe", "Send",
-                "FetchRemoteConfig", "GetRemoteConfig", "ObserveRemoteConfig",
-                "GetDocument", "AddDocument", "SetDocument", "UpdateDocument",
-                "DeleteDocument", "QueryCollection", "ObserveDocument", "ObserveCollection"
-            )
+            annotationName in restAnnotations || annotationName in socketAnnotations ||
+                annotationName in firestoreAnnotations || annotationName in remoteConfigAnnotations
         }
 
         if (httpAnnotation == null) {
@@ -150,6 +232,17 @@ class RemoteDataSourceProcessor(
             .build()
     }
 
+    /**
+     * Resolves the client variable name based on annotation type.
+     */
+    private fun clientNameFor(httpMethod: String): String = when {
+        httpMethod in restAnnotations -> "restClient"
+        httpMethod in socketAnnotations -> "socketClient"
+        httpMethod in firestoreAnnotations -> "firestoreClient"
+        httpMethod in remoteConfigAnnotations -> "remoteConfigClient"
+        else -> throw IllegalArgumentException("Unknown annotation: $httpMethod")
+    }
+
     private fun generateMethodBody(
         httpMethod: String,
         path: String,
@@ -157,6 +250,7 @@ class RemoteDataSourceProcessor(
         annotation: KSAnnotation
     ): CodeBlock {
         val codeBuilder = CodeBlock.builder()
+        val client = clientNameFor(httpMethod)
 
         // Parse parameters
         val bodyParam = function.parameters.find { param ->
@@ -190,7 +284,7 @@ class RemoteDataSourceProcessor(
 
         when (httpMethod) {
             "GET" -> {
-                codeBuilder.add("return remoteApi.get(\n")
+                codeBuilder.add("return $client.get(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("path = %S,", finalPath)
 
@@ -224,7 +318,7 @@ class RemoteDataSourceProcessor(
 
             "POST", "PUT", "PATCH" -> {
                 val methodName = httpMethod.lowercase()
-                codeBuilder.add("return remoteApi.$methodName(\n")
+                codeBuilder.add("return $client.$methodName(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("path = %S,", finalPath)
 
@@ -249,7 +343,7 @@ class RemoteDataSourceProcessor(
             }
 
             "DELETE" -> {
-                codeBuilder.add("return remoteApi.delete(\n")
+                codeBuilder.add("return $client.delete(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("path = %S,", finalPath)
 
@@ -282,7 +376,7 @@ class RemoteDataSourceProcessor(
             }
 
             "Subscribe" -> {
-                codeBuilder.add("return remoteApi.subscribe(\n")
+                codeBuilder.add("return $client.subscribe(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("path = %S,", finalPath)
 
@@ -298,7 +392,7 @@ class RemoteDataSourceProcessor(
             }
 
             "Send" -> {
-                codeBuilder.add("return remoteApi.send(\n")
+                codeBuilder.add("return $client.send(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("path = %S,", finalPath)
 
@@ -316,9 +410,9 @@ class RemoteDataSourceProcessor(
                 codeBuilder.unindent()
                 codeBuilder.add(")\n")
             }
-            
+
             "FetchRemoteConfig" -> {
-                codeBuilder.addStatement("return remoteApi.fetchAndActivate()")
+                codeBuilder.addStatement("return $client.fetchAndActivate()")
             }
 
             "GetRemoteConfig" -> {
@@ -326,11 +420,11 @@ class RemoteDataSourceProcessor(
                 val returnTypeName = returnType?.declaration?.simpleName?.asString()
 
                 when (returnTypeName) {
-                    "Boolean" -> codeBuilder.addStatement("return remoteApi.getBoolean(%S)", finalPath)
-                    "String" -> codeBuilder.addStatement("return remoteApi.getString(%S)", finalPath)
-                    "Long" -> codeBuilder.addStatement("return remoteApi.getLong(%S)", finalPath)
-                    "Double" -> codeBuilder.addStatement("return remoteApi.getDouble(%S)", finalPath)
-                    else -> codeBuilder.addStatement("return remoteApi.getSerializable(%S, %T::class)", finalPath, returnType?.toClassName())
+                    "Boolean" -> codeBuilder.addStatement("return $client.getBoolean(%S)", finalPath)
+                    "String" -> codeBuilder.addStatement("return $client.getString(%S)", finalPath)
+                    "Long" -> codeBuilder.addStatement("return $client.getLong(%S)", finalPath)
+                    "Double" -> codeBuilder.addStatement("return $client.getDouble(%S)", finalPath)
+                    else -> codeBuilder.addStatement("return $client.getSerializable(%S, %T::class)", finalPath, returnType?.toClassName())
                 }
             }
 
@@ -340,18 +434,18 @@ class RemoteDataSourceProcessor(
                 val flowTypeName = flowType?.declaration?.simpleName?.asString()
 
                 when (flowTypeName) {
-                    "Boolean" -> codeBuilder.addStatement("return remoteApi.observeBoolean(%S)", finalPath)
-                    "String" -> codeBuilder.addStatement("return remoteApi.observeString(%S)", finalPath)
-                    "Long" -> codeBuilder.addStatement("return remoteApi.observeLong(%S)", finalPath)
-                    "Double" -> codeBuilder.addStatement("return remoteApi.observeDouble(%S)", finalPath)
-                    else -> codeBuilder.addStatement("return remoteApi.observeSerializable(%S, %T::class)", finalPath, flowType?.toClassName())
+                    "Boolean" -> codeBuilder.addStatement("return $client.observeBoolean(%S)", finalPath)
+                    "String" -> codeBuilder.addStatement("return $client.observeString(%S)", finalPath)
+                    "Long" -> codeBuilder.addStatement("return $client.observeLong(%S)", finalPath)
+                    "Double" -> codeBuilder.addStatement("return $client.observeDouble(%S)", finalPath)
+                    else -> codeBuilder.addStatement("return $client.observeSerializable(%S, %T::class)", finalPath, flowType?.toClassName())
                 }
             }
 
             "GetDocument" -> {
                 val documentIdParam = findDocumentIdParam(function)
                 val returnType = function.returnType?.resolve()
-                codeBuilder.add("return remoteApi.getDocument(\n")
+                codeBuilder.add("return $client.getDocument(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("collection = %S,", finalPath)
                 codeBuilder.addStatement("documentId = %L,", documentIdParam)
@@ -361,26 +455,26 @@ class RemoteDataSourceProcessor(
             }
 
             "AddDocument" -> {
-                val bodyParam = findBodyParam(function)
-                codeBuilder.add("return remoteApi.addDocument(\n")
+                val bodyParamName = findBodyParam(function)
+                codeBuilder.add("return $client.addDocument(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("collection = %S,", finalPath)
-                codeBuilder.add("data = %L\n", bodyParam)
+                codeBuilder.add("data = %L\n", bodyParamName)
                 codeBuilder.unindent()
                 codeBuilder.add(")\n")
             }
 
             "SetDocument" -> {
                 val documentIdParam = findDocumentIdParam(function)
-                val bodyParam = findBodyParam(function)
+                val bodyParamName = findBodyParam(function)
                 val mergeArg = annotation.arguments
                     .firstOrNull { it.name?.asString() == "merge" }
                     ?.value as? Boolean ?: false
-                codeBuilder.add("return remoteApi.setDocument(\n")
+                codeBuilder.add("return $client.setDocument(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("collection = %S,", finalPath)
                 codeBuilder.addStatement("documentId = %L,", documentIdParam)
-                codeBuilder.addStatement("data = %L,", bodyParam)
+                codeBuilder.addStatement("data = %L,", bodyParamName)
                 codeBuilder.add("merge = %L\n", mergeArg)
                 codeBuilder.unindent()
                 codeBuilder.add(")\n")
@@ -389,7 +483,7 @@ class RemoteDataSourceProcessor(
             "UpdateDocument" -> {
                 val documentIdParam = findDocumentIdParam(function)
                 val fieldParams = findFieldParams(function)
-                codeBuilder.add("return remoteApi.updateDocument(\n")
+                codeBuilder.add("return $client.updateDocument(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("collection = %S,", finalPath)
                 codeBuilder.addStatement("documentId = %L,", documentIdParam)
@@ -405,7 +499,7 @@ class RemoteDataSourceProcessor(
 
             "DeleteDocument" -> {
                 val documentIdParam = findDocumentIdParam(function)
-                codeBuilder.add("return remoteApi.deleteDocument(\n")
+                codeBuilder.add("return $client.deleteDocument(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("collection = %S,", finalPath)
                 codeBuilder.add("documentId = %L\n", documentIdParam)
@@ -420,7 +514,7 @@ class RemoteDataSourceProcessor(
                 val orderByClauses = findOrderByClauses(function)
                 val limitValue = findLimitValue(function)
 
-                codeBuilder.add("return remoteApi.queryCollection(\n")
+                codeBuilder.add("return $client.queryCollection(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("collection = %S,", finalPath)
 
@@ -442,7 +536,7 @@ class RemoteDataSourceProcessor(
                 val documentIdParam = findDocumentIdParam(function)
                 val returnType = function.returnType?.resolve()
                 val flowType = returnType?.arguments?.firstOrNull()?.type?.resolve()
-                codeBuilder.add("return remoteApi.observeDocument(\n")
+                codeBuilder.add("return $client.observeDocument(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("collection = %S,", finalPath)
                 codeBuilder.addStatement("documentId = %L,", documentIdParam)
@@ -459,7 +553,7 @@ class RemoteDataSourceProcessor(
                 val orderByClauses = findOrderByClauses(function)
                 val limitValue = findLimitValue(function)
 
-                codeBuilder.add("return remoteApi.observeCollection(\n")
+                codeBuilder.add("return $client.observeCollection(\n")
                 codeBuilder.indent()
                 codeBuilder.addStatement("collection = %S,", finalPath)
 

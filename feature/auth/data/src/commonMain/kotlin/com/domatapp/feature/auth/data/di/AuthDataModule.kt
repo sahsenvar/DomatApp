@@ -1,6 +1,6 @@
 package com.domatapp.feature.auth.data.di
 
-import com.domatapp.core.remote.api.RemoteApi
+import com.domatapp.core.remote.rest.KtorRestClient
 import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSource
 import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSourceImpl
 import org.koin.core.annotation.ComponentScan
@@ -18,6 +18,6 @@ import org.koin.core.annotation.Single
 class AuthDataModule {
 
     @Single
-    fun provideAuthRemoteDataSource(remoteApi: RemoteApi): AuthRemoteDataSource =
-        AuthRemoteDataSourceImpl(remoteApi)
+    fun provideAuthRemoteDataSource(restClient: KtorRestClient): AuthRemoteDataSource =
+        AuthRemoteDataSourceImpl(restClient)
 }

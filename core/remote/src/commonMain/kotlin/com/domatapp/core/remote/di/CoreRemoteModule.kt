@@ -10,7 +10,7 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * Koin module for core:remote layer.
- * Provides HttpClient, RemoteApi, RestApi, SocketApi, and SerializationApi via annotations.
+ * Provides HttpClient and discovers concrete clients (KtorRestClient, KtorSocketClient, etc.) via @ComponentScan.
  */
 @Module
 @ComponentScan("com.domatapp.core.remote")
