@@ -1,11 +1,13 @@
 package com.domatapp.core.presentation.base
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
 /**
  * Base ViewModel for MVI pattern.
@@ -44,7 +46,7 @@ abstract class BaseViewModel<UiState : Any, Intent : Any, Effect : Any>(
      * Emit a one-time effect/side effect.
      * Call this from concrete ViewModels to trigger side effects.
      */
-    protected suspend fun emitEffect(effect: Effect) {
+    protected fun emitEffect(effect: Effect) = viewModelScope.launch {
         _effect.send(effect)
     }
 

@@ -16,12 +16,7 @@ sealed interface Route {
     data object Onboarding : Route
 
     @Serializable
-    sealed interface Main : Route {
-        @Serializable data object Home : Main
-        @Serializable data object Wallet : Main
-        @Serializable data object Notifications : Main
-        @Serializable data object Profile : Main
-    }
+    data object Main : MainRoute, Route
 
     @Serializable
     sealed interface Product : Route {
@@ -29,3 +24,5 @@ sealed interface Route {
         @Serializable data class Detail(val productId: String) : Product
     }
 }
+
+

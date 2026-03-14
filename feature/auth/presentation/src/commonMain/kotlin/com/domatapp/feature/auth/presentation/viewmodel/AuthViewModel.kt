@@ -1,5 +1,6 @@
 package com.domatapp.feature.auth.presentation.viewmodel
 
+import androidx.lifecycle.viewModelScope
 import com.domatapp.core.presentation.base.BaseViewModel
 import com.domatapp.core.resource.MR
 import com.domatapp.core.resource.api.StringResourceApi
@@ -12,7 +13,6 @@ import com.domatapp.feature.auth.presentation.model.AuthIntent
 import com.domatapp.feature.auth.presentation.model.AuthUiState
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
 
@@ -40,9 +40,7 @@ class AuthViewModel(
 
     private fun handleGoogleSignInClicked() {
         updateState { it.copy(isGoogleSignInInProgress = true) }
-        viewModelScope.launch {
             emitEffect(AuthEffect.LaunchGoogleSignIn)
-        }
     }
 
     private fun handleGoogleTokenReceived(idToken: String) {
