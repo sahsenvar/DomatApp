@@ -1,18 +1,35 @@
 package com.domatapp.core.processor.remote
 
-import com.google.devtools.ksp.processing.*
-import com.google.devtools.ksp.symbol.*
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
+import com.google.devtools.ksp.symbol.ClassKind
+import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSAnnotation
+import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.validate
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toClassName
-import com.squareup.kotlinpoet.ksp.writeTo
-import kotlin.reflect.KClass
+import com.squareup.kotlinpoet.ksp.toTypeName
 
 /**
  * KSP Processor that generates concrete client-based implementations for @RemoteDataSource interfaces.
  *
  * Analyzes which backend types (REST, WebSocket, Firestore, RemoteConfig) each DataSource uses
- * and injects only the required concrete clients (KtorRestClient, KtorSocketClient, etc.).
+ * and injects only the required concrete clients (HttpClient, Json, etc.).
  */
 class RemoteDataSourceProcessor(
     private val codeGenerator: CodeGenerator,
@@ -29,10 +46,12 @@ class RemoteDataSourceProcessor(
     private val remoteConfigAnnotations = setOf("FetchRemoteConfig", "GetRemoteConfig", "ObserveRemoteConfig")
 
     // Concrete client class names
-    private val restClientClass = ClassName("com.domatapp.core.remote.rest", "KtorRestClient")
-    private val socketClientClass = ClassName("com.domatapp.core.remote.socket", "KtorSocketClient")
+    private val httpClientClass = ClassName("io.ktor.client", "HttpClient")
+    private val jsonClass = ClassName("kotlinx.serialization.json", "Json")
     private val firestoreClientClass = ClassName("com.domatapp.core.remote.firestore", "FirebaseFirestoreClient")
     private val remoteConfigClientClass = ClassName("com.domatapp.core.remote.remoteconfig", "FirebaseRemoteConfigClient")
+    private val webSocketSessionClass =
+        ClassName("io.ktor.client.plugins.websocket", "DefaultClientWebSocketSession")
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val remoteDataSourceAnnotation = "com.domatapp.core.remote.annotations.RemoteDataSource"
@@ -98,20 +117,31 @@ class RemoteDataSourceProcessor(
         val constructorBuilder = FunSpec.constructorBuilder()
         val properties = mutableListOf<PropertySpec>()
 
-        if (deps.needsRest) {
-            constructorBuilder.addParameter("restClient", restClientClass)
+        if (deps.needsRest || deps.needsSocket) {
+            constructorBuilder.addParameter("httpClient", httpClientClass)
             properties.add(
-                PropertySpec.builder("restClient", restClientClass)
-                    .initializer("restClient")
+                PropertySpec.builder("httpClient", httpClientClass)
+                    .initializer("httpClient")
                     .addModifiers(KModifier.PRIVATE)
                     .build()
             )
         }
         if (deps.needsSocket) {
-            constructorBuilder.addParameter("socketClient", socketClientClass)
+            constructorBuilder.addParameter("json", jsonClass)
             properties.add(
-                PropertySpec.builder("socketClient", socketClientClass)
-                    .initializer("socketClient")
+                PropertySpec.builder("json", jsonClass)
+                    .initializer("json")
+                    .addModifiers(KModifier.PRIVATE)
+                    .build()
+            )
+
+            // Add connections map for WebSocket sessions
+            val mapType = ClassName("kotlin.collections", "MutableMap")
+                .parameterizedBy(ClassName("kotlin", "String"), webSocketSessionClass)
+
+            properties.add(
+                PropertySpec.builder("connections", mapType)
+                    .initializer("mutableMapOf()")
                     .addModifiers(KModifier.PRIVATE)
                     .build()
             )
@@ -161,9 +191,42 @@ class RemoteDataSourceProcessor(
             writer.write("package $packageName\n\n")
 
             // Write imports and type using KotlinPoet
-            val fileSpec = FileSpec.builder("", implClassName)
-                .addType(typeSpec)
-                .build()
+            val fileSpecBuilder = FileSpec.builder("", implClassName)
+
+            if (deps.needsRest) {
+                fileSpecBuilder.addImport(
+                    "io.ktor.client.request",
+                    "get",
+                    "post",
+                    "put",
+                    "patch",
+                    "delete",
+                    "parameter",
+                    "header",
+                    "setBody"
+                )
+                fileSpecBuilder.addImport("io.ktor.client.call", "body")
+                fileSpecBuilder.addImport("io.ktor.http", "contentType", "ContentType")
+            }
+
+            if (deps.needsSocket) {
+                fileSpecBuilder.addImport("io.ktor.client.plugins.websocket", "webSocket")
+                fileSpecBuilder.addImport("io.ktor.websocket", "Frame", "readBytes", "readText")
+                fileSpecBuilder.addImport(
+                    "kotlinx.coroutines.flow",
+                    "flow",
+                    "catch",
+                    "onCompletion"
+                )
+                fileSpecBuilder.addImport(
+                    "kotlinx.serialization",
+                    "builtins.serializer",
+                    "json.Json"
+                )
+                fileSpecBuilder.addImport("com.domatapp.core.remote.mapper", "toRemoteError")
+            }
+
+            val fileSpec = fileSpecBuilder.addType(typeSpec).build()
 
             // Write the content (without package declaration since we wrote it manually)
             val content = StringBuilder()
@@ -212,18 +275,18 @@ class RemoteDataSourceProcessor(
                     addModifiers(KModifier.SUSPEND)
                 }
 
-                // Add parameters
+                // Add parameters (toTypeName handles generic types like Map<String, String>)
                 function.parameters.forEach { param ->
                     addParameter(
                         param.name!!.asString(),
-                        param.type.resolve().toClassName()
+                        param.type.toTypeName()
                     )
                 }
 
-                // Add return type
-                val returnType = function.returnType?.resolve()
-                if (returnType != null) {
-                    returns(returnType.toClassName())
+                // Add return type (toTypeName handles generic types like Flow<String>)
+                val resolvedReturnType = function.returnType
+                if (resolvedReturnType != null) {
+                    returns(resolvedReturnType.toTypeName())
                 }
 
                 // Generate method body
@@ -236,8 +299,8 @@ class RemoteDataSourceProcessor(
      * Resolves the client variable name based on annotation type.
      */
     private fun clientNameFor(httpMethod: String): String = when {
-        httpMethod in restAnnotations -> "restClient"
-        httpMethod in socketAnnotations -> "socketClient"
+        httpMethod in restAnnotations -> "httpClient"
+        httpMethod in socketAnnotations -> "httpClient"
         httpMethod in firestoreAnnotations -> "firestoreClient"
         httpMethod in remoteConfigAnnotations -> "remoteConfigClient"
         else -> throw IllegalArgumentException("Unknown annotation: $httpMethod")
@@ -283,132 +346,184 @@ class RemoteDataSourceProcessor(
         }
 
         when (httpMethod) {
-            "GET" -> {
-                codeBuilder.add("return $client.get(\n")
+            "GET", "DELETE" -> {
+                val methodName = httpMethod.lowercase()
+                codeBuilder.add("return $client.$methodName(%S) {\n", finalPath)
                 codeBuilder.indent()
-                codeBuilder.addStatement("path = %S,", finalPath)
 
                 // Query params
-                if (queryParams.isNotEmpty()) {
-                    codeBuilder.add("queryParams = mapOf(")
-                    queryParams.forEachIndexed { index, param ->
-                        val paramName = param.name!!.asString()
-                        val queryAnnotation = param.annotations.first { it.shortName.asString() == "Query" }
-                        val queryName = (queryAnnotation.arguments.firstOrNull()?.value as? String)?.takeIf { it.isNotEmpty() } ?: paramName
-                        if (index > 0) codeBuilder.add(", ")
-                        codeBuilder.add("%S to %L", queryName, paramName)
-                    }
-                    codeBuilder.add("),\n")
-                } else {
-                    codeBuilder.add("queryParams = emptyMap(),\n")
+                queryParams.forEach { param ->
+                    val paramName = param.name!!.asString()
+                    val queryAnnotation =
+                        param.annotations.first { it.shortName.asString() == "Query" }
+                    val queryName =
+                        (queryAnnotation.arguments.firstOrNull()?.value as? String)?.takeIf { it.isNotEmpty() }
+                            ?: paramName
+                    codeBuilder.addStatement("parameter(%S, %L)", queryName, paramName)
                 }
 
                 // Headers
-                generateHeaders(codeBuilder, headerParams, headerMapParam)
-
-                // Response type
-                val returnType = function.returnType?.resolve()
-                if (returnType != null) {
-                    codeBuilder.add("responseType = %T::class\n", returnType.toClassName())
+                headerParams.forEach { param ->
+                    val paramName = param.name!!.asString()
+                    val headerAnnotation =
+                        param.annotations.first { it.shortName.asString() == "Header" }
+                    val headerName = headerAnnotation.arguments.first().value as String
+                    codeBuilder.addStatement("header(%S, %L)", headerName, paramName)
+                }
+                if (headerMapParam != null) {
+                    codeBuilder.addStatement(
+                        "%L.forEach { (key, value) -> header(key, value) }",
+                        headerMapParam.name!!.asString()
+                    )
                 }
 
                 codeBuilder.unindent()
-                codeBuilder.add(")\n")
+                codeBuilder.add("}.body()\n")
             }
 
             "POST", "PUT", "PATCH" -> {
                 val methodName = httpMethod.lowercase()
-                codeBuilder.add("return $client.$methodName(\n")
+                codeBuilder.add("return $client.$methodName(%S) {\n", finalPath)
                 codeBuilder.indent()
-                codeBuilder.addStatement("path = %S,", finalPath)
+
+                // Query params
+                queryParams.forEach { param ->
+                    val paramName = param.name!!.asString()
+                    val queryAnnotation =
+                        param.annotations.first { it.shortName.asString() == "Query" }
+                    val queryName =
+                        (queryAnnotation.arguments.firstOrNull()?.value as? String)?.takeIf { it.isNotEmpty() }
+                            ?: paramName
+                    codeBuilder.addStatement("parameter(%S, %L)", queryName, paramName)
+                }
+
+                // Headers
+                headerParams.forEach { param ->
+                    val paramName = param.name!!.asString()
+                    val headerAnnotation =
+                        param.annotations.first { it.shortName.asString() == "Header" }
+                    val headerName = headerAnnotation.arguments.first().value as String
+                    codeBuilder.addStatement("header(%S, %L)", headerName, paramName)
+                }
+                if (headerMapParam != null) {
+                    codeBuilder.addStatement(
+                        "%L.forEach { (key, value) -> header(key, value) }",
+                        headerMapParam.name!!.asString()
+                    )
+                }
 
                 // Body
                 if (bodyParam != null) {
-                    codeBuilder.addStatement("body = %L,", bodyParam.name!!.asString())
-                } else {
-                    codeBuilder.add("body = null,\n")
-                }
-
-                // Headers
-                generateHeaders(codeBuilder, headerParams, headerMapParam)
-
-                // Response type
-                val returnType = function.returnType?.resolve()
-                if (returnType != null) {
-                    codeBuilder.add("responseType = %T::class\n", returnType.toClassName())
+                    codeBuilder.addStatement("contentType(ContentType.Application.Json)")
+                    codeBuilder.addStatement("setBody(%L)", bodyParam.name!!.asString())
                 }
 
                 codeBuilder.unindent()
-                codeBuilder.add(")\n")
-            }
-
-            "DELETE" -> {
-                codeBuilder.add("return $client.delete(\n")
-                codeBuilder.indent()
-                codeBuilder.addStatement("path = %S,", finalPath)
-
-                // Query params
-                if (queryParams.isNotEmpty()) {
-                    codeBuilder.add("queryParams = mapOf(")
-                    queryParams.forEachIndexed { index, param ->
-                        val paramName = param.name!!.asString()
-                        val queryAnnotation = param.annotations.first { it.shortName.asString() == "Query" }
-                        val queryName = (queryAnnotation.arguments.firstOrNull()?.value as? String)?.takeIf { it.isNotEmpty() } ?: paramName
-                        if (index > 0) codeBuilder.add(", ")
-                        codeBuilder.add("%S to %L", queryName, paramName)
-                    }
-                    codeBuilder.add("),\n")
-                } else {
-                    codeBuilder.add("queryParams = emptyMap(),\n")
-                }
-
-                // Headers
-                generateHeaders(codeBuilder, headerParams, headerMapParam)
-
-                // Response type
-                val returnType = function.returnType?.resolve()
-                if (returnType != null) {
-                    codeBuilder.add("responseType = %T::class\n", returnType.toClassName())
-                }
-
-                codeBuilder.unindent()
-                codeBuilder.add(")\n")
+                codeBuilder.add("}.body()\n")
             }
 
             "Subscribe" -> {
-                codeBuilder.add("return $client.subscribe(\n")
-                codeBuilder.indent()
-                codeBuilder.addStatement("path = %S,", finalPath)
-
-                // Message type (Flow generic type)
                 val returnType = function.returnType?.resolve()
                 val messageType = returnType?.arguments?.firstOrNull()?.type?.resolve()
                 if (messageType != null) {
-                    codeBuilder.add("messageType = %T::class\n", messageType.toClassName())
+                    codeBuilder.add("return flow {\n")
+                    codeBuilder.indent()
+                    codeBuilder.add("$client.webSocket(%S) {\n", finalPath)
+                    codeBuilder.indent()
+                    codeBuilder.addStatement("connections[%S] = this", finalPath)
+                    codeBuilder.add("for (frame in incoming) {\n")
+                    codeBuilder.indent()
+                    codeBuilder.add("when (frame) {\n")
+                    codeBuilder.indent()
+                    codeBuilder.add("is Frame.Text -> {\n")
+                    codeBuilder.indent()
+                    codeBuilder.addStatement("val text = frame.readText()")
+                    codeBuilder.addStatement(
+                        "val message = json.decodeFromString(%T.serializer(), text)",
+                        messageType.toClassName()
+                    )
+                    codeBuilder.addStatement("emit(message)")
+                    codeBuilder.unindent()
+                    codeBuilder.add("}\n")
+                    codeBuilder.add("is Frame.Binary -> {\n")
+                    codeBuilder.indent()
+                    codeBuilder.addStatement("val bytes = frame.readBytes()")
+                    codeBuilder.addStatement(
+                        "val message = json.decodeFromString(%T.serializer(), bytes.decodeToString())",
+                        messageType.toClassName()
+                    )
+                    codeBuilder.addStatement("emit(message)")
+                    codeBuilder.unindent()
+                    codeBuilder.add("}\n")
+                    codeBuilder.add("else -> {}\n")
+                    codeBuilder.unindent()
+                    codeBuilder.add("}\n")
+                    codeBuilder.unindent()
+                    codeBuilder.add("}\n")
+                    codeBuilder.unindent()
+                    codeBuilder.add("}\n")
+                    codeBuilder.unindent()
+                    codeBuilder.add("}.catch { e -> throw e.toRemoteError() }\n")
+                    codeBuilder.add(".onCompletion { connections.remove(%S) }\n", finalPath)
                 }
-
-                codeBuilder.unindent()
-                codeBuilder.add(")\n")
             }
 
             "Send" -> {
-                codeBuilder.add("return $client.send(\n")
+                codeBuilder.add("return try {\n")
                 codeBuilder.indent()
-                codeBuilder.addStatement("path = %S,", finalPath)
+                codeBuilder.add(
+                    "val connection = connections[%S] ?: throw IllegalStateException(%S)\n",
+                    finalPath,
+                    "No active WebSocket connection for path: $finalPath. Call subscribe() first."
+                )
 
-                // Message (body)
                 if (bodyParam != null) {
-                    codeBuilder.addStatement("message = %L,", bodyParam.name!!.asString())
+                    codeBuilder.add("@Suppress(%S)\n", "UNCHECKED_CAST")
+                    codeBuilder.addStatement(
+                        "val serializer = %L::class.serializer() as kotlinx.serialization.KSerializer<Any>",
+                        bodyParam.name!!.asString()
+                    )
+                    codeBuilder.addStatement(
+                        "val serialized = json.encodeToString(serializer, %L)",
+                        bodyParam.name!!.asString()
+                    )
+                    codeBuilder.addStatement("connection.send(Frame.Text(serialized))")
                 }
 
-                // Response type
                 val returnType = function.returnType?.resolve()
                 if (returnType != null) {
-                    codeBuilder.add("responseType = %T::class\n", returnType.toClassName())
+                    codeBuilder.add("when (val response = connection.incoming.receive()) {\n")
+                    codeBuilder.indent()
+                    codeBuilder.add("is Frame.Text -> {\n")
+                    codeBuilder.indent()
+                    codeBuilder.addStatement(
+                        "json.decodeFromString(%T.serializer(), response.readText())",
+                        returnType.toClassName()
+                    )
+                    codeBuilder.unindent()
+                    codeBuilder.add("}\n")
+                    codeBuilder.add("is Frame.Binary -> {\n")
+                    codeBuilder.indent()
+                    codeBuilder.addStatement(
+                        "json.decodeFromString(%T.serializer(), response.readBytes().decodeToString())",
+                        returnType.toClassName()
+                    )
+                    codeBuilder.unindent()
+                    codeBuilder.add("}\n")
+                    codeBuilder.add(
+                        "else -> throw IllegalStateException(%S)\n",
+                        "Unexpected frame type"
+                    )
+                    codeBuilder.unindent()
+                    codeBuilder.add("}\n")
                 }
 
                 codeBuilder.unindent()
-                codeBuilder.add(")\n")
+                codeBuilder.add("} catch (e: Exception) {\n")
+                codeBuilder.indent()
+                codeBuilder.addStatement("throw e.toRemoteError()")
+                codeBuilder.unindent()
+                codeBuilder.add("}\n")
             }
 
             "FetchRemoteConfig" -> {
@@ -700,45 +815,6 @@ class RemoteDataSourceProcessor(
             }
             codeBuilder.unindent()
             codeBuilder.add("),\n")
-        }
-    }
-
-    // --- REST/Socket helper methods ---
-
-    private fun generateHeaders(
-        codeBuilder: CodeBlock.Builder,
-        headerParams: List<KSValueParameter>,
-        headerMapParam: KSValueParameter?
-    ) {
-        if (headerParams.isNotEmpty() || headerMapParam != null) {
-            if (headerMapParam != null && headerParams.isEmpty()) {
-                // Only HeaderMap
-                codeBuilder.add("headers = %L,\n", headerMapParam.name!!.asString())
-            } else if (headerMapParam == null && headerParams.isNotEmpty()) {
-                // Only individual headers
-                codeBuilder.add("headers = mapOf(")
-                headerParams.forEachIndexed { index, param ->
-                    val paramName = param.name!!.asString()
-                    val headerAnnotation = param.annotations.first { it.shortName.asString() == "Header" }
-                    val headerName = headerAnnotation.arguments.first().value as String
-                    if (index > 0) codeBuilder.add(", ")
-                    codeBuilder.add("%S to %L", headerName, paramName)
-                }
-                codeBuilder.add("),\n")
-            } else {
-                // Both HeaderMap and individual headers
-                codeBuilder.add("headers = mapOf(")
-                headerParams.forEachIndexed { index, param ->
-                    val paramName = param.name!!.asString()
-                    val headerAnnotation = param.annotations.first { it.shortName.asString() == "Header" }
-                    val headerName = headerAnnotation.arguments.first().value as String
-                    if (index > 0) codeBuilder.add(", ")
-                    codeBuilder.add("%S to %L", headerName, paramName)
-                }
-                codeBuilder.add(") + %L,\n", headerMapParam!!.name!!.asString())
-            }
-        } else {
-            codeBuilder.add("headers = emptyMap(),\n")
         }
     }
 }

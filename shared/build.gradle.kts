@@ -1,10 +1,18 @@
 plugins {
-    alias(libs.plugins.domatapp.kmp.library)
+    kotlin("multiplatform")
+    alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.ksp)
     alias(libs.plugins.skie)
+    alias(libs.plugins.mokoResources)
 }
 
 kotlin {
+    android {
+        namespace = "com.domatapp.shared"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -13,15 +21,23 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+
+            // Exports
             export(projects.core.navigation)
+            export(projects.core.common)
+            export(projects.core.resource)
+            export(projects.core.presentation)
+            export(projects.feature.auth.domain)
+            export(projects.feature.auth.presentation)
+
+            export(libs.kotlinx.coroutines.core)
             export(libs.moko.resources)
             export(libs.moko.graphics)
         }
     }
-    
+
     sourceSets {
         commonMain.dependencies {
-            // Core modules
             api(projects.core.navigation)
             api(projects.core.local)
             api(projects.core.remote)
@@ -29,20 +45,24 @@ kotlin {
             api(projects.core.resource)
             api(projects.core.resulting)
             api(projects.core.serialization)
+            api(projects.core.presentation)
 
-            // Feature modules
             api(projects.feature.auth.domain)
             api(projects.feature.auth.data)
             api(projects.feature.auth.presentation)
 
-            // Koin for dependency injection
             api(libs.koin.core)
             api(libs.koin.annotations)
-
-            // Coroutines
             api(libs.kotlinx.coroutines.core)
+
+            api(libs.moko.resources)
+            api(libs.moko.graphics)
         }
     }
+}
+
+multiplatformResources {
+    resourcesPackage.set("com.domatapp.shared")
 }
 
 dependencies {
@@ -51,6 +71,6 @@ dependencies {
 
 ksp {
     arg("KOIN_DEFAULT_MODULE", "false")
-    arg("KOIN_CONFIG_CHECK", "true") // Compile-time validation of Koin DI
+    arg("KOIN_CONFIG_CHECK", "true")
     arg("KOIN_LOG_TIMES", "true")
 }

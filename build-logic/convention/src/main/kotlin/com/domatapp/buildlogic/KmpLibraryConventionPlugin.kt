@@ -17,6 +17,7 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
 
         // Temel KMP ayarlarını burada merkezi olarak yapabiliriz
         extensions.configure(KotlinMultiplatformExtension::class.java) {
+            iosX64()
             iosArm64()
             iosSimulatorArm64()
         }

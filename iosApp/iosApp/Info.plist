@@ -4,5 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+    <key>UIAppFonts</key>
+    <array>
+        <string>nunito_sans_regular.ttf</string>
+        <string>nunito_sans_italic.ttf</string>
+    </array>
 </dict>
 </plist>

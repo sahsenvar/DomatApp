@@ -21,11 +21,13 @@ kotlin {
 
                 // Lifecycle ViewModel for KMP
                 api(libs.androidx.lifecycle.viewmodel)
+
+                // Compose Runtime (For ViewModels/State)
+                api(libs.compose.runtime)
             }
         }
         androidMain {
             dependencies {
-                implementation(libs.compose.runtime)
                 implementation(libs.compose.material3)
             }
         }

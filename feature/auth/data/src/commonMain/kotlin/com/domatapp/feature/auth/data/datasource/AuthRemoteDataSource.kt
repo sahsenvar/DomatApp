@@ -1,8 +1,15 @@
 package com.domatapp.feature.auth.data.datasource
 
-import com.domatapp.core.remote.annotations.*
+import com.domatapp.core.remote.annotations.Body
+import com.domatapp.core.remote.annotations.DELETE
+import com.domatapp.core.remote.annotations.GET
+import com.domatapp.core.remote.annotations.Header
+import com.domatapp.core.remote.annotations.POST
+import com.domatapp.core.remote.annotations.RemoteDataSource
+import com.domatapp.core.remote.annotations.Subscribe
 import com.domatapp.feature.auth.data.dto.GoogleSignInRequest
 import com.domatapp.feature.auth.data.dto.RemoteUserDto
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Remote data source for authentication.
@@ -34,4 +41,9 @@ interface AuthRemoteDataSource {
     suspend fun logout(
         @Header("Authorization") token: String
     )
+
+    @Subscribe("my/test/topic")
+    suspend fun observeSession(
+        token: String
+    ): Flow<String>
 }

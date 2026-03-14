@@ -1,13 +1,12 @@
 package com.domatapp.core.local.di
 
-import app.cash.sqldelight.db.SqlDriver
-import com.domatapp.core.local.api.KeyValueApi
-import com.domatapp.core.local.database.DomatAppDatabase
-import com.domatapp.core.local.database.factory.createSqlDriver
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.domatapp.core.local.database.AppDatabase
+import com.domatapp.core.local.database.dao.AuthSessionDao
+import com.domatapp.core.local.database.getDatabaseBuilder
+import com.domatapp.core.local.database.getRoomDatabase
 import com.domatapp.core.local.factory.createDataStore
-import com.domatapp.core.local.impl.DataStoreKeyValueApiImpl
-import com.domatapp.core.serialization.api.SerializationApi
-import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
@@ -16,17 +15,12 @@ import org.koin.core.annotation.Single
 class CoreLocalModule {
 
     @Single
-    fun provideSqlDriver(): SqlDriver = createSqlDriver("domatapp")
+    fun provideDatabase(): AppDatabase = getRoomDatabase(getDatabaseBuilder())
 
     @Single
-    fun provideDatabase(driver: SqlDriver): DomatAppDatabase = DomatAppDatabase(driver)
+    fun provideAuthSessionDao(database: AppDatabase): AuthSessionDao = database.authSessionDao()
 
-    @Factory
-    @Named("auth")
-    fun provideAuthKeyValueApi(
-        serializationApi: SerializationApi
-    ): KeyValueApi = DataStoreKeyValueApiImpl(
-        serializationApi = serializationApi,
-        name = "auth"
-    )
+    @Single
+    @Named("authDataStore")
+    fun provideAuthDataStore(): DataStore<Preferences> = createDataStore("auth")
 }

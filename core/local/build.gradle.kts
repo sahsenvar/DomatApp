@@ -2,15 +2,12 @@ plugins {
     alias(libs.plugins.domatapp.kmp.library)
     alias(libs.plugins.domatapp.kmp.di)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.sqldelight)
+    alias(libs.plugins.androidxRoom)
 }
 
-sqldelight {
-    databases {
-        create("DomatAppDatabase") {
-            packageName.set("com.domatapp.core.local.database")
-        }
-    }
+room {
+    schemaDirectory("$projectDir/schemas")
+    generateKotlin = true
 }
 
 kotlin {
@@ -32,26 +29,38 @@ kotlin {
                 // Multiplatform Settings
                 implementation(libs.multiplatform.settings)
                 implementation(libs.kotlinx.coroutines.core)
-                implementation(libs.kvStore.datastore)
-                implementation(libs.kvStore.datastore.preferences)
+                api(libs.kvStore.datastore)
+                api(libs.kvStore.datastore.preferences)
 
-                // SQLDelight
-                implementation(libs.sqldelight.runtime)
-                implementation(libs.sqldelight.coroutines)
+                // Room
+                implementation(libs.androidx.room.runtime)
+                implementation(libs.androidx.sqlite.bundled)
             }
         }
 
         androidMain {
             dependencies {
-                implementation(libs.sqldelight.android.driver)
             }
         }
 
         iosMain {
             dependencies {
-                implementation(libs.sqldelight.native.driver)
             }
         }
     }
 
+}
+
+dependencies {
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosX64", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+}
+
+// Workaround for KSP implicit dependency error
+tasks.configureEach {
+    if (name.startsWith("ksp") && name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
 }

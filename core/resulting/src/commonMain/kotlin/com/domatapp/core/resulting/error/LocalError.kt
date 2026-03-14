@@ -3,7 +3,7 @@ package com.domatapp.core.resulting.error
 /**
  * Local storage related domain errors.
  * These are infrastructure-level errors that can occur during local database operations
- * (SQLDelight, etc.) via core:local module.
+ * (Room, etc.) via core:local module.
  */
 sealed class LocalError(message: String? = null, cause: Throwable? = null) : DomainError(message, cause) {
 

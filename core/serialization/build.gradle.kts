@@ -21,7 +21,7 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
 
                 // kotlinx.serialization
-                implementation(libs.kotlinx.serialization.json)
+                api(libs.kotlinx.serialization.json)
 
                 // Coroutines
                 implementation(libs.kotlinx.coroutines.core)

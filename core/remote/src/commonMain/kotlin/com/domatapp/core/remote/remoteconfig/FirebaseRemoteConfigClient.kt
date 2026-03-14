@@ -1,6 +1,5 @@
 package com.domatapp.core.remote.remoteconfig
 
-import com.domatapp.core.serialization.api.SerializationApi
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.remoteconfig.remoteConfig
 import kotlinx.coroutines.flow.Flow
@@ -8,6 +7,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import org.koin.core.annotation.Single
 import kotlin.reflect.KClass
 
@@ -17,7 +19,7 @@ import kotlin.reflect.KClass
  */
 @Single
 class FirebaseRemoteConfigClient(
-    private val serializationApi: SerializationApi
+    private val json: Json
 ) {
 
     private val remoteConfig by lazy { Firebase.remoteConfig }
@@ -53,9 +55,10 @@ class FirebaseRemoteConfigClient(
         return remoteConfig.getValue(key).asDouble()
     }
 
+    @OptIn(InternalSerializationApi::class)
     fun <T : Any> getSerializable(key: String, type: KClass<T>): T {
-        val json = getString(key)
-        return serializationApi.deserialize(json, type)
+        val jsonString = getString(key)
+        return json.decodeFromString(type.serializer(), jsonString)
     }
 
     fun observeString(key: String): Flow<String> {
