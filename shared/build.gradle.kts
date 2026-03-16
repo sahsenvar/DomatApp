@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.skie)
     alias(libs.plugins.mokoResources)
+    alias(libs.plugins.androidxRoom)
 }
 
 kotlin {
@@ -40,6 +41,7 @@ kotlin {
         commonMain.dependencies {
             api(projects.core.navigation)
             api(projects.core.local)
+            api(projects.core.config)
             api(projects.core.remote)
             api(projects.core.common)
             api(projects.core.resource)
@@ -57,8 +59,17 @@ kotlin {
 
             api(libs.moko.resources)
             api(libs.moko.graphics)
+
+            // Room
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
         }
     }
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
+    generateKotlin = true
 }
 
 multiplatformResources {
@@ -67,10 +78,21 @@ multiplatformResources {
 
 dependencies {
     kspCommonMainMetadata(libs.koin.ksp.compiler)
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosX64", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
 }
 
 ksp {
     arg("KOIN_DEFAULT_MODULE", "false")
     arg("KOIN_CONFIG_CHECK", "true")
     arg("KOIN_LOG_TIMES", "true")
+}
+
+// Workaround for KSP implicit dependency error
+tasks.configureEach {
+    if (name.startsWith("ksp") && name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
 }

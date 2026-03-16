@@ -6,17 +6,33 @@ import kotlinx.serialization.Serializable
 sealed interface Route {
 
     @Serializable
-    sealed interface Auth : Route {
-        @Serializable data object Login : Auth
-        @Serializable data object Register : Auth
-        @Serializable data object ForgotPassword : Auth
+    sealed interface AuthRoute : Route {
+        @Serializable
+        data object AuthScreen : AuthRoute
+
+        @Serializable
+        data class AddressValidationScreen(
+            val address: String
+        ) : AuthRoute
     }
 
     @Serializable
     data object Onboarding : Route
 
     @Serializable
-    data object Main : MainRoute, Route
+    sealed interface Main : Route {
+        @Serializable
+        data object Home : Main
+
+        @Serializable
+        data object Wallet : Main
+
+        @Serializable
+        data object Notifications : Main
+
+        @Serializable
+        data object Profile : Main
+    }
 
     @Serializable
     sealed interface Product : Route {

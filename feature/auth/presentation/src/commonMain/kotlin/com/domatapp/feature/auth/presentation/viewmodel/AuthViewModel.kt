@@ -1,6 +1,8 @@
 package com.domatapp.feature.auth.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.domatapp.core.navigation.Route
+import com.domatapp.core.navigation.annotations.NavigationViewModel
 import com.domatapp.core.presentation.base.BaseViewModel
 import com.domatapp.core.resource.MR
 import com.domatapp.core.resource.api.StringResourceApi
@@ -14,14 +16,15 @@ import com.domatapp.feature.auth.presentation.model.AuthUiState
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Factory
+import org.koin.android.annotation.KoinViewModel
 
 /**
  * ViewModel for Authentication screen.
  * Implements MVI pattern with exception-based error handling.
  * Uses Lifecycle ViewModel's viewModelScope and lifecycle management.
  */
-@Factory
+@NavigationViewModel(Route.AuthRoute.AuthScreen::class)
+@KoinViewModel
 class AuthViewModel(
     private val loginWithGoogleUseCase: LoginWithGoogleUseCase,
     private val stringResource: StringResourceApi

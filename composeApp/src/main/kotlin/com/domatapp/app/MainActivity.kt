@@ -18,14 +18,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.app.navigation.authEntries
 import com.domatapp.app.navigation.homeEntries
-import com.domatapp.app.scaffold.DomatBottomBar
-import com.domatapp.app.scaffold.DomatFab
-import com.domatapp.app.scaffold.scaffoldConfig
+import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.presentation.compose.LocalNavigator
 import com.domatapp.core.presentation.compose.LocalSnackbarHostState
+import com.domatapp.feature.auth.presentation.navigation.authPageEntry
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +43,6 @@ fun DomatApp() {
     val snackbarHostState = remember { SnackbarHostState() }
 
     val currentRoute = state.currentRoute
-    val scaffoldConfig = currentRoute.scaffoldConfig()
 
     CompositionLocalProvider(
         LocalNavigator provides mainViewModel,
@@ -54,14 +50,10 @@ fun DomatApp() {
     ) {
         Scaffold(
             bottomBar = {
-                if (scaffoldConfig.showBottomBar) {
-                    DomatBottomBar(currentRoute = currentRoute)
-                }
+
             },
             floatingActionButton = {
-                if (scaffoldConfig.showFab) {
-                    DomatFab(onClick = { /* TODO */ })
-                }
+
             },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
@@ -77,8 +69,8 @@ fun DomatApp() {
                 backStack = state.backStack,
                 modifier = Modifier.padding(innerPadding),
                 entryProvider = entryProvider {
-                    authEntries()
-                    homeEntries()
+                    authPageEntry()   // generated
+                    homeEntries()       // manual (no MVI pattern yet)
                 },
                 onBack = { mainViewModel.popBack() }
             )

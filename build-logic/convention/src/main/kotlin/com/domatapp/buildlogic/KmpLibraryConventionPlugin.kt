@@ -27,7 +27,7 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             (this as ExtensionAware).extensions.configure(
                 "androidLibrary",
                 Action<KotlinMultiplatformAndroidLibraryExtension> {
-                    namespace = "com.domatapp" + path.toString().replace(":", ".").replace("-", "_")
+                    namespace = "com.domatapp" + path.replace(":", ".").replace("-", "_")
                     compileSdk = 36
                     minSdk = 30
                 })

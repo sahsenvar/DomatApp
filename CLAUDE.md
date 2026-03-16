@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 DomatApp is a **Kotlin Multiplatform (KMP)** application targeting Android and iOS with strict **Feature-Based Modularization** and **Clean Architecture**. The project uses **Jetpack Compose for Android** and **100% Native SwiftUI for iOS** - UI code is NOT shared between platforms.
 
 ## Build Commands
-/
+
 ### Android
 ```bash
 # Build debug APK
@@ -31,34 +31,74 @@ The project follows a strict layered architecture:
 
 ```
 :composeApp/              → Android app entry point (Compose UI)
-:shared/                  → Umbrella Framework for iOS (exports core + feature modules)
+:shared/                  → Umbrella Framework for iOS + AppDatabase + DI aggregation
 :core:{module}/           → Infrastructure layer
   :core:common/           → Shared utilities and extensions
   :core:data/             → Data utilities and base repository patterns
   :core:domain/           → Shared domain models across features
-  :core:resulting/        → Error handling (DomainError, RemoteError, ValidationError, SerializationError)
+  :core:resulting/        → Error handling (DomainError, RemoteError, LocalError, ValidationError, SerializationError)
   :core:serialization/    → Serialization abstraction (SerializationApi, custom serializers)
-  :core:remote/           → Network layer (Ktor REST/WebSocket, Firebase Firestore/RemoteConfig)
-  :core:local/            → Local storage abstractions
+  :core:remote/           → Network layer (Ktor REST/WebSocket, Firebase Firestore)
+  :core:config/           → Configuration layer (DataStore key-value, Firebase RemoteConfig)
   :core:navigation/       → Navigation definitions
   :core:resource/         → Shared resources
   :core:localization/     → i18n support
 :feature:{name}:domain/   → 100% Pure Kotlin (UseCases, Models, Repository Interfaces)
-:feature:{name}:data/     → Repository implementations, DataSources (Firebase/Ktor)
+:feature:{name}:data/     → Repository implementations, DataSources, Room Entity/DAO
 :feature:{name}:presentation/ → ViewModels, StateFlow, MVI (shared between Android & iOS)
 ```
+
+### DataSource Architecture (3-Layer)
+
+Each feature's data layer has up to **3 DataSource types**:
+
+```
+feature:{name}:data/
+├── datasource/
+│   ├── {Name}RemoteDataSource    → @RemoteDataSource (KSP generated) - REST, WebSocket, Firestore
+│   ├── {Name}LocalDataSource     → @Dao (Room DAO) - structured database operations
+│   └── {Name}ConfigDataSource    → @ConfigDataSource (KSP generated) - DataStore + RemoteConfig
+├── local/
+│   └── entity/
+│       └── {Name}Entity.kt      → @Entity (Room entity)
+└── repository/
+    └── {Name}RepositoryImpl.kt   → orchestrates all 3 DataSources
+```
+
+### Room Schema Ownership
+
+Each feature module owns its Room schema (Entity + DAO). `AppDatabase` lives in `:shared` and
+aggregates all feature DAOs:
+
+```kotlin
+// shared/.../database/AppDatabase.kt
+@Database(entities = [AuthSessionEntity::class, /* future entities */], version = 1)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun authLocalDataSource(): AuthLocalDataSource
+    // future DAOs added here
+}
+```
+
+**Adding a new feature's database schema:**
+
+1. Create Entity in `feature/{name}/data/local/entity/`
+2. Create Room `@Dao` interface as `{Name}LocalDataSource` in `feature/{name}/data/datasource/`
+3. Add `abstract fun` to `shared/.../database/AppDatabase.kt`
+4. Add `single { get<AppDatabase>().{name}LocalDataSource() }` to `shared/.../di/KoinInitializer.kt`
+5. Add `implementation(libs.androidx.room.runtime)` to feature's `build.gradle.kts`
 
 ### Dependency Rules
 
 **CRITICAL:** Features use Clean Architecture with strict boundaries:
 - **Domain layer**: Depends on `:core:domain` and `:core:resulting`. No other dependencies.
-- **Data layer**: Depends on its own `domain`, plus `:core:remote`, `:core:local`, `:core:data`, `:core:resulting`.
+- **Data layer**: Depends on its own `domain`, plus `:core:remote`, `:core:config`, `:core:data`,
+  `:core:resulting`.
 - **Presentation layer**: Depends ONLY on its own `domain`, plus `:core:common` and `:core:navigation`. Never depends on `data`.
 
 **Core Module Dependencies:**
 - **core:serialization** → `:core:resulting` (for SerializationError)
 - **core:remote** → `:core:resulting` (for RemoteError), `:core:serialization`
-- **core:local** → `:core:serialization` (for storage serialization)
+- **core:config** → `:core:resulting`, `:core:serialization`
 - **core:data** → `:core:domain`, `:core:resulting`
 - **core:resulting** → No dependencies (base module for error handling)
 
@@ -106,6 +146,7 @@ The project uses **exception-based error handling** with a strict mapping chain 
 Central error handling module containing:
 - **DomainError**: Base sealed class for all domain errors
 - **RemoteError**: Infrastructure-level remote API errors (timeout, no connection, HTTP errors)
+- **LocalError**: Database errors (constraint violation, not found, corruption)
 - **SerializationError**: Serialization/deserialization errors (encoding, decoding, type mismatch)
 - **ValidationError**: Input validation errors (future use)
 
@@ -139,7 +180,7 @@ ViewModel.catch { }
 
 ### Implementation Pattern
 
-**core:remote** (Infrastructure Layer - `KtorRestClient`):
+**core:remote** (Infrastructure Layer):
 ```kotlin
 // Automatically maps Ktor exceptions to RemoteError
 suspend fun <T> get(/*...*/): T = try {
@@ -157,7 +198,6 @@ override fun login(idToken: String): Flow<AuthSession> = flow {
     emit(dto.toDomain())
 }
 .retryWhen { cause, attempt ->
-    // Retry on remote connection errors
     cause is RemoteError.NoConnection && attempt < 3
 }
 .catch { exception ->
@@ -165,48 +205,30 @@ override fun login(idToken: String): Flow<AuthSession> = flow {
 }
 ```
 
-**feature:auth:domain** (Domain Layer):
-```kotlin
-sealed class AuthError : DomainError {
-    data object InvalidCredentials
-    data object UserNotFound
-    data object EmailAlreadyInUse
-}
-```
-
-### Benefits
-
-- ✅ **No Code Duplication**: Ktor→RemoteError mapping happens once in core:remote
-- ✅ **Clean Architecture**: Infrastructure errors don't leak to domain layer
-- ✅ **Type Safety**: Compile-time error checking
-- ✅ **Retry/Resilience**: Flow operators work naturally with exceptions
-- ✅ **Feature-Specific**: Each feature maps RemoteError to its own domain errors
-
 ## Remote DataSource Code Generation (KSP Annotations)
 
 The project uses **KSP annotations** to automatically generate DataSource implementations. The KSP processor analyzes which backend types each DataSource uses and injects only the required concrete clients.
 
 ### Concrete Clients (core:remote)
 
-- **`KtorRestClient`**: Ktor HttpClient for REST (GET, POST, PUT, PATCH, DELETE)
-- **`KtorSocketClient`**: Ktor WebSocket for real-time communication
-- **`FirebaseFirestoreClient`**: Firebase Firestore for document CRUD and realtime observation
-- **`FirebaseRemoteConfigClient`**: Firebase Remote Config for feature flags and configuration
+- **`HttpClient`**: Ktor HttpClient for REST (GET, POST, PUT, PATCH, DELETE) and WebSocket
+- **`FirebaseFirestoreClient`** (`core:remote/firestore/`): Firebase Firestore for document CRUD and
+  realtime observation
 
-### Annotations
+### Annotations (core:remote)
 
-**HTTP Methods (→ `KtorRestClient`):**
+**HTTP Methods:**
 - `@GET(path)` - HTTP GET request
 - `@POST(path)` - HTTP POST request
 - `@PUT(path)` - HTTP PUT request
 - `@PATCH(path)` - HTTP PATCH request
 - `@DELETE(path)` - HTTP DELETE request
 
-**WebSocket Methods (→ `KtorSocketClient`):**
+**WebSocket Methods:**
 - `@Subscribe(path)` - WebSocket subscription (returns Flow)
 - `@Send(path)` - WebSocket send/receive
 
-**Firestore Methods (→ `FirebaseFirestoreClient`):**
+**Firestore Methods:**
 - `@GetDocument(collection)` - Get a single document
 - `@AddDocument(collection)` - Add a new document
 - `@SetDocument(collection)` - Set/overwrite a document
@@ -215,11 +237,6 @@ The project uses **KSP annotations** to automatically generate DataSource implem
 - `@QueryCollection(collection)` - Query with filters
 - `@ObserveDocument(collection)` - Realtime document observation
 - `@ObserveCollection(collection)` - Realtime collection observation
-
-**Remote Config Methods (→ `FirebaseRemoteConfigClient`):**
-- `@FetchRemoteConfig` - Fetch and activate remote config
-- `@GetRemoteConfig(key)` - Get a config value
-- `@ObserveRemoteConfig(key)` - Observe config changes
 
 **Parameters:**
 - `@Body` - Request body (will be serialized)
@@ -251,93 +268,210 @@ interface AuthRemoteDataSource {
 
     @DELETE("auth/session")
     suspend fun logout(
-        @Header("Authorization") token: String,
-        @HeaderMap additionalHeaders: Map<String, String>
+        @Header("Authorization") token: String
     )
 
     @Subscribe("auth/events")
     fun subscribeToAuthEvents(): Flow<AuthEvent>
 }
 
-// KSP automatically generates (only REST + Socket clients injected based on usage):
+// KSP automatically generates (only required clients injected based on usage):
 class AuthRemoteDataSourceImpl(
-    private val restClient: KtorRestClient,
-    private val socketClient: KtorSocketClient,
+    private val httpClient: HttpClient,
+    private val json: Json,
 ) : AuthRemoteDataSource {
     override suspend fun signInWithGoogle(request: GoogleSignInRequest): RemoteUserDto {
-        return restClient.post(
-            path = "auth/google",
-            body = request,
-            headers = emptyMap(),
-            responseType = RemoteUserDto::class
-        )
+        return httpClient.post("auth/google") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
     }
     // ... other methods
 }
 ```
 
-**Mixed Backend DataSource (REST + Firestore):**
-```kotlin
-@RemoteDataSource
-interface ProductRemoteDataSource {
-    @GET("products/{id}")
-    suspend fun getProductFromApi(@Path("id") id: String): ProductDto
+## Config DataSource Code Generation (KSP Annotations)
 
-    @GetDocument("products")
-    suspend fun getProductFromFirestore(@DocumentId id: String): ProductDto
+The `core:config` module provides configuration storage for both **local preferences** (DataStore)
+and **remote feature flags** (Firebase RemoteConfig). KSP generates implementations automatically.
+
+### Concrete Clients (core:config)
+
+- **`DataStore<Preferences>`**: Jetpack DataStore for local key-value storage
+- **`FirebaseRemoteConfig`** (GitLive `dev.gitlive.firebase.remoteconfig.FirebaseRemoteConfig`):
+  Firebase Remote Config, injected directly via Koin (like `HttpClient`)
+
+### Annotations (core:config)
+
+**LocalConfig Methods (→ `DataStore<Preferences>`):**
+
+- `@SaveLocalConfig(key)` - Save a value to key-value store
+- `@RetrieveLocalConfig(key)` - Retrieve a single value (`suspend fun`, returns `T`). Compile-time
+  error if return type is `Flow`.
+- `@ObserveLocalConfig(key)` - Observe a value as `Flow<T?>`. Compile-time error if return type is
+  not `Flow`.
+- `@ClearLocalConfig(key)` - Remove a specific key
+- `@ClearAllLocalConfig` - Clear all values
+
+**RemoteConfig Methods (→ `FirebaseRemoteConfig`):**
+
+- `@RetrieveRemoteConfig(key)` - Retrieve a config value (`suspend fun`, auto `fetchAndActivate()`).
+  Compile-time error if return type is `Flow`.
+- `@ObserveRemoteConfig(key)` - Observe config changes as `Flow<T>` (polling with auto
+  `fetchAndActivate()`). Compile-time error if return type is not `Flow`.
+
+### Usage Example
+
+```kotlin
+@ConfigDataSource(name = "auth")
+interface AuthConfigDataSource {
+
+    @SaveLocalConfig(key = "access_token")
+    suspend fun saveToken(token: String)
+
+    @RetrieveLocalConfig(key = "access_token")
+    suspend fun retrieveToken(): String?
+
+    @ObserveLocalConfig(key = "access_token")
+    fun observeToken(): Flow<String?>
+
+    @ClearLocalConfig(key = "access_token")
+    suspend fun clearToken()
+
+    @ClearAllLocalConfig
+    suspend fun clearAll()
 }
 
-// Generated with both clients:
-class ProductRemoteDataSourceImpl(
-    private val restClient: KtorRestClient,
-    private val firestoreClient: FirebaseFirestoreClient,
-) : ProductRemoteDataSource { ... }
+// KSP automatically generates:
+@Single
+class AuthConfigDataSourceImpl(
+    @Named("auth") private val dataStore: DataStore<Preferences>
+) : AuthConfigDataSource {
+    override suspend fun saveToken(token: String) {
+        dataStore.edit { prefs -> prefs[stringPreferencesKey("access_token")] = token }
+    }
+    override suspend fun retrieveToken(): String? {
+        return dataStore.data.map { prefs -> prefs[stringPreferencesKey("access_token")] }.first()
+    }
+    override fun observeToken(): Flow<String?> {
+        return dataStore.data.map { prefs -> prefs[stringPreferencesKey("access_token")] }
+    }
+    // ...
+}
 ```
 
-**Benefits:**
-- ✅ **No Boilerplate**: Implementation automatically generated
-- ✅ **Type-Safe**: Compile-time validation
-- ✅ **Minimal Dependencies**: Only required clients are injected per DataSource
-- ✅ **Mixed Backends**: REST, WebSocket, Firestore, and RemoteConfig can coexist in one DataSource
+**Mixed Config DataSource (DataStore + RemoteConfig):**
+
+```kotlin
+@ConfigDataSource(name = "product")
+interface ProductConfigDataSource {
+    @SaveLocalConfig(key = "last_category")
+    suspend fun saveLastCategory(category: String)
+
+    @RetrieveRemoteConfig("new_feature_enabled")
+    suspend fun isNewFeatureEnabled(): Boolean
+
+    @ObserveRemoteConfig("promo_banner_text")
+    fun observePromoBanner(): Flow<String>
+}
+
+// Generated with both clients (FirebaseRemoteConfig injected directly):
+@Single
+class ProductConfigDataSourceImpl(
+    @Named("product") private val dataStore: DataStore<Preferences>,
+    private val remoteConfig: FirebaseRemoteConfig
+) : ProductConfigDataSource { ... }
+```
+
+## Local DataSource (Room DAO)
+
+Local data sources are **Room `@Dao` interfaces directly** - no KSP code generation needed. Room's
+own KSP processor generates the implementations.
+
+```kotlin
+// feature/auth/data/datasource/AuthLocalDataSource.kt
+@Dao
+interface AuthLocalDataSource {
+    @Query("SELECT * FROM auth_session WHERE id = :id")
+    suspend fun getById(id: String): AuthSessionEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(session: AuthSessionEntity)
+
+    @Query("DELETE FROM auth_session")
+    suspend fun deleteAll()
+}
+```
+
+Room handles implementation generation. The DAO is registered in
+`shared/.../database/AppDatabase.kt` and provided via Koin in `shared/.../di/KoinInitializer.kt`.
+
+## Navigation Code Generation (KSP Annotations)
+
+The `core:navigation` module provides annotations for auto-generating route composables and
+navigation entries. KSP generates the boilerplate glue code.
+
+### Annotations (core:navigation)
+
+- `@NavigationScreen(route)` — Marks a @Composable as the UI screen for a Route
+- `@NavigationViewModel(route)` — Marks a ViewModel as the state holder for a Route
+- `@NavigationEffectHandler(route)` — (Optional) Marks a @Composable as the effect handler for a
+  Route
+
+### Generated Output
+
+For each Route with matching `@NavigationScreen` + `@NavigationViewModel`:
+
+- `{Name}Route.kt` — Composable that wires ViewModel -> State -> Screen (+ EffectHandler if
+  annotated)
+- `{Feature}PresentationEntries.kt` — `EntryProviderScope<Route>.{feature}PresentationEntries()`
+  extension
+
+### Convention
+
+- Screen: `fun AuthScreen(uiState: AuthUiState, onIntent: (AuthIntent) -> Unit)`
+- EffectHandler: `fun AuthEffectHandler(effectFlow: Flow<AuthEffect>)`
+- ViewModel: `class AuthViewModel : BaseViewModel<AuthUiState, AuthIntent, AuthEffect>`
+
+### Feature Presentation KSP Setup
+
+Feature presentation modules using these annotations must add:
+
+```kotlin
+dependencies {
+    add("kspAndroid", projects.core.processor)
+}
+```
+
+Use `kspAndroid` because `@NavigationScreen` and `@NavigationEffectHandler` live in `androidMain`,
+while `@NavigationViewModel` is in `commonMain` but visible during Android compilation.
 
 ## Backend Strategy (Concrete Clients + DataSource Pattern)
 
 ### Concrete Client Architecture
 
-The `core:remote` module provides concrete client classes for each backend type. There are no abstraction interfaces - each client is used directly:
+The project provides concrete client classes across two modules:
 
-- **`KtorRestClient`** (`core:remote/rest/`): Ktor HttpClient for REST (GET, POST, PUT, PATCH, DELETE)
-- **`KtorSocketClient`** (`core:remote/socket/`): Ktor WebSocket for real-time communication
+**core:remote** (Network):
+
+- **`HttpClient`** (Ktor): REST (GET, POST, PUT, PATCH, DELETE) + WebSocket
 - **`FirebaseFirestoreClient`** (`core:remote/firestore/`): Firebase Firestore CRUD and realtime
-- **`FirebaseRemoteConfigClient`** (`core:remote/remoteconfig/`): Firebase Remote Config
 
-All clients are `@Single` annotated and discovered by Koin via `@ComponentScan`.
+**core:config** (Configuration):
+
+- **`DataStore<Preferences>`**: Local key-value storage (platform-specific factory)
+- **`FirebaseRemoteConfig`** (GitLive): Firebase Remote Config, injected directly via Koin
 
 ### DataSource Pattern (Feature Layer)
 
-Each feature defines its own DataSource interface with `@RemoteDataSource` annotation:
+Each feature defines its own DataSource interfaces:
 
-- **Interface**: `AuthRemoteDataSource` (in `feature:auth:data`)
-- **Implementation**: `AuthRemoteDataSourceImpl` is KSP-generated, injecting only the concrete clients it needs
+- **`AuthRemoteDataSource`** → `@RemoteDataSource` (KSP-generated impl)
+- **`AuthLocalDataSource`** → Room `@Dao` (Room-generated impl)
+- **`AuthConfigDataSource`** → `@ConfigDataSource` (KSP-generated impl)
 
-**Example:**
-```kotlin
-// KSP-generated implementation injects only KtorRestClient (since only REST annotations are used)
-class AuthRemoteDataSourceImpl(
-    private val restClient: KtorRestClient
-) : AuthRemoteDataSource {
-    override suspend fun signInWithGoogle(request: GoogleSignInRequest): RemoteUserDto {
-        return restClient.post(
-            path = "auth/google",
-            body = request,
-            headers = emptyMap(),
-            responseType = RemoteUserDto::class
-        )
-    }
-}
-```
-
-Repository implementations MUST only orchestrate between `RemoteDataSource` and `LocalDataSource` interfaces. Never use concrete clients directly in repositories.
+Repository implementations orchestrate between these 3 DataSources. Never use concrete clients
+directly in repositories.
 
 ## Version Catalog
 
@@ -352,7 +486,8 @@ Test source sets are currently disabled across core and feature modules. Do not 
 
 ## Dependency Injection (Koin Annotations)
 
-The project uses **Koin with KSP Annotations** for dependency injection, NOT Koin DSL.
+The project uses **Koin with KSP Annotations** for dependency injection, NOT Koin DSL (except for
+`databaseModule` in KoinInitializer).
 
 ### Module Setup
 
@@ -361,30 +496,13 @@ Each module defines a `@Module` class with `@ComponentScan`:
 ```kotlin
 @Module
 @ComponentScan("com.domatapp.core.remote")
-class CoreRemoteModule {
-    @Single
-    fun provideHttpClient(): HttpClient { /*...*/ }
-}
+class CoreRemoteModule
 ```
 
 ### Class Annotations
 
 - **@Single**: Singleton scoped (repositories, data sources, API clients)
 - **@Factory**: New instance on each injection (use cases)
-
-**Example:**
-```kotlin
-@Single
-class KtorRestClient(
-    private val client: HttpClient,
-    private val serializer: SerializationApi
-) { /*...*/ }
-
-@Factory
-class LoginWithGoogleUseCase(
-    private val repository: AuthRepository
-) { /*...*/ }
-```
 
 ### KSP Configuration
 
@@ -402,7 +520,8 @@ dependencies {
 }
 ```
 
-KSP generates module code at build time. **Never use `module { }` DSL syntax.**
+KSP generates module code at build time. **Never use `module { }` DSL syntax** (except
+`databaseModule` in `KoinInitializer` for Room).
 
 ## Key Technologies
 
@@ -410,8 +529,10 @@ KSP generates module code at build time. **Never use `module { }` DSL syntax.**
 - **Android**: minSdk 30, targetSdk 36, AGP 9.0.1
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
 - **Architecture**: Arrow-kt for functional programming, Coroutines + Flow
-- **DI**: Koin 3.5.3 with Annotations 1.3.1 (KSP code generation)
-- **Networking**: Ktor Client 2.3.8 (REST + WebSocket)
-- **Backend**: Firebase Auth (GitLive 2.4.0) with Ktor migration path
-- **Serialization**: kotlinx.serialization 1.8.0
+- **DI**: Koin 4.1.1 with Annotations 2.3.1 (KSP code generation)
+- **Networking**: Ktor Client 3.4.1 (REST + WebSocket)
+- **Database**: Room 2.7.0 (KMP)
+- **Storage**: DataStore 1.2.0 (Preferences)
+- **Backend**: Firebase Auth (GitLive 2.4.0), Firebase Firestore, Firebase RemoteConfig
+- **Serialization**: kotlinx.serialization
 - **Error Handling**: Exception-based with core:resulting module

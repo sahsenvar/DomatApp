@@ -3,23 +3,23 @@ package com.domatapp.feature.auth.data.datasource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
-import com.domatapp.core.local.annotations.ClearAll
-import kotlinx.coroutines.flow.Flow
+import androidx.room.Query
+import com.domatapp.feature.auth.data.dto.AuthSessionEntity
 
-/**
- * Local data source for authentication.
- */
 @Dao
-@DataS
 interface AuthLocalDataSource {
+    @Query("SELECT * FROM auth_session WHERE id = :id")
+    suspend fun getById(id: String): AuthSessionEntity?
+
+    @Query("SELECT * FROM auth_session WHERE expiresAt > :currentTime ORDER BY createdAt DESC LIMIT 1")
+    suspend fun getActive(currentTime: Long): AuthSessionEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun saveToken(token: String)
-    fun retrieveToken(): Flow<String?>
+    suspend fun insert(session: AuthSessionEntity)
 
+    @Query("DELETE FROM auth_session WHERE id = :id")
+    suspend fun deleteById(id: String)
 
-    suspend fun clearToken()
-
-    @ClearAll()
-    suspend fun clearAll()
+    @Query("DELETE FROM auth_session")
+    suspend fun deleteAll()
 }

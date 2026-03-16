@@ -30,7 +30,6 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
 
                 // Firebase
-                implementation(libs.firebase.config)
                 implementation(libs.firebase.firestore)
 
                 // Koin for KMP

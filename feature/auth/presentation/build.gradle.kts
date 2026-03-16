@@ -36,6 +36,8 @@ kotlin {
                 // Coroutines
                 implementation(libs.kotlinx.coroutines.core)
 
+                // Koin ViewModel (for @KoinViewModel generated code)
+                implementation(libs.koin.core.viewmodel)
             }
         }
         androidMain {
@@ -46,10 +48,22 @@ kotlin {
                 implementation(libs.compose.material3)
                 implementation(libs.compose.ui)
                 implementation(libs.koin.compose)
+
+                // Navigation3 (for generated entries extension)
+                implementation(libs.navigation3.runtime)
             }
         }
         iosMain {
             dependencies {}
         }
     }
+}
+
+dependencies {
+    add("kspAndroid", projects.core.processor)
+}
+
+// Ensure kspAndroidMain runs after kspCommonMainKotlinMetadata (Koin KSP)
+tasks.matching { it.name == "kspAndroidMain" }.configureEach {
+    dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
 }

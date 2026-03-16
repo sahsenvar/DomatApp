@@ -43,13 +43,10 @@ class RemoteDataSourceProcessor(
         "GetDocument", "AddDocument", "SetDocument", "UpdateDocument",
         "DeleteDocument", "QueryCollection", "ObserveDocument", "ObserveCollection"
     )
-    private val remoteConfigAnnotations = setOf("FetchRemoteConfig", "GetRemoteConfig", "ObserveRemoteConfig")
-
     // Concrete client class names
     private val httpClientClass = ClassName("io.ktor.client", "HttpClient")
     private val jsonClass = ClassName("kotlinx.serialization.json", "Json")
     private val firestoreClientClass = ClassName("com.domatapp.core.remote.firestore", "FirebaseFirestoreClient")
-    private val remoteConfigClientClass = ClassName("com.domatapp.core.remote.remoteconfig", "FirebaseRemoteConfigClient")
     private val webSocketSessionClass =
         ClassName("io.ktor.client.plugins.websocket", "DefaultClientWebSocketSession")
 
@@ -77,15 +74,13 @@ class RemoteDataSourceProcessor(
     private data class BackendDependencies(
         val needsRest: Boolean,
         val needsSocket: Boolean,
-        val needsFirestore: Boolean,
-        val needsRemoteConfig: Boolean
+        val needsFirestore: Boolean
     )
 
     private fun analyzeBackendDependencies(interfaceDeclaration: KSClassDeclaration): BackendDependencies {
         var needsRest = false
         var needsSocket = false
         var needsFirestore = false
-        var needsRemoteConfig = false
 
         interfaceDeclaration.getAllFunctions()
             .filter { it.parentDeclaration == interfaceDeclaration }
@@ -96,12 +91,11 @@ class RemoteDataSourceProcessor(
                         name in restAnnotations -> needsRest = true
                         name in socketAnnotations -> needsSocket = true
                         name in firestoreAnnotations -> needsFirestore = true
-                        name in remoteConfigAnnotations -> needsRemoteConfig = true
                     }
                 }
             }
 
-        return BackendDependencies(needsRest, needsSocket, needsFirestore, needsRemoteConfig)
+        return BackendDependencies(needsRest, needsSocket, needsFirestore)
     }
 
     private fun generateImplementation(interfaceDeclaration: KSClassDeclaration) {
@@ -155,16 +149,6 @@ class RemoteDataSourceProcessor(
                     .build()
             )
         }
-        if (deps.needsRemoteConfig) {
-            constructorBuilder.addParameter("remoteConfigClient", remoteConfigClientClass)
-            properties.add(
-                PropertySpec.builder("remoteConfigClient", remoteConfigClientClass)
-                    .initializer("remoteConfigClient")
-                    .addModifiers(KModifier.PRIVATE)
-                    .build()
-            )
-        }
-
         val typeSpec = TypeSpec.classBuilder(implClassName)
             .addSuperinterface(interfaceDeclaration.toClassName())
             .primaryConstructor(constructorBuilder.build())
@@ -250,7 +234,7 @@ class RemoteDataSourceProcessor(
         val httpAnnotation = function.annotations.firstOrNull { annotation ->
             val annotationName = annotation.shortName.asString()
             annotationName in restAnnotations || annotationName in socketAnnotations ||
-                annotationName in firestoreAnnotations || annotationName in remoteConfigAnnotations
+                    annotationName in firestoreAnnotations
         }
 
         if (httpAnnotation == null) {
@@ -258,14 +242,10 @@ class RemoteDataSourceProcessor(
         }
 
         val httpMethod = httpAnnotation.shortName.asString()
-        val path = when (httpMethod) {
-            "FetchRemoteConfig" -> ""
-            else -> {
-                // For Firestore annotations the parameter is named "collection", for others it's "path" or "key"
-                val firstArg = httpAnnotation.arguments.firstOrNull()?.value as? String
-                firstArg ?: throw IllegalArgumentException("Annotation $httpMethod must have a path/key/collection parameter")
-            }
-        }
+        // For Firestore annotations the parameter is named "collection", for others it's "path"
+        val firstArg = httpAnnotation.arguments.firstOrNull()?.value as? String
+        val path = firstArg
+            ?: throw IllegalArgumentException("Annotation $httpMethod must have a path/collection parameter")
 
         return FunSpec.builder(functionName)
             .addModifiers(KModifier.OVERRIDE)
@@ -302,7 +282,6 @@ class RemoteDataSourceProcessor(
         httpMethod in restAnnotations -> "httpClient"
         httpMethod in socketAnnotations -> "httpClient"
         httpMethod in firestoreAnnotations -> "firestoreClient"
-        httpMethod in remoteConfigAnnotations -> "remoteConfigClient"
         else -> throw IllegalArgumentException("Unknown annotation: $httpMethod")
     }
 
@@ -524,37 +503,6 @@ class RemoteDataSourceProcessor(
                 codeBuilder.addStatement("throw e.toRemoteError()")
                 codeBuilder.unindent()
                 codeBuilder.add("}\n")
-            }
-
-            "FetchRemoteConfig" -> {
-                codeBuilder.addStatement("return $client.fetchAndActivate()")
-            }
-
-            "GetRemoteConfig" -> {
-                val returnType = function.returnType?.resolve()
-                val returnTypeName = returnType?.declaration?.simpleName?.asString()
-
-                when (returnTypeName) {
-                    "Boolean" -> codeBuilder.addStatement("return $client.getBoolean(%S)", finalPath)
-                    "String" -> codeBuilder.addStatement("return $client.getString(%S)", finalPath)
-                    "Long" -> codeBuilder.addStatement("return $client.getLong(%S)", finalPath)
-                    "Double" -> codeBuilder.addStatement("return $client.getDouble(%S)", finalPath)
-                    else -> codeBuilder.addStatement("return $client.getSerializable(%S, %T::class)", finalPath, returnType?.toClassName())
-                }
-            }
-
-            "ObserveRemoteConfig" -> {
-                val returnType = function.returnType?.resolve()
-                val flowType = returnType?.arguments?.firstOrNull()?.type?.resolve()
-                val flowTypeName = flowType?.declaration?.simpleName?.asString()
-
-                when (flowTypeName) {
-                    "Boolean" -> codeBuilder.addStatement("return $client.observeBoolean(%S)", finalPath)
-                    "String" -> codeBuilder.addStatement("return $client.observeString(%S)", finalPath)
-                    "Long" -> codeBuilder.addStatement("return $client.observeLong(%S)", finalPath)
-                    "Double" -> codeBuilder.addStatement("return $client.observeDouble(%S)", finalPath)
-                    else -> codeBuilder.addStatement("return $client.observeSerializable(%S, %T::class)", finalPath, flowType?.toClassName())
-                }
             }
 
             "GetDocument" -> {

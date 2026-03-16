@@ -1,8 +1,17 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinAndroid)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_11)
+    }
 }
 
 android {
@@ -16,6 +25,7 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -26,6 +36,7 @@ android {
             isMinifyEnabled = false
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -41,6 +52,7 @@ dependencies {
     implementation(projects.core.presentation)
     implementation(projects.core.serialization)
     implementation(projects.core.remote)
+    implementation(projects.core.config)
 
     // Feature modules
     implementation(projects.feature.auth.domain)
@@ -65,6 +77,7 @@ dependencies {
     api(libs.koin.android)
     api(libs.koin.compose)
     implementation(libs.koin.annotations)
+    implementation(libs.androidx.core.ktx)
     ksp(libs.koin.ksp.compiler)
 
     // Ktor (needed for HttpClient configuration)

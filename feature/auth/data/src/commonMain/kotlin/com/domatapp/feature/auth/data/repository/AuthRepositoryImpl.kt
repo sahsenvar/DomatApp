@@ -1,7 +1,7 @@
 package com.domatapp.feature.auth.data.repository
 
-import com.domatapp.core.local.database.dao.AuthSessionDao
 import com.domatapp.core.resulting.error.RemoteError
+import com.domatapp.feature.auth.data.datasource.AuthConfigDataSource
 import com.domatapp.feature.auth.data.datasource.AuthLocalDataSource
 import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSource
 import com.domatapp.feature.auth.data.dto.GoogleSignInRequest
@@ -16,28 +16,24 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retryWhen
 import org.koin.core.annotation.Single
 
-/**
- * Implementation of AuthRepository using exception-based error handling.
- */
 @Single
 class AuthRepositoryImpl(
     private val remoteDataSource: AuthRemoteDataSource,
     private val localDataSource: AuthLocalDataSource,
-    private val authSessionDao: AuthSessionDao
+    private val configDataSource: AuthConfigDataSource
 ) : AuthRepository {
 
     override fun loginWithGoogle(idToken: String): Flow<AuthSession> = flow {
         val dto = remoteDataSource.signInWithGoogle(GoogleSignInRequest(idToken))
 
         // TODO: Save to local data source
-        // localDataSource.saveToken("sample")
-        // authSessionDao.insert(...)
+        // configDataSource.saveToken("sample")
+        // localDataSource.saveSession(...)
 
         emit(dto.toDomain())
     }.retryWhen { cause, attempt ->
-        // Retry only on remote connection errors, max 3 attempts
         if (cause is RemoteError.NoConnection && attempt < 3) {
-            delay(1000 * (attempt + 1)) // Exponential backoff
+            delay(1000 * (attempt + 1))
             true
         } else {
             false
@@ -45,21 +41,18 @@ class AuthRepositoryImpl(
     }.catch { throw it.toAuthError() }
 
     override fun observeAuthSession(): Flow<AuthSession?> = flow {
-        // TODO: Observe from local data source
-        // localDataSource.retrieveToken() ...
+        // TODO: Observe from config data source
+        // configDataSource.retrieveToken() ...
         emit(null)
     }.catch { throw it.toAuthError() }
 
     override fun logout(): Flow<Unit> = flow {
-        // TODO: Retrieve current token
         val token = "dummy-token"
 
-        // Call remote logout
         remoteDataSource.logout(token)
 
-        // Clear local session
-        localDataSource.clearAll()
-        authSessionDao.deleteAll()
+        configDataSource.clearAll()
+        localDataSource.deleteAll()
 
         emit(Unit)
     }.catch { throw it.toAuthError() }

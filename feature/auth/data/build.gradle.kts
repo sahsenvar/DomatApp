@@ -16,7 +16,7 @@ kotlin {
                 // Projects ========================================================================
                 implementation(projects.feature.auth.domain)
                 implementation(projects.core.remote)
-                implementation(projects.core.local)
+                implementation(projects.core.config)
                 implementation(projects.core.data)
 
 
@@ -24,6 +24,9 @@ kotlin {
                 // Core
                 implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.coroutines.core)
+
+                // Room (Entity + DAO definitions)
+                implementation(libs.androidx.room.runtime)
 
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)
