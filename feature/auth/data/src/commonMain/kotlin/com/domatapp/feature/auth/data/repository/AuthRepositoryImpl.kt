@@ -2,7 +2,6 @@ package com.domatapp.feature.auth.data.repository
 
 import com.domatapp.core.resulting.error.RemoteError
 import com.domatapp.feature.auth.data.datasource.AuthConfigDataSource
-import com.domatapp.feature.auth.data.datasource.AuthLocalDataSource
 import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSource
 import com.domatapp.feature.auth.data.dto.GoogleSignInRequest
 import com.domatapp.feature.auth.data.mapper.toAuthError
@@ -14,12 +13,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retryWhen
-import org.koin.core.annotation.Single
 
-@Single
 class AuthRepositoryImpl(
     private val remoteDataSource: AuthRemoteDataSource,
-    private val localDataSource: AuthLocalDataSource,
+    //private val localDataSource: AuthLocalDataSource,
     private val configDataSource: AuthConfigDataSource
 ) : AuthRepository {
 
@@ -52,7 +49,7 @@ class AuthRepositoryImpl(
         remoteDataSource.logout(token)
 
         configDataSource.clearAll()
-        localDataSource.deleteAll()
+        //localDataSource.deleteAll()
 
         emit(Unit)
     }.catch { throw it.toAuthError() }

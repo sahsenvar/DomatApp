@@ -7,12 +7,12 @@ import dev.icerock.moko.resources.StringResource
 import dev.icerock.moko.resources.desc.PluralFormattedStringDesc
 import dev.icerock.moko.resources.desc.ResourceFormattedStringDesc
 import dev.icerock.moko.resources.desc.desc
-import org.koin.core.annotation.Single
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-@Single(binds = [StringResourceApi::class])
-class AndroidStringResourceApi(
-    private val context: Context
-) : StringResourceApi {
+class AndroidStringResourceApi : StringResourceApi, KoinComponent {
+
+    private val context: Context by inject()
 
     override fun getString(resource: StringResource): String =
         resource.desc().toString(context)

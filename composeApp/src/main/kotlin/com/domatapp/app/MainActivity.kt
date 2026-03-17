@@ -42,19 +42,13 @@ fun DomatApp() {
     val state by mainViewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val currentRoute = state.currentRoute
-
     CompositionLocalProvider(
         LocalNavigator provides mainViewModel,
         LocalSnackbarHostState provides snackbarHostState
     ) {
         Scaffold(
-            bottomBar = {
-
-            },
-            floatingActionButton = {
-
-            },
+            bottomBar = {},
+            floatingActionButton = {},
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(

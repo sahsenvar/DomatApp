@@ -165,7 +165,6 @@ class ConfigDataSourceProcessor(
         }
 
         val typeSpec = TypeSpec.classBuilder(implClassName)
-            .addAnnotation(singleAnnotation)
             .addSuperinterface(interfaceDeclaration.toClassName())
             .primaryConstructor(constructorBuilder.build())
             .addProperties(properties)

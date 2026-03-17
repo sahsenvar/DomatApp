@@ -4,6 +4,7 @@ import com.domatapp.feature.auth.domain.model.AuthSession
 import com.domatapp.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.annotation.Factory
+import org.koin.core.annotation.Provided
 
 /**
  * Use case for Google Sign-In.
@@ -11,7 +12,7 @@ import org.koin.core.annotation.Factory
  */
 @Factory
 class LoginWithGoogleUseCase(
-    private val repository: AuthRepository
+    @Provided private val repository: AuthRepository
 ) {
     operator fun invoke(idToken: String): Flow<AuthSession> =
         repository.loginWithGoogle(idToken)

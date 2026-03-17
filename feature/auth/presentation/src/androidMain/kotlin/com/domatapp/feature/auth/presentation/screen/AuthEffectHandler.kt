@@ -22,7 +22,7 @@ fun AuthEffectHandler(
     LaunchedEffect(effectFlow) {
         effectFlow.collectLatest { effect ->
             when (effect) {
-                is AuthEffect.LaunchGoogleSignIn -> TODO()
+                is AuthEffect.LaunchGoogleSignIn -> snackbarHostState.showSnackbar("tıklandı")
                 is AuthEffect.NavigateToHome -> navigator.replaceAll(Route.Main.Home)
                 is AuthEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
                 is AuthEffect.Idle -> Unit

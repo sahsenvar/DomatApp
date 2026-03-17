@@ -8,7 +8,6 @@ import com.domatapp.core.remote.mapper.toRemoteError
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Query
 import dev.gitlive.firebase.firestore.firestore
-import dev.gitlive.firebase.firestore.where
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.InternalSerializationApi
@@ -137,12 +136,23 @@ class FirebaseFirestoreClient {
                     WhereOperator.GREATER_THAN -> clause.field greaterThan value!!
                     WhereOperator.GREATER_THAN_OR_EQUAL_TO -> clause.field greaterThanOrEqualTo value!!
                     WhereOperator.ARRAY_CONTAINS -> clause.field contains value!!
-                    @Suppress("UNCHECKED_CAST")
-                    WhereOperator.ARRAY_CONTAINS_ANY -> clause.field containsAny (value as List<Any>)
-                    @Suppress("UNCHECKED_CAST")
-                    WhereOperator.IN -> clause.field inArray (value as List<Any>)
-                    @Suppress("UNCHECKED_CAST")
-                    WhereOperator.NOT_IN -> clause.field notInArray (value as List<Any>)
+                    WhereOperator.ARRAY_CONTAINS_ANY -> {
+                        val listValue = value as? List<*>
+                            ?: throw IllegalArgumentException("ARRAY_CONTAINS_ANY value must be a List")
+                        clause.field containsAny listValue.filterNotNull()
+                    }
+
+                    WhereOperator.IN -> {
+                        val listValue = value as? List<*>
+                            ?: throw IllegalArgumentException("IN value must be a List")
+                        clause.field inArray listValue.filterNotNull()
+                    }
+
+                    WhereOperator.NOT_IN -> {
+                        val listValue = value as? List<*>
+                            ?: throw IllegalArgumentException("NOT_IN value must be a List")
+                        clause.field notInArray listValue.filterNotNull()
+                    }
                 }
             }
         }

@@ -6,9 +6,7 @@ import dev.icerock.moko.resources.StringResource
 import dev.icerock.moko.resources.desc.PluralFormattedStringDesc
 import dev.icerock.moko.resources.desc.ResourceFormattedStringDesc
 import dev.icerock.moko.resources.desc.desc
-import org.koin.core.annotation.Single
 
-@Single(binds = [StringResourceApi::class])
 class IosStringResourceApi : StringResourceApi {
 
     override fun getString(resource: StringResource): String =
