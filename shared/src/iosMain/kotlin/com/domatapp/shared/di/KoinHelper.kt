@@ -18,4 +18,7 @@ fun doInitKoin() = initKoin {}
 class KoinHelper : KoinComponent {
     fun authViewModel() =
         getKoin().get<com.domatapp.feature.auth.presentation.viewmodel.AuthViewModel>()
+
+    fun loginViewModel() =
+        getKoin().get<com.domatapp.feature.auth.presentation.viewmodel.LoginViewModel>()
 }

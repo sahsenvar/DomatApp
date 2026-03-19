@@ -100,6 +100,7 @@
 				C4130CD61CD1BBE525F02161 /* Sources */,
 				C7DF6EFD801421AC5331E512 /* Frameworks */,
 				027F38E1F1AC36BCADC7E68F /* Resources */,
+				8816486ACBF944009A12AC96 /* Copy MOKO Resources */,
 			);
 			buildRules = (
 			);
@@ -168,6 +169,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		8816486ACBF944009A12AC96 /* Copy MOKO Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483867;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy MOKO Resources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "RESOURCE_BUNDLE=\"${BUILT_PRODUCTS_DIR}/Shared.framework/DomatApp.core:resource.bundle\"\nDESTINATION=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/DomatApp.core:resource.bundle\"\nif [ -d \"$RESOURCE_BUNDLE\" ]; then\n  rm -rf \"$DESTINATION\"\n  cp -r \"$RESOURCE_BUNDLE\" \"$DESTINATION\"\n  echo \"MOKO resource bundle copied.\"\nelse\n  echo \"MOKO resource bundle not found: $RESOURCE_BUNDLE\"\nfi\n";
+		};
 		30ADEA9A1261F9BBFA028456 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -332,7 +352,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
-				DEVELOPMENT_TEAM = "${TEAM_ID}";
+				DEVELOPMENT_TEAM = Y5N2K8HZR6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
@@ -357,7 +377,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
-				DEVELOPMENT_TEAM = "${TEAM_ID}";
+				DEVELOPMENT_TEAM = Y5N2K8HZR6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;

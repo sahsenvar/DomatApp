@@ -86,8 +86,8 @@ struct DomatColorScheme {
 
 extension DomatColorScheme {
     static let light = DomatColorScheme(
-        primary: DomatPalette.green700,
-        onPrimary: DomatPalette.white,
+        primary: Color(hex: 0x13EC49),
+        onPrimary: DomatPalette.green900,
         primaryContainer: DomatPalette.green200,
         onPrimaryContainer: DomatPalette.green900,
         secondary: DomatPalette.sage600,
