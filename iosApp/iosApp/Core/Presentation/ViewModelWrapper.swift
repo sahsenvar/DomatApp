@@ -53,7 +53,7 @@ Effect: AnyObject>: ObservableObject {
                     guard !Task.isCancelled else {
                         break
                     }
-                    if let state = newState as ? UiState {
+                    if let state = newState as? UiState {
                         self.state = state
                     }
                 }
@@ -73,9 +73,9 @@ Effect: AnyObject>: ObservableObject {
                     guard !Task.isCancelled else {
                         break
                     }
-                    if let eff = effect as ? Effect {
+                    if let eff = effect as? Effect {
                         self.latestEffect = eff
-                        self.onEffect ? (eff)
+                        self.onEffect?(eff)
                     }
                 }
             } catch {
