@@ -26,7 +26,7 @@ struct LoginView: View {
         .ignoresSafeArea(edges: .top)
         .onEffect(from: vm) { effect in
             if effect is LoginEffectNavigateToLocationSelection {
-                // TODO: router.navigate(to: .locationSelection)
+                router.navigate(to: .locationSelection)
             }
         }
     }

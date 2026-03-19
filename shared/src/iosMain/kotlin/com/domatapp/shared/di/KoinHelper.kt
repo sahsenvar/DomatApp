@@ -21,4 +21,10 @@ class KoinHelper : KoinComponent {
 
     fun loginViewModel() =
         getKoin().get<com.domatapp.feature.auth.presentation.viewmodel.LoginViewModel>()
+
+    fun onboardingWelcomeViewModel() =
+        getKoin().get<com.domatapp.feature.onboarding.presentation.viewmodel.OnboardingWelcomeViewModel>()
+
+    fun locationSelectionViewModel() =
+        getKoin().get<com.domatapp.feature.auth.presentation.viewmodel.LocationSelectionViewModel>()
 }
