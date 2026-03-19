@@ -90,7 +90,7 @@ DomatProgressDots(activeIndex = uiState.currentPage)
 ```kotlin
 // Doğru ✓ — SupplyChainRow UiModel ile çalışır
 data class SupplyChainRowUiModel(
-    val icon: DrawableResource,
+    val icon: ImageResource,          // dev.icerock.moko.resources.ImageResource
     val variant: SupplyChainRowVariant,
     val title: String,
     val subtitle: String,
@@ -134,6 +134,87 @@ Text(text = stringResource(MR.strings.onboarding_effortless_title))
 - **Yüzde işareti:** `%%40` → strings.xml'de `%%` ile escape edilir, composable'a `%40` olarak gelir
 - **Annotated string parçaları:** `buildAnnotatedString { append(stringResource(MR.strings.xyz)) }` şeklinde ayrı parçalar halinde birleştirilir
 - **HTML entity:** `&amp;` → strings.xml'de `&amp;` olarak yazılır (`Taze &amp; Yerel` → "Taze & Yerel")
+
+---
+
+## Image / Drawable Sistemi
+
+### Kural: Her şey MR.images üzerinden
+
+Projede Compose Resources (`Res.drawable.*`) kullanılmaz. Tüm görseller moko-resources `MR.images.*` üzerinden alınır.
+
+```kotlin
+// Yanlış ❌ — Compose Resources
+import domatapp.feature.onboarding.presentation.generated.resources.Res
+import org.jetbrains.compose.resources.painterResource
+
+painterResource(Res.drawable.ic_arrow_back)
+
+// Doğru ✓ — moko-resources
+import com.domatapp.core.resource.MR
+import dev.icerock.moko.resources.compose.painterResource
+
+painterResource(MR.images.ic_arrow_back)
+```
+
+### Image Tipi
+
+UiModel içinde image referansı tutulurken:
+
+```kotlin
+// Yanlış ❌
+import org.jetbrains.compose.resources.DrawableResource
+val icon: DrawableResource
+
+// Doğru ✓
+import dev.icerock.moko.resources.ImageResource
+val icon: ImageResource
+```
+
+### Kaynak Dosya Konumu ve Format Kuralları
+
+Tüm görseller `core/resource/src/commonMain/moko-resources/images/` altına eklenir.
+
+| Format | Davranış |
+|--------|----------|
+| `.svg` | Doğrudan `images/` içine koyulur |
+| `.png` / `.jpg` | Dosya adına density suffix eklenir: `img_name@1x.png`, `img_name@2x.png` |
+
+**PNG Kritik Kural:** PNG dosyaları `@1x` / `@2x` / `@3x` suffix'i olmadan koyulursa moko-resources "unknown scale" hatası verir ve Android drawable olarak üretilmez.
+
+```
+images/
+├── ic_arrow_back.svg              ✓ doğru
+├── img_welcome@1x.png             ✓ doğru (@1x suffix zorunlu)
+├── img_welcome.png                ✗ yanlış (scale bilinmiyor, ignore edilir)
+└── 1x/img_welcome.png             ✗ yanlış (subdirectory çalışmıyor)
+```
+
+### VectorDrawable XML → SVG Dönüşümü
+
+Android VectorDrawable XML formatı (`<vector xmlns:android=...>`) moko-resources tarafından desteklenmez. SVG formatına dönüştürülmesi gerekir.
+
+| VectorDrawable | SVG |
+|----------------|-----|
+| `<vector android:width android:height android:viewportWidth android:viewportHeight>` | `<svg width height viewBox="0 0 W H">` |
+| `<path android:pathData android:fillColor>` | `<path d fill>` |
+| `<group android:translateX android:translateY>` | `<g transform="translate(x, y)">` |
+| `#AARRGGBB` renk (Android) | `#RRGGBB` + `fill-opacity` (SVG) |
+
+Dönüşüm scripti: `/tmp/convert_drawables.py`
+
+### Compose Resources Üretimini Engelleme
+
+`composeMultiplatform` plugin'i olan her modülde `Res.kt` üretimi kapatılır:
+
+```kotlin
+// Her modülün build.gradle.kts dosyasına eklenir
+compose.resources {
+    generateResClass = never
+}
+```
+
+`composeResources/` klasörü oluşturulmaz. `compose.components.resources` bağımlılığı eklenmez.
 
 ---
 
