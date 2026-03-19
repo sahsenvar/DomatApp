@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import dev.icerock.moko.resources.compose.colorResource
 
 @Composable
 fun DomatTextField(
@@ -30,7 +31,7 @@ fun DomatTextField(
         onValueChange = onValueChange,
         modifier = modifier,
         placeholder = if (placeholder.isNotEmpty()) {
-            { Text(placeholder, style = MaterialTheme.typography.bodyMedium, color = DomatColors.TextMuted) }
+            { Text(placeholder, style = MaterialTheme.typography.bodyMedium, color = colorResource(DomatColors.textMuted)) }
         } else null,
         label = if (label.isNotEmpty()) {
             { Text(label, style = MaterialTheme.typography.bodyMedium) }
@@ -41,16 +42,16 @@ fun DomatTextField(
         leadingIcon = leadingIcon,
         shape = RoundedCornerShape(10.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = DomatColors.Primary,
-            unfocusedBorderColor = DomatColors.BorderDefault,
-            errorBorderColor = DomatColors.Error,
-            disabledBorderColor = DomatColors.BorderLight,
-            focusedTextColor = DomatColors.TextPrimary,
-            unfocusedTextColor = DomatColors.TextPrimary,
-            disabledTextColor = DomatColors.TextDisabled,
-            errorTextColor = DomatColors.TextPrimary,
-            cursorColor = DomatColors.Primary,
-            errorCursorColor = DomatColors.Error,
+            focusedBorderColor = colorResource(DomatColors.primary),
+            unfocusedBorderColor = colorResource(DomatColors.borderDefault),
+            errorBorderColor = colorResource(DomatColors.error),
+            disabledBorderColor = colorResource(DomatColors.borderLight),
+            focusedTextColor = colorResource(DomatColors.textPrimary),
+            unfocusedTextColor = colorResource(DomatColors.textPrimary),
+            disabledTextColor = colorResource(DomatColors.textDisabled),
+            errorTextColor = colorResource(DomatColors.textPrimary),
+            cursorColor = colorResource(DomatColors.primary),
+            errorCursorColor = colorResource(DomatColors.error),
         ),
         textStyle = MaterialTheme.typography.bodyMedium,
         keyboardOptions = keyboardOptions,

@@ -33,20 +33,30 @@ kotlin {
                 // Resources (Moko Resources for i18n)
                 implementation(projects.core.resource)
 
+                // Compose Resources
+                implementation(libs.compose.components.resources)
+
                 // Coroutines
                 implementation(libs.kotlinx.coroutines.core)
 
                 // Koin ViewModel (for @KoinViewModel generated code)
                 implementation(libs.koin.core.viewmodel)
+
+
             }
         }
         androidMain {
             dependencies {
+                // Design system
+                implementation(projects.core.design)
+
                 // Compose
                 implementation(libs.compose.runtime)
                 implementation(libs.compose.foundation)
                 implementation(libs.compose.material3)
                 implementation(libs.compose.ui)
+                implementation(libs.compose.uiTooling)
+                implementation(libs.compose.uiToolingPreview)
                 implementation(libs.koin.compose)
 
                 // Navigation3 (for generated entries extension)
@@ -66,4 +76,10 @@ dependencies {
 // Ensure kspAndroidMain runs after kspCommonMainKotlinMetadata (Koin KSP)
 tasks.matching { it.name == "kspAndroidMain" }.configureEach {
     dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
+}
+
+compose.resources {
+    publicResClass = false
+    packageOfResClass = "domatapp.feature.auth.presentation.generated.resources"
+    generateResClass = always
 }

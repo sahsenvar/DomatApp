@@ -8,7 +8,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(projects.core.resource)
+                api(projects.core.resource)
             }
         }
         androidMain {

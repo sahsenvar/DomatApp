@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import dev.icerock.moko.resources.compose.colorResource
 
 @Composable
 fun DomatPrimaryButton(
@@ -29,6 +30,7 @@ fun DomatPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     leadingIcon: ImageVector? = null,
+    trailingContent: @Composable (() -> Unit)? = null,
 ) {
     Button(
         onClick = onClick,
@@ -36,10 +38,10 @@ fun DomatPrimaryButton(
         enabled = enabled,
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = DomatColors.Primary,
-            contentColor = DomatColors.TextPrimary,
-            disabledContainerColor = DomatColors.SurfaceMuted,
-            disabledContentColor = DomatColors.TextDisabled,
+            containerColor = colorResource(DomatColors.primary),
+            contentColor = colorResource(DomatColors.textPrimary),
+            disabledContainerColor = colorResource(DomatColors.surfaceMuted),
+            disabledContentColor = colorResource(DomatColors.textDisabled),
         ),
     ) {
         if (leadingIcon != null) {
@@ -51,6 +53,10 @@ fun DomatPrimaryButton(
             Spacer(modifier = Modifier.width(8.dp))
         }
         Text(text = text, style = MaterialTheme.typography.titleLarge)
+        if (trailingContent != null) {
+            Spacer(modifier = Modifier.width(8.dp))
+            trailingContent()
+        }
     }
 }
 
@@ -67,10 +73,10 @@ fun DomatPrimaryMediumButton(
         enabled = enabled,
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = DomatColors.Primary,
-            contentColor = DomatColors.TextPrimary,
-            disabledContainerColor = DomatColors.SurfaceMuted,
-            disabledContentColor = DomatColors.TextDisabled,
+            containerColor = colorResource(DomatColors.primary),
+            contentColor = colorResource(DomatColors.textPrimary),
+            disabledContainerColor = colorResource(DomatColors.surfaceMuted),
+            disabledContentColor = colorResource(DomatColors.textDisabled),
         ),
     ) {
         Text(text = text, style = MaterialTheme.typography.titleLarge)
@@ -90,10 +96,10 @@ fun DomatPrimarySmallButton(
         enabled = enabled,
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = DomatColors.Primary,
-            contentColor = DomatColors.TextPrimary,
-            disabledContainerColor = DomatColors.SurfaceMuted,
-            disabledContentColor = DomatColors.TextDisabled,
+            containerColor = colorResource(DomatColors.primary),
+            contentColor = colorResource(DomatColors.textPrimary),
+            disabledContainerColor = colorResource(DomatColors.surfaceMuted),
+            disabledContentColor = colorResource(DomatColors.textDisabled),
         ),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
     ) {
@@ -114,10 +120,10 @@ fun DomatSecondaryButton(
         enabled = enabled,
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = DomatColors.SurfaceDark,
-            contentColor = DomatColors.TextInverse,
-            disabledContainerColor = DomatColors.SurfaceMuted,
-            disabledContentColor = DomatColors.TextDisabled,
+            containerColor = colorResource(DomatColors.surfaceDark),
+            contentColor = colorResource(DomatColors.textInverse),
+            disabledContainerColor = colorResource(DomatColors.surfaceMuted),
+            disabledContentColor = colorResource(DomatColors.textDisabled),
         ),
     ) {
         Text(text = text, style = MaterialTheme.typography.titleLarge)
@@ -137,13 +143,13 @@ fun DomatGhostButton(
         enabled = enabled,
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = DomatColors.SurfaceDefault,
-            contentColor = DomatColors.TextPrimary,
-            disabledContentColor = DomatColors.TextDisabled,
+            containerColor = colorResource(DomatColors.surfaceDefault),
+            contentColor = colorResource(DomatColors.textPrimary),
+            disabledContentColor = colorResource(DomatColors.textDisabled),
         ),
         border = BorderStroke(
             width = 0.dp,
-            color = DomatColors.SurfaceDefault,
+            color = colorResource(DomatColors.surfaceDefault),
         ),
     ) {
         Text(
@@ -174,10 +180,10 @@ fun DomatIconButton(
         enabled = enabled,
         shape = RoundedCornerShape(percent = 50),
         colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = DomatColors.SurfaceMuted,
-            contentColor = DomatColors.TextPrimary,
-            disabledContainerColor = DomatColors.BorderDefault,
-            disabledContentColor = DomatColors.TextDisabled,
+            containerColor = colorResource(DomatColors.surfaceMuted),
+            contentColor = colorResource(DomatColors.textPrimary),
+            disabledContainerColor = colorResource(DomatColors.borderDefault),
+            disabledContentColor = colorResource(DomatColors.textDisabled),
         ),
     ) {
         Icon(imageVector = icon, contentDescription = contentDescription)

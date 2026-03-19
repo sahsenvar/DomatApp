@@ -23,6 +23,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.presentation.compose.LocalNavigator
 import com.domatapp.core.presentation.compose.LocalSnackbarHostState
 import com.domatapp.feature.auth.presentation.navigation.authPageEntry
+import com.domatapp.app.navigation.onboardingPresentationEntries
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,8 +64,9 @@ fun DomatApp() {
                 backStack = state.backStack,
                 modifier = Modifier.padding(innerPadding),
                 entryProvider = entryProvider {
-                    authPageEntry()   // generated
-                    homeEntries()       // manual (no MVI pattern yet)
+                    authPageEntry()
+                    onboardingPresentationEntries()
+                    homeEntries()
                 },
                 onBack = { mainViewModel.popBack() }
             )

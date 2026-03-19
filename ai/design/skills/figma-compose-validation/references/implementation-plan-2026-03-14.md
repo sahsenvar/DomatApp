@@ -4,22 +4,18 @@
 
 **Goal:** Figma tasarımından Compose koduna giden her adımda otomatik doğrulama katmanları oluşturmak — asset sınıflandırma, dönüşüm validasyonu, token eşleştirme, screenshot karşılaştırma.
 
-**Architecture:** Gradle plugin ile @Screen annotated composable'lardan @Preview wrapper generate et, Paparazzi ile screenshot'ları PNG olarak yakala, Python script ile Figma screenshot vs Compose preview pixel diff hesapla, Claude görsel review ile doğrula.
+**Architecture:** Paparazzi ile screenshot'ları PNG olarak yakala, Python script ile Figma screenshot vs Compose preview pixel diff hesapla, Claude görsel review ile doğrula.
 
-**Tech Stack:** Gradle Plugin (Kotlin DSL), Paparazzi (Square), Python PIL/pixelmatch, Figma MCP
+**Tech Stack:** Paparazzi (Square), Python PIL/pixelmatch, Figma MCP
 
 ---
 
 ## Dosya Yapısı
 
 ```
-build-logic/convention/src/main/kotlin/
-├── GenerateScreenPreviewPlugin.kt     ← YENİ: @Screen → @Preview generator
-
 composeApp/
-├── build.gradle.kts                   ← MODIFY: Paparazzi + Preview plugin ekle
-├── src/androidUnitTest/kotlin/.../    ← YENİ: Paparazzi snapshot testleri
-└── src/androidMain/kotlin/.../generated/previews/  ← GENERATED: @Preview wrappers
+├── build.gradle.kts                   ← MODIFY: Paparazzi plugin ekle
+└── src/androidUnitTest/kotlin/.../    ← YENİ: Paparazzi snapshot testleri
 
 scripts/
 ├── validate_svg_paths.py              ← YENİ: SVG path data doğrulayıcı
@@ -33,275 +29,7 @@ ai/design/skills/figma-compose-validation/
 
 ---
 
-## Chunk 1: GenerateScreenPreviewPlugin
-
-### Task 1: Plugin Kaydı (build-logic)
-
-**Files:**
-- Modify: `build-logic/convention/build.gradle.kts` — Plugin kaydı ekle
-- Modify: `gradle/libs.versions.toml` — Plugin ID tanımla
-
-- [ ] **Step 1: libs.versions.toml'a plugin ID ekle**
-
-`gradle/libs.versions.toml` → `[plugins]` bölümüne:
-```toml
-techspirationGenerateScreenPreview = { id = "techspiration.generate.screen.preview", version = "unspecified" }
-```
-
-- [ ] **Step 2: build-logic/convention/build.gradle.kts'ye register ekle**
-
-Mevcut plugin register'ların yanına:
-```kotlin
-register("GenerateScreenPreviewPlugin") {
-    id = libs.plugins.techspirationGenerateScreenPreview.get().pluginId
-    implementationClass = "GenerateScreenPreviewPlugin"
-}
-```
-
-- [ ] **Step 3: Build et, plugin kayıt doğrula**
-
-Run: `./gradlew :build-logic:convention:classes`
-Expected: BUILD SUCCESSFUL
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add gradle/libs.versions.toml build-logic/convention/build.gradle.kts
-git commit -m "chore: register GenerateScreenPreviewPlugin in build-logic"
-```
-
----
-
-### Task 2: GenerateScreenPreviewPlugin Implementasyonu
-
-**Files:**
-- Create: `build-logic/convention/src/main/kotlin/GenerateScreenPreviewPlugin.kt`
-
-- [ ] **Step 1: Plugin dosyasını oluştur**
-
-GenerateIosBridgePlugin pattern'ini takip et. Temel yapı:
-
-```kotlin
-import org.gradle.api.DefaultTask
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.TaskAction
-import java.io.File
-
-data class ScreenInfo(
-    val functionName: String,
-    val packageName: String,
-    val stateClass: String,
-    val statePackage: String,
-)
-
-abstract class GenerateScreenPreviewTask : DefaultTask() {
-    @get:InputFiles
-    abstract val sourceFiles: ConfigurableFileCollection
-
-    @get:OutputDirectory
-    abstract val outputDir: DirectoryProperty
-
-    @TaskAction
-    fun generate() {
-        val screens = scanScreenAnnotations()
-        if (screens.isEmpty()) {
-            logger.lifecycle("GenerateScreenPreview: No @Screen functions found")
-            return
-        }
-        logger.lifecycle("GenerateScreenPreview: Found ${screens.size} screens")
-
-        val outDir = outputDir.get().asFile
-        outDir.deleteRecursively()
-        outDir.mkdirs()
-
-        screens.forEach { screen ->
-            generatePreviewFile(screen, outDir)
-        }
-    }
-
-    private fun scanScreenAnnotations(): List<ScreenInfo> {
-        // @Screen annotation pattern:
-        // @Screen(SomeRoute::class, SomeViewModel::class)
-        // @Composable
-        // fun SomeScreen(state: SomeUiState, onIntent: (SomeUiIntent) -> Unit)
-        val screenPattern = Regex(
-            """@Screen\([^)]+\)\s*\n\s*@Composable\s*\n\s*fun\s+(\w+)\s*\(\s*state\s*:\s*(\w+)""",
-        )
-        val packagePattern = Regex("""^package\s+([\w.]+)""", RegexOption.MULTILINE)
-
-        val results = mutableListOf<ScreenInfo>()
-
-        sourceFiles.files
-            .filter { it.extension == "kt" && it.path.contains("/commonMain/") }
-            .forEach { file ->
-                val content = file.readText()
-                screenPattern.findAll(content).forEach { match ->
-                    val pkg = packagePattern.find(content)?.groupValues?.get(1) ?: return@forEach
-                    results.add(
-                        ScreenInfo(
-                            functionName = match.groupValues[1],
-                            packageName = pkg,
-                            stateClass = match.groupValues[2],
-                            statePackage = pkg,
-                        ),
-                    )
-                }
-            }
-
-        // Also scan for manually registered screens (state, onIntent pattern without @Screen)
-        val manualPattern = Regex(
-            """@Composable\s*\n\s*fun\s+(\w+Screen)\s*\(\s*state\s*:\s*(\w+)\s*,\s*onIntent""",
-        )
-        sourceFiles.files
-            .filter { it.extension == "kt" && it.path.contains("/commonMain/") }
-            .forEach { file ->
-                val content = file.readText()
-                // Skip if already found via @Screen
-                if (content.contains("@Screen(")) return@forEach
-                manualPattern.findAll(content).forEach { match ->
-                    val pkg = packagePattern.find(content)?.groupValues?.get(1) ?: return@forEach
-                    val funcName = match.groupValues[1]
-                    // Avoid duplicates
-                    if (results.none { it.functionName == funcName }) {
-                        results.add(
-                            ScreenInfo(
-                                functionName = funcName,
-                                packageName = pkg,
-                                stateClass = match.groupValues[2],
-                                statePackage = pkg,
-                            ),
-                        )
-                    }
-                }
-            }
-
-        return results
-    }
-
-    private fun generatePreviewFile(screen: ScreenInfo, outDir: File) {
-        val previewContent = buildString {
-            appendLine("package ${screen.packageName}.preview")
-            appendLine()
-            appendLine("import androidx.compose.runtime.Composable")
-            appendLine("import androidx.compose.ui.tooling.preview.Preview")
-            appendLine("import ${screen.packageName}.${screen.functionName}")
-            appendLine("import ${screen.statePackage}.${screen.stateClass}")
-            appendLine()
-            appendLine("@Preview(")
-            appendLine("    showBackground = true,")
-            appendLine("    showSystemUi = true,")
-            appendLine("    device = \"spec:width=390dp,height=844dp,dpi=440\",")
-            appendLine(")")
-            appendLine("@Composable")
-            appendLine("fun ${screen.functionName}Preview() {")
-            appendLine("    ${screen.functionName}(")
-            appendLine("        state = ${screen.stateClass}(),")
-            appendLine("        onIntent = {},")
-            appendLine("    )")
-            appendLine("}")
-        }
-
-        val pkgDir = File(outDir, screen.packageName.replace(".", "/") + "/preview")
-        pkgDir.mkdirs()
-        File(pkgDir, "${screen.functionName}Preview.kt").writeText(previewContent)
-        logger.lifecycle("  Generated: ${screen.functionName}Preview.kt")
-    }
-}
-
-class GenerateScreenPreviewPlugin : Plugin<Project> {
-    override fun apply(target: Project): Unit = with(target) {
-        val composeAppProject = findProject(":composeApp")
-
-        val task = tasks.register("generateScreenPreviews", GenerateScreenPreviewTask::class.java) {
-            val srcDirs = subprojects
-                .filter { !it.name.endsWith("-compiler") }
-                .flatMap { sub ->
-                    sub.projectDir.resolve("src").let { srcDir ->
-                        if (srcDir.exists()) listOf(srcDir) else emptyList()
-                    }
-                }
-
-            sourceFiles.from(srcDirs.map { fileTree(it) { include("**/*.kt") } })
-            outputDir.set(
-                composeAppProject?.layout?.buildDirectory?.dir("generated/screenPreviews/androidMain/kotlin")
-                    ?: layout.buildDirectory.dir("generated/screenPreviews/androidMain/kotlin"),
-            )
-        }
-
-        // Android compile task'larına dependency ekle
-        composeAppProject?.afterEvaluate {
-            tasks.configureEach {
-                if (name.startsWith("compile") && name.contains("Kotlin") && name.contains("Android", ignoreCase = true)) {
-                    dependsOn(task)
-                }
-            }
-        }
-    }
-}
-```
-
-- [ ] **Step 2: Build et**
-
-Run: `./gradlew :build-logic:convention:classes`
-Expected: BUILD SUCCESSFUL
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add build-logic/convention/src/main/kotlin/GenerateScreenPreviewPlugin.kt
-git commit -m "feat: add GenerateScreenPreviewPlugin for auto @Preview generation"
-```
-
----
-
-### Task 3: Plugin'i composeApp'e Bağla
-
-**Files:**
-- Modify: `composeApp/build.gradle.kts` — Plugin apply + source set
-
-- [ ] **Step 1: Plugin'i composeApp'e ekle**
-
-`composeApp/build.gradle.kts` → plugins bölümüne:
-```kotlin
-id(libs.plugins.techspirationGenerateScreenPreview.get().pluginId)
-```
-
-- [ ] **Step 2: Generated source set'i androidMain'e ekle**
-
-`composeApp/build.gradle.kts` → sourceSets konfigürasyonuna:
-```kotlin
-sourceSets.configureEach {
-    if (name == "androidMain") {
-        kotlin.srcDir("build/generated/screenPreviews/androidMain/kotlin")
-    }
-}
-```
-
-- [ ] **Step 3: Generate et ve doğrula**
-
-Run: `./gradlew :generateScreenPreviews`
-Expected: "Found N screens" + "Generated: XxxScreenPreview.kt" mesajları
-
-- [ ] **Step 4: Build et**
-
-Run: `./gradlew :composeApp:compileDebugKotlinAndroid`
-Expected: BUILD SUCCESSFUL (generated preview'lar compile olmalı)
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add composeApp/build.gradle.kts
-git commit -m "feat: apply GenerateScreenPreviewPlugin to composeApp"
-```
-
----
-
-## Chunk 2: Screenshot Capture (Paparazzi)
+## Chunk 1: Screenshot Capture (Paparazzi)
 
 ### Task 4: Paparazzi Setup
 
@@ -803,13 +531,10 @@ python3 scripts/validate_svg_paths.py
 # K3: Token validation
 python3 scripts/validate_design_tokens.py
 
-# K4: Preview generation
-./gradlew :generateScreenPreviews
-
-# K5: Screenshot comparison (manuel)
+# K4: Screenshot comparison (manuel)
 # 1. Figma'dan: get_screenshot(nodeId) → figma-ref.png
-# 2. Compose'dan: Paparazzi snapshot veya @Preview render
-# 3. Karşılaştır: python3 scripts/pixel_diff.py figma-ref.png compose-preview.png -o diff.png
+# 2. Cihazdan: ./scripts/capture_screen.sh → compose.png
+# 3. Karşılaştır: python3 scripts/pixel_diff.py figma-ref.png compose.png -o diff.png
 # 4. Claude: İki görseli oku ve karşılaştır
 ```
 
@@ -830,16 +555,11 @@ python3 scripts/validate_design_tokens.py
 **Nasıl:** `python3 scripts/validate_design_tokens.py`
 **Doğrulama:** Renkler eşleşiyor mu? Font size/weight doğru mu? Hardcoded değer var mı?
 
-### K4: Preview Screenshot Üretimi
-**Ne yapar:** @Screen composable'lardan otomatik @Preview + PNG
-**Nasıl:** `./gradlew :generateScreenPreviews` + Paparazzi record
-**Doğrulama:** Her ekranın preview'ı var mı? Render hatası yok mu?
-
-### K5: Görsel Karşılaştırma
+### K4: Görsel Karşılaştırma
 **Ne yapar:** Figma screenshot vs Compose preview pixel diff + Claude review
 **Nasıl:**
 1. `get_screenshot(nodeId)` → Figma referans PNG
-2. Paparazzi/Preview → Compose PNG
+2. `capture_screen.sh` → ADB ile cihazdan Compose PNG
 3. `python3 scripts/pixel_diff.py figma.png compose.png -o diff.png -t 5`
 4. Claude: İki görseli yan yana değerlendir
 
@@ -847,13 +567,12 @@ python3 scripts/validate_design_tokens.py
 
 ## Başlangıçta Çalıştır (Figma → Kod başlamadan)
 1. K1: Tüm elementleri sınıfla
-2. K5-başlangıç: Figma screenshot'ı referans olarak kaydet
+2. K4-başlangıç: Figma screenshot'ı referans olarak kaydet
 
 ## Sonunda Çalıştır (Kod tamamlandıktan sonra)
 1. K2: SVG path'leri doğrula
 2. K3: Token'ları doğrula
-3. K4: Preview'ları generate et
-4. K5-son: Pixel diff + Claude karşılaştırma
+3. K4-son: Pixel diff + Claude karşılaştırma
 ```
 
 - [ ] **Step 2: Commit**
@@ -880,13 +599,9 @@ validate-svg:          ## Validate SVG path data in vector drawables
 validate-tokens:       ## Validate design tokens against Figma reference
 	python3 scripts/validate_design_tokens.py
 
-validate-previews:     ## Generate @Preview wrappers from @Screen annotations
-	./gradlew :generateScreenPreviews
-
 validate-all:          ## Run all validation checks
 	@echo "=== SVG Path Validation ===" && python3 scripts/validate_svg_paths.py
 	@echo "\n=== Design Token Validation ===" && python3 scripts/validate_design_tokens.py
-	@echo "\n=== Preview Generation ===" && ./gradlew :generateScreenPreviews
 	@echo "\n=== All validations complete ==="
 ```
 
@@ -912,11 +627,10 @@ git commit -m "feat: add validation targets to Makefile"
 - Veya: `adb shell screencap` + crop ile fallback
 
 **Sıralama:**
-- Chunk 1 (Plugin) → Chunk 3 (Scriptler) → Chunk 2 (Paparazzi) → Chunk 4 (Skill)
-- Chunk 2 en riskli (Paparazzi KMP uyumu), sona bırakılabilir
+- Chunk 1 (Paparazzi) → Chunk 2 (Scriptler) → Chunk 3 (Skill)
+- Chunk 1 en riskli (Paparazzi KMP uyumu), sorun çıkarırsa `adb shell screencap` fallback kullan
 
 **Bağımlılıklar:**
 - Chunk 1 bağımsız
-- Chunk 2 Chunk 1'e bağımlı (generated preview'ları kullanır)
-- Chunk 3 bağımsız
-- Chunk 4 hepsine bağımlı (orchestration)
+- Chunk 2 bağımsız
+- Chunk 3 hepsine bağımlı (orchestration)

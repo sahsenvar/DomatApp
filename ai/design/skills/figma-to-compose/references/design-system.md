@@ -468,12 +468,6 @@ make validate-all
 # 4. Claude: İki PNG'yi oku ve karşılaştır
 ```
 
-### GenerateScreenPreviewPlugin
-- `@Screen` annotated composable'ları otomatik tarar
-- Her biri için `@Preview` wrapper generate eder
-- 13 ekran otomatik preview üretimi
-- `./gradlew :generateScreenPreviews`
-
 ### Doğrulama Scriptleri
 | Script | Dosya | Ne Kontrol Eder |
 |--------|-------|-----------------|

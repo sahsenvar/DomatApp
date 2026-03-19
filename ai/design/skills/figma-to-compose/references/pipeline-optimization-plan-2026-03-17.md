@@ -907,7 +907,6 @@ validate-all:
 	python3 ai/design/scripts/validate_svg_paths.py
 	python3 ai/design/scripts/validate_design_tokens.py
 	python3 ai/design/scripts/detect_token_drift.py --figma-code $(FIGMA_CODE)
-	./gradlew :generateScreenPreviews
 
 convert-assets:
 	python3 ai/design/scripts/svg_to_xml_vd.py figma-assets/ -o composeApp/src/commonMain/composeResources/drawable/

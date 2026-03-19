@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import dev.icerock.moko.resources.compose.colorResource
 
 enum class DomatBadgeVariant { Primary, Warning, Error, Dark, Info, Success }
 
@@ -37,10 +38,10 @@ fun DomatBadge(
 
 @Composable
 private fun badgeColors(variant: DomatBadgeVariant): Pair<Color, Color> = when (variant) {
-    DomatBadgeVariant.Primary -> DomatColors.Primary to DomatColors.TextPrimary
-    DomatBadgeVariant.Warning -> DomatColors.Warning to DomatColors.TextInverse
-    DomatBadgeVariant.Error -> DomatColors.Error to DomatColors.TextInverse
-    DomatBadgeVariant.Dark -> DomatColors.SurfaceDark to DomatColors.TextInverse
-    DomatBadgeVariant.Info -> DomatColors.InfoLight to DomatColors.Info
-    DomatBadgeVariant.Success -> DomatColors.SuccessLight to DomatColors.Success
+    DomatBadgeVariant.Primary -> colorResource(DomatColors.primary) to colorResource(DomatColors.textPrimary)
+    DomatBadgeVariant.Warning -> colorResource(DomatColors.warning) to colorResource(DomatColors.textInverse)
+    DomatBadgeVariant.Error -> colorResource(DomatColors.error) to colorResource(DomatColors.textInverse)
+    DomatBadgeVariant.Dark -> colorResource(DomatColors.surfaceDark) to colorResource(DomatColors.textInverse)
+    DomatBadgeVariant.Info -> colorResource(DomatColors.infoLight) to colorResource(DomatColors.info)
+    DomatBadgeVariant.Success -> colorResource(DomatColors.successLight) to colorResource(DomatColors.success)
 }

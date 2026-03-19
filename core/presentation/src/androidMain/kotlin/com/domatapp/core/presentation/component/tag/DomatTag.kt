@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import dev.icerock.moko.resources.compose.colorResource
 
 enum class DomatTagVariant { New, Sale, Discount, Limited }
 
@@ -37,8 +38,8 @@ fun DomatTag(
 
 @Composable
 private fun tagColors(variant: DomatTagVariant): Pair<Color, Color> = when (variant) {
-    DomatTagVariant.New -> DomatColors.Primary to DomatColors.TextPrimary
-    DomatTagVariant.Sale -> DomatColors.Warning to DomatColors.TextInverse
-    DomatTagVariant.Discount -> DomatColors.Error to DomatColors.TextInverse
-    DomatTagVariant.Limited -> DomatColors.SurfaceDark to DomatColors.TextInverse
+    DomatTagVariant.New -> colorResource(DomatColors.primary) to colorResource(DomatColors.textPrimary)
+    DomatTagVariant.Sale -> colorResource(DomatColors.warning) to colorResource(DomatColors.textInverse)
+    DomatTagVariant.Discount -> colorResource(DomatColors.error) to colorResource(DomatColors.textInverse)
+    DomatTagVariant.Limited -> colorResource(DomatColors.surfaceDark) to colorResource(DomatColors.textInverse)
 }

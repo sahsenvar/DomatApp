@@ -7,6 +7,7 @@ import com.domatapp.core.serialization.di.CoreSerializationModule
 import com.domatapp.feature.auth.data.di.AuthDataModule
 import com.domatapp.feature.auth.domain.di.AuthDomainModule
 import com.domatapp.feature.auth.presentation.di.AuthPresentationModule
+import com.domatapp.feature.onboarding.presentation.di.OnboardingPresentationModule
 import com.domatapp.shared.database.AppDatabase
 import com.domatapp.shared.database.getDatabaseBuilder
 import com.domatapp.shared.database.getRoomDatabase
@@ -33,6 +34,7 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication {
             AuthDomainModule().module,
             AuthDataModule().module,
             AuthPresentationModule().module,
+            OnboardingPresentationModule().module,
         )
     }
 }

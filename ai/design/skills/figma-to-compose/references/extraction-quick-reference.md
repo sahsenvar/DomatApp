@@ -170,14 +170,41 @@ Column(
 
 ### Asset Kullanımı
 ```kotlin
-// Vektör ikon
-Image(painter = painterResource(Res.drawable.ic_xxx), ...)
+// Vektör ikon — MUTLAKA painterResource ile kullan, Canvas ile ÇIZME
+Icon(
+    painter = painterResource(Res.drawable.ic_xxx),
+    contentDescription = null,
+    tint = Color.Unspecified, // Renkli SVG ise Unspecified kullan
+)
 
 // Fotoğraf
 Image(painter = painterResource(Res.drawable.img_xxx), contentScale = ContentScale.Crop, ...)
 
 // Shape → Kod olarak yaz
 Box(modifier = Modifier.clip(CircleShape).background(AppColors.primaryAlpha10))
+```
+
+### İkon — Canvas YASAK
+**İkonları asla `Canvas {}` ile çizme.** Figma'dan SVG olarak export et, XML Vector Drawable'a çevir, `painterResource` ile kullan.
+
+❌ **Yanlış:**
+```kotlin
+Canvas(modifier = Modifier.size(24.dp)) {
+    drawCircle(color = Color.Red, radius = 12.dp.toPx())
+    drawPath(...)
+}
+```
+
+✅ **Doğru:**
+```kotlin
+// 1. Figma'dan SVG export et
+// 2. XML Vector Drawable'a çevir → res/drawable/ic_xxx.xml
+// 3. painterResource ile kullan
+Icon(
+    painter = painterResource(R.drawable.ic_xxx),
+    contentDescription = null,
+    tint = Color.Unspecified,
+)
 ```
 
 ### Component'lerde Dual Icon Support
@@ -247,8 +274,7 @@ Pixel diff > %5 veya Claude review'da ❌ varsa:
 | Token Validator | `python3 scripts/validate_design_tokens.py` |
 | Pixel Diff | `python3 scripts/pixel_diff.py img1 img2 -o diff.png` |
 | Asset Extractor | `python3 scripts/extract_assets.py` |
-| Preview Generator | `./gradlew :generateScreenPreviews` |
-| Screenshot Capture | Instrumented test + `adb pull` |
+| Screenshot Capture | `./scripts/capture_screen.sh` |
 | Full Validation | `make validate-all` |
 
 ---
@@ -267,3 +293,4 @@ Pixel diff > %5 veya Claude review'da ❌ varsa:
 10. **Önce screenshot, sonra kod** — Referans PNG olmadan başlama
 11. **%5 pixel diff threshold** — Üstü → düzelt, altı → geç
 12. **Her image'ın fallback'i olmalı** — Placeholder + error state
+13. **İkonları Canvas ile çizme** — Figma'dan SVG export et → XML Vector Drawable → `painterResource`

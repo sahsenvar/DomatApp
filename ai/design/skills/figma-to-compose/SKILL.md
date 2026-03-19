@@ -290,10 +290,11 @@ fun XxxScreen(
 
 ### Asset Kullanımı
 ```kotlin
-// Vektör ikon (from composeResources)
-Image(
+// Vektör ikon (from composeResources) — MUTLAKA painterResource, asla Canvas
+Icon(
     painter = painterResource(Res.drawable.ic_shield_large),
     contentDescription = null,
+    tint = Color.Unspecified, // Renkli SVG için
     modifier = Modifier.size(70.dp),
 )
 
@@ -311,6 +312,30 @@ Box(
         .size(200.dp)
         .clip(CircleShape)
         .background(AppColors.primaryAlpha10),
+)
+```
+
+### İkon — Canvas KESİNLİKLE YASAK
+**İkonları asla `Canvas {}` ile çizme.** Her ikon Figma'dan SVG olarak export edilmeli, XML Vector Drawable'a dönüştürülmeli ve `painterResource` ile kullanılmalıdır.
+
+❌ **Yanlış — YAPMA:**
+```kotlin
+Canvas(modifier = Modifier.size(24.dp)) {
+    drawPath(googlePath, color = Color(0xFF4285F4))
+    // ... Canvas ile ikon çizmek yasak
+}
+```
+
+✅ **Doğru — HEP BÖYLE YAP:**
+```kotlin
+// 1. figma_execute ile SVG export et:
+//    figma.exportAsync(node, {format: "SVG"})
+// 2. SVG → XML Vector Drawable'a çevir → res/drawable/ic_xxx.xml
+// 3. Compose'da kullan:
+Icon(
+    painter = painterResource(R.drawable.ic_xxx),
+    contentDescription = null,
+    tint = Color.Unspecified, // Renkli ikonlarda Unspecified kullan
 )
 ```
 
@@ -338,7 +363,6 @@ make validate-all
 Bu komut sırayla çalıştırır:
 1. `validate_svg_paths.py` — SVG path data doğrulama
 2. `validate_design_tokens.py` — Token eşleştirme + hardcoded scan
-3. `./gradlew :generateScreenPreviews` — @Preview otomatik generation
 
 ### Compose Screenshot Yakalama
 ```bash
@@ -437,6 +461,7 @@ Her component çağrısında tüm parametrelerin doğru geçildiğini kontrol et
 13. **Önce screenshot al, sonra kodla** — Referans PNG olmadan başlama
 14. **%5 pixel diff threshold** — Üstündeyse düzelt, altındaysa geç
 15. **Shadow XML VD'de yok** — Compose'da `Modifier.shadow()` ile ekle
+16. **İkonları Canvas ile çizme** — Figma'dan SVG export et → XML Vector Drawable → `painterResource`; `Canvas {}` ile ikon çizmek KESİNLİKLE YASAK
 
 ---
 
@@ -466,7 +491,6 @@ Figma URL →
 | SVG Validator | `python3 scripts/validate_svg_paths.py` | Path doğrulama |
 | Token Validator | `python3 scripts/validate_design_tokens.py` | Token eşleştirme |
 | Pixel Diff | `python3 scripts/pixel_diff.py` | Screenshot karşılaştırma |
-| Preview Gen | `./gradlew :generateScreenPreviews` | @Preview otomatik üretimi |
-| Screenshot | Instrumented test | Compose → PNG yakalama |
+| Screenshot | `./scripts/capture_screen.sh` | Compose → PNG yakalama |
 | Asset Extract | `python3 scripts/extract_assets.py` | REST API asset çekme |
 | Validate All | `make validate-all` | Tüm doğrulamaları çalıştır |

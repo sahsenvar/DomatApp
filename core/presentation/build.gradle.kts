@@ -28,6 +28,7 @@ kotlin {
         }
         androidMain {
             dependencies {
+                implementation(projects.core.design)
                 implementation(libs.compose.material3)
             }
         }

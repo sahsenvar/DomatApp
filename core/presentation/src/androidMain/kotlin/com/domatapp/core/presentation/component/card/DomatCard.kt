@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import dev.icerock.moko.resources.compose.colorResource
 
 @Composable
 fun DomatProductCard(
@@ -37,8 +38,8 @@ fun DomatProductCard(
         onClick = onClick,
         modifier = modifier.width(163.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = DomatColors.SurfaceDefault),
-        border = BorderStroke(1.dp, DomatColors.BorderDefault),
+        colors = CardDefaults.cardColors(containerColor = colorResource(DomatColors.surfaceDefault)),
+        border = BorderStroke(1.dp, colorResource(DomatColors.borderDefault)),
     ) {
         Box(
             modifier = Modifier
@@ -53,18 +54,18 @@ fun DomatProductCard(
             Text(
                 text = name,
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                color = DomatColors.TextPrimary,
+                color = colorResource(DomatColors.textPrimary),
                 maxLines = 2,
             )
             Text(
                 text = price,
                 style = MaterialTheme.typography.titleMedium,
-                color = DomatColors.TextPrimary,
+                color = colorResource(DomatColors.textPrimary),
             )
             Text(
                 text = description,
                 style = MaterialTheme.typography.labelSmall,
-                color = DomatColors.TextSecondary,
+                color = colorResource(DomatColors.textSecondary),
                 maxLines = 1,
             )
         }
@@ -78,14 +79,14 @@ fun DomatSelectionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val borderColor = if (isSelected) DomatColors.Primary else DomatColors.BorderDefault
+    val borderColor = if (isSelected) colorResource(DomatColors.primary) else colorResource(DomatColors.borderDefault)
     val borderWidth = if (isSelected) 2.dp else 1.dp
 
     Card(
         onClick = onClick,
         modifier = modifier.size(width = 84.dp, height = 56.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = DomatColors.SurfaceDefault),
+        colors = CardDefaults.cardColors(containerColor = colorResource(DomatColors.surfaceDefault)),
         border = BorderStroke(borderWidth, borderColor),
     ) {
         Box(
@@ -95,7 +96,7 @@ fun DomatSelectionCard(
             Text(
                 text = text,
                 style = MaterialTheme.typography.labelLarge,
-                color = DomatColors.TextPrimary,
+                color = colorResource(DomatColors.textPrimary),
             )
         }
     }
@@ -115,8 +116,8 @@ fun DomatPaymentCard(
             .fillMaxWidth()
             .height(72.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = DomatColors.SurfaceDefault),
-        border = BorderStroke(1.dp, DomatColors.BorderDefault),
+        colors = CardDefaults.cardColors(containerColor = colorResource(DomatColors.surfaceDefault)),
+        border = BorderStroke(1.dp, colorResource(DomatColors.borderDefault)),
     ) {
         Row(
             modifier = Modifier
@@ -130,12 +131,12 @@ fun DomatPaymentCard(
                 Text(
                     text = cardNumber,
                     style = MaterialTheme.typography.labelLarge,
-                    color = DomatColors.TextPrimary,
+                    color = colorResource(DomatColors.textPrimary),
                 )
                 Text(
                     text = cardInfo,
                     style = MaterialTheme.typography.bodySmall,
-                    color = DomatColors.TextSecondary,
+                    color = colorResource(DomatColors.textSecondary),
                 )
             }
         }

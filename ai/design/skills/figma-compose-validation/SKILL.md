@@ -9,7 +9,7 @@ description: >
 
 # Figma → Compose Validation
 
-5 katmanlı doğrulama sistemi. Her katman bağımsız çalışabilir.
+4 katmanlı doğrulama sistemi. Her katman bağımsız çalışabilir.
 
 ## Quick Run (Tüm katmanlar)
 
@@ -20,13 +20,10 @@ python3 scripts/validate_svg_paths.py
 # K3: Token validation
 python3 scripts/validate_design_tokens.py
 
-# K4: Preview generation
-./gradlew :generateScreenPreviews
-
-# K5: Screenshot comparison (manuel)
+# K4: Screenshot comparison (manuel)
 # 1. Figma'dan: get_screenshot(nodeId) → figma-ref.png
-# 2. Compose'dan: Paparazzi snapshot veya @Preview render
-# 3. Karşılaştır: python3 scripts/pixel_diff.py figma-ref.png compose-preview.png -o diff.png
+# 2. Cihazdan: ./scripts/capture_screen.sh → compose.png
+# 3. Karşılaştır: python3 scripts/pixel_diff.py figma-ref.png compose.png -o diff.png
 # 4. Claude: İki görseli oku ve karşılaştır
 ```
 
@@ -47,16 +44,11 @@ python3 scripts/validate_design_tokens.py
 **Nasıl:** `python3 scripts/validate_design_tokens.py`
 **Doğrulama:** Renkler eşleşiyor mu? Font size/weight doğru mu? Hardcoded değer var mı?
 
-### K4: Preview Screenshot Üretimi
-**Ne yapar:** @Screen composable'lardan otomatik @Preview + PNG
-**Nasıl:** `./gradlew :generateScreenPreviews` + Paparazzi record
-**Doğrulama:** Her ekranın preview'ı var mı? Render hatası yok mu?
-
-### K5: Görsel Karşılaştırma
+### K4: Görsel Karşılaştırma
 **Ne yapar:** Figma screenshot vs Compose preview pixel diff + Claude review
 **Nasıl:**
 1. `get_screenshot(nodeId)` → Figma referans PNG
-2. Paparazzi/Preview → Compose PNG
+2. `capture_screen.sh` → ADB ile cihazdan Compose PNG
 3. `python3 scripts/pixel_diff.py figma.png compose.png -o diff.png -t 5`
 4. Claude: İki görseli yan yana değerlendir
 
@@ -69,5 +61,4 @@ python3 scripts/validate_design_tokens.py
 ## Sonunda Çalıştır (Kod tamamlandıktan sonra)
 1. K2: SVG path'leri doğrula
 2. K3: Token'ları doğrula
-3. K4: Preview'ları generate et
-4. K5-son: Pixel diff + Claude karşılaştırma
+3. K4-son: Pixel diff + Claude karşılaştırma

@@ -17,7 +17,15 @@ sealed interface Route {
     }
 
     @Serializable
-    data object Onboarding : Route
+    sealed interface OnboardingRoute : Route {
+        @Serializable data object Welcome           : OnboardingRoute
+        @Serializable data object Effortless        : OnboardingRoute
+        @Serializable data object Pricing           : OnboardingRoute
+        @Serializable data object Community         : OnboardingRoute
+        @Serializable data object Trust             : OnboardingRoute
+        @Serializable data object Login             : OnboardingRoute
+        @Serializable data object LocationSelection : OnboardingRoute
+    }
 
     @Serializable
     sealed interface Main : Route {
