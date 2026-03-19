@@ -33,7 +33,7 @@ fun DomatProgressDots(
     modifier: Modifier = Modifier,
 ) {
     val primaryColor = colorResource(DomatColors.primary)
-    val inactiveColor = colorResource(DomatColors.borderDefault)
+    val inactiveColor = colorResource(DomatColors.borderLight)
 
     Row(
         modifier = modifier,
@@ -44,7 +44,7 @@ fun DomatProgressDots(
             val isActive = index == activeIndex
 
             val width by animateDpAsState(
-                targetValue = if (isActive) 24.dp else 8.dp,
+                targetValue = if (isActive) 24.dp else 6.dp,
                 animationSpec = spring(dampingRatio = 0.6f, stiffness = 500f),
                 label = "dot_width_$index",
             )
@@ -57,7 +57,7 @@ fun DomatProgressDots(
             Box(
                 modifier = Modifier
                     .width(width)
-                    .height(8.dp)
+                    .height(6.dp)
                     .clip(RoundedCornerShape(9999.dp))
                     .background(color),
             )

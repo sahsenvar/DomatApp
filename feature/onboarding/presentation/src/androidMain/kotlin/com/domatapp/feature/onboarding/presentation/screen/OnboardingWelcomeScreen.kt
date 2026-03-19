@@ -2,7 +2,6 @@ package com.domatapp.feature.onboarding.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -32,10 +31,9 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationEffectHandler
 import com.domatapp.core.navigation.annotations.NavigationScreen
-import com.domatapp.core.presentation.component.button.DomatGoogleSignInButton
-import com.domatapp.core.presentation.component.indicator.DomatProgressDots
 import com.domatapp.core.presentation.compose.LocalNavigator
 import com.domatapp.core.resource.MR
+import com.domatapp.feature.onboarding.presentation.model.welcome.OnboardingPage
 import com.domatapp.feature.onboarding.presentation.model.welcome.OnboardingWelcomeEffect
 import com.domatapp.feature.onboarding.presentation.model.welcome.OnboardingWelcomeIntent
 import com.domatapp.feature.onboarding.presentation.model.welcome.OnboardingWelcomeUiState
@@ -57,6 +55,13 @@ fun ColumnScope.OnboardingWelcomeScreen(
         onIntent(OnboardingWelcomeIntent.OnPageChanged(pagerState.currentPage))
     }
 
+    LaunchedEffect(uiState.targetPage) {
+        uiState.targetPage?.let { page ->
+            pagerState.animateScrollToPage(page.index)
+            onIntent(OnboardingWelcomeIntent.OnScrollConsumed)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -69,34 +74,30 @@ fun ColumnScope.OnboardingWelcomeScreen(
                 .fillMaxWidth(),
             userScrollEnabled = true,
         ) { page ->
-            when (page) {
-                0 -> OnboardingWelcomePageContent()
-                1 -> OnboardingEffortlessPageContent()
-                2 -> OnboardingPricingPageContent()
-                3 -> OnboardingCommunityPageContent()
-                4 -> OnboardingTrustPageContent()
-                else -> Unit
+            when (OnboardingPage.fromIndex(page)) {
+                OnboardingPage.WELCOME -> OnboardingWelcomePageContent()
+                OnboardingPage.PRICING -> OnboardingPricingPageContent()
+                OnboardingPage.COMMUNITY -> OnboardingCommunityPageContent()
+                OnboardingPage.TRUST -> OnboardingTrustPageContent()
+                OnboardingPage.EFFORTLESS -> OnboardingEffortlessPageContent()
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(top = 20.dp, bottom = 40.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-        ) {
-            DomatProgressDots(
-                totalDots = 5,
-                activeIndex = uiState.currentPage,
-            )
-            DomatGoogleSignInButton(
-                onClick = { onIntent(OnboardingWelcomeIntent.GoogleSignInClicked) },
-                iconPainter = painterResource(MR.images.ic_google),
-                text = stringResource(MR.strings.google_sign_in_button_text),
-            )
+        val buttonText = when (uiState.currentPage) {
+            OnboardingPage.WELCOME -> stringResource(MR.strings.onboarding_btn_welcome)
+            OnboardingPage.PRICING -> stringResource(MR.strings.onboarding_btn_pricing)
+            OnboardingPage.COMMUNITY -> stringResource(MR.strings.onboarding_btn_community)
+            OnboardingPage.TRUST -> stringResource(MR.strings.onboarding_btn_trust)
+            OnboardingPage.EFFORTLESS -> stringResource(MR.strings.onboarding_btn_effortless)
         }
+        OnboardingBottomBar(
+            uiModel = OnboardingBottomBarUiModel(
+                buttonText = buttonText,
+                totalDots = OnboardingPage.entries.size,
+                activeDotIndex = uiState.currentPage.index,
+            ),
+            onContinue = { onIntent(OnboardingWelcomeIntent.OnContinueClicked) },
+        )
     }
 }
 

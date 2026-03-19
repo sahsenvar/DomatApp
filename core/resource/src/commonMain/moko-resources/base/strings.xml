@@ -51,6 +51,13 @@
     <string name="onboarding_trust_feature_location">Üretici şehri görünür</string>
     <string name="onboarding_trust_feature_guarantee">Memnun kalmazsanız paranız iade!</string>
 
+    <!-- Onboarding - Bottom Bar Button Texts -->
+    <string name="onboarding_btn_welcome">Devam Et</string>
+    <string name="onboarding_btn_effortless">Süpermiş! Hadi başlayalım</string>
+    <string name="onboarding_btn_pricing">Hmm.. Güzelmiş. Başka?</string>
+    <string name="onboarding_btn_community">Uygunsa kalitesi kötü müdür?</string>
+    <string name="onboarding_btn_trust">Ben pazardan alıyorum 😬</string>
+
     <!-- Onboarding - Login -->
     <string name="onboarding_login_hero_badge">Taze &amp; Yerel</string>
     <string name="onboarding_login_subtitle">Haftalık olarak en taze ürünleri sitenize/kapınıza kadar getiriyoruz</string>
