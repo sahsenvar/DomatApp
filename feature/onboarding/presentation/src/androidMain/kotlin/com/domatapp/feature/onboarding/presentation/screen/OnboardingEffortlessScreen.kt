@@ -52,6 +52,7 @@ fun ColumnScope.OnboardingEffortlessScreen(
     val glowColorBottomLeft = colorResource(DomatColors.primary5)
     val glowColorTopRight = colorResource(DomatColors.primary10)
     val bgColor = colorResource(DomatColors.surfaceDefault)
+    val textSecondary = colorResource(DomatColors.textSecondary)
 
     Box(
         modifier = Modifier
@@ -124,7 +125,7 @@ fun ColumnScope.OnboardingEffortlessScreen(
                         "gelin, QR kodunuzu okutun ve\n" +
                         "domateslerinizi alın. İşte bu kadar!",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colorResource(DomatColors.textPrimary),
+                    color = textSecondary,
                     textAlign = TextAlign.Center,
                 )
             }

@@ -69,6 +69,7 @@ fun ColumnScope.OnboardingCommunityScreen(
     val primary = colorResource(DomatColors.primary)
     val surfaceDefault = colorResource(DomatColors.surfaceDefault)
     val textPrimary = colorResource(DomatColors.textPrimary)
+    val textSecondary = colorResource(DomatColors.textSecondary)
 
     Box(
         modifier = Modifier
@@ -109,7 +110,7 @@ fun ColumnScope.OnboardingCommunityScreen(
                         "de bu tasarrufu doğrudan size yansıtırız.\n" +
                         "Birlikte sipariş verdiğimizde herkes kazanır.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = textPrimary,
+                    color = textSecondary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )

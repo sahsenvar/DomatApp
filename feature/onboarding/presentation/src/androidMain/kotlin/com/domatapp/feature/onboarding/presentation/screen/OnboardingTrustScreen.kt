@@ -57,6 +57,7 @@ fun ColumnScope.OnboardingTrustScreen(
     val primary10 = colorResource(DomatColors.primary10)
     val primary20 = colorResource(DomatColors.primary20)
     val textPrimary = colorResource(DomatColors.textPrimary)
+    val textSecondary = colorResource(DomatColors.textSecondary)
     val surfaceDefault = colorResource(DomatColors.surfaceDefault)
 
     Column(
@@ -127,7 +128,7 @@ fun ColumnScope.OnboardingTrustScreen(
             Text(
                 text = "Siparişinizde eksik veya hasarlı bir ürün varsa,\ntutarı anında uygulama içi cüzdanınıza iade\nedilir.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = textPrimary,
+                color = textSecondary,
                 textAlign = TextAlign.Center,
             )
         }

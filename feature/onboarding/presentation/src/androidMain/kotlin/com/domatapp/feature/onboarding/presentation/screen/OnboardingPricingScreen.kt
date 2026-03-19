@@ -62,6 +62,7 @@ fun ColumnScope.OnboardingPricingScreen(
     val primary20 = colorResource(DomatColors.primary20)
     val primary30 = colorResource(DomatColors.primary30)
     val textPrimary = colorResource(DomatColors.textPrimary)
+    val textSecondary = colorResource(DomatColors.textSecondary)
     val textTertiary = colorResource(DomatColors.textTertiary)
     val textMuted = colorResource(DomatColors.textMuted)
     val borderDefault = colorResource(DomatColors.borderDefault)
@@ -98,7 +99,7 @@ fun ColumnScope.OnboardingPricingScreen(
                         "yok, depo yok, dükkan kirası yok, gereksiz\n" +
                         "maliyetler yok.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = textPrimary,
+                    color = textSecondary,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -250,7 +251,7 @@ private fun SupplyChainRow(
                 if (showCrossOut) {
                     Text(
                         text = "✕",
-                        color = Color(0xFFEF4444),
+                        color = colorResource(DomatColors.error),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                     )

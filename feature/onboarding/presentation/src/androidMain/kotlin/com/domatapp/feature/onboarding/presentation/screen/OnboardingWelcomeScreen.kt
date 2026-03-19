@@ -93,7 +93,7 @@ fun ColumnScope.OnboardingWelcomeScreen(
         Text(
             text = "Her hafta en taze domatesleri doğrudan\nüreticiden sitenize getiriyoruz. Stres yok,\nmarket gezmek yok, sürpriz yok.",
             style = MaterialTheme.typography.bodyLarge,
-            color = colorResource(DomatColors.textPrimary),
+            color = colorResource(DomatColors.textSecondary),
         )
 
         Spacer(modifier = Modifier.weight(1f))
