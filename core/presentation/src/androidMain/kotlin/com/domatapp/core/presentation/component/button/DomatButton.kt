@@ -19,8 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import com.domatapp.core.design.theme.DomatTheme
 import dev.icerock.moko.resources.compose.colorResource
 
 @Composable
@@ -189,3 +191,44 @@ fun DomatIconButton(
         Icon(imageVector = icon, contentDescription = contentDescription)
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatPrimaryButtonPreview() {
+    DomatTheme {
+        DomatPrimaryButton(text = "Devam Et", onClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatPrimaryMediumButtonPreview() {
+    DomatTheme {
+        DomatPrimaryMediumButton(text = "Devam Et", onClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatPrimarySmallButtonPreview() {
+    DomatTheme {
+        DomatPrimarySmallButton(text = "Detay", onClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatSecondaryButtonPreview() {
+    DomatTheme {
+        DomatSecondaryButton(text = "İptal", onClick = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatGhostButtonPreview() {
+    DomatTheme {
+        DomatGhostButton(text = "Atla", onClick = {})
+    }
+}
+

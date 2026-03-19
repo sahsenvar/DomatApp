@@ -2,10 +2,10 @@ package com.domatapp.feature.onboarding.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,18 +30,22 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationEffectHandler
 import com.domatapp.core.navigation.annotations.NavigationScreen
 import com.domatapp.core.presentation.component.badge.DomatHeroBadge
 import com.domatapp.core.presentation.component.button.DomatGoogleSignInButton
 import com.domatapp.core.presentation.compose.LocalNavigator
+import com.domatapp.core.resource.MR
 import com.domatapp.feature.onboarding.presentation.model.login.OnboardingLoginEffect
 import com.domatapp.feature.onboarding.presentation.model.login.OnboardingLoginIntent
 import com.domatapp.feature.onboarding.presentation.model.login.OnboardingLoginUiState
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.stringResource
 import domatapp.feature.onboarding.presentation.generated.resources.Res
 import domatapp.feature.onboarding.presentation.generated.resources.ic_google
 import domatapp.feature.onboarding.presentation.generated.resources.ic_leaf_badge
@@ -107,10 +111,10 @@ fun ColumnScope.OnboardingLoginScreen(
             ) {
                 DomatHeroBadge(
                     iconPainter = painterResource(Res.drawable.ic_leaf_badge),
-                    text = "Taze & Yerel",
+                    text = stringResource(MR.strings.onboarding_login_hero_badge),
                 )
                 Text(
-                    text = "DomatApp",
+                    text = stringResource(MR.strings.app_name),
                     style = MaterialTheme.typography.displayLarge,
                     color = Color.White,
                 )
@@ -125,7 +129,7 @@ fun ColumnScope.OnboardingLoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Haftalık olarak en taze ürünleri\nsitenize/kapınıza kadar getiriyoruz",
+                text = stringResource(MR.strings.onboarding_login_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = textSecondary,
                 textAlign = TextAlign.Center,
@@ -136,6 +140,7 @@ fun ColumnScope.OnboardingLoginScreen(
             DomatGoogleSignInButton(
                 onClick = { onIntent(OnboardingLoginIntent.OnGoogleSignInClicked) },
                 iconPainter = painterResource(Res.drawable.ic_google),
+                text = stringResource(MR.strings.google_sign_in_button_text),
             )
         }
 
@@ -148,25 +153,25 @@ fun ColumnScope.OnboardingLoginScreen(
         ) {
             Text(
                 text = buildAnnotatedString {
-                    append("Devam ederek, ")
+                    append(stringResource(MR.strings.onboarding_login_tos_prefix))
                     withStyle(
                         SpanStyle(
                             color = primary,
                             textDecoration = TextDecoration.Underline,
                         ),
                     ) {
-                        append("Hizmet Şartlarımızı")
+                        append(stringResource(MR.strings.onboarding_login_tos_link1))
                     }
-                    append(" ve ")
+                    append(stringResource(MR.strings.onboarding_login_tos_connector))
                     withStyle(
                         SpanStyle(
                             color = primary,
                             textDecoration = TextDecoration.Underline,
                         ),
                     ) {
-                        append("Gizlilik Politikamızı")
+                        append(stringResource(MR.strings.onboarding_login_tos_link2))
                     }
-                    append(" kabul\netmiş olursunuz.")
+                    append(stringResource(MR.strings.onboarding_login_tos_suffix))
                 },
                 style = MaterialTheme.typography.labelMedium,
                 color = textMuted,
@@ -187,5 +192,26 @@ fun OnboardingLoginEffectHandler(effectFlow: Flow<OnboardingLoginEffect>) {
                     navigator.navigate(Route.OnboardingRoute.LocationSelection)
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OnboardingLoginScreenPreview() {
+    DomatTheme {
+        Column {
+            OnboardingLoginScreen(
+                uiState = OnboardingLoginUiState(),
+                onIntent = {},
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OnboardingLoginEffectHandlerPreview() {
+    DomatTheme {
+        OnboardingLoginEffectHandler(effectFlow = kotlinx.coroutines.flow.emptyFlow())
     }
 }

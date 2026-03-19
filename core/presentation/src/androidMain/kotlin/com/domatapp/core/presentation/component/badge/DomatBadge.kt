@@ -8,8 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import com.domatapp.core.design.theme.DomatTheme
 import dev.icerock.moko.resources.compose.colorResource
 
 enum class DomatBadgeVariant { Primary, Warning, Error, Dark, Info, Success }
@@ -44,4 +46,12 @@ private fun badgeColors(variant: DomatBadgeVariant): Pair<Color, Color> = when (
     DomatBadgeVariant.Dark -> colorResource(DomatColors.surfaceDark) to colorResource(DomatColors.textInverse)
     DomatBadgeVariant.Info -> colorResource(DomatColors.infoLight) to colorResource(DomatColors.info)
     DomatBadgeVariant.Success -> colorResource(DomatColors.successLight) to colorResource(DomatColors.success)
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatBadgePreview() {
+    DomatTheme {
+        DomatBadge(text = "Yeni", variant = DomatBadgeVariant.Primary)
+    }
 }

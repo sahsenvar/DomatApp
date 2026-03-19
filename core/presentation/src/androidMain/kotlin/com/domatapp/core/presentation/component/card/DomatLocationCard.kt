@@ -19,10 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import com.domatapp.core.design.theme.DomatTheme
 import dev.icerock.moko.resources.compose.colorResource
 
 @Composable
@@ -91,4 +95,24 @@ fun DomatLocationCardConnector(modifier: Modifier = Modifier) {
             .height(24.dp)
             .background(colorResource(DomatColors.borderDefault)),
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatLocationCardPreview() {
+    DomatTheme {
+        DomatLocationCard(
+            label = "Mahalle",
+            value = "Aydınlı Mh.",
+            checkmarkPainter = ColorPainter(Color.Green),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatLocationCardConnectorPreview() {
+    DomatTheme {
+        DomatLocationCardConnector()
+    }
 }

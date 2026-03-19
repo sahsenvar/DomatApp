@@ -17,7 +17,10 @@ class OnboardingWelcomeViewModel : BaseViewModel<
 >(OnboardingWelcomeUiState()) {
     override fun onIntent(intent: OnboardingWelcomeIntent) {
         when (intent) {
-            OnboardingWelcomeIntent.GoNext -> emitEffect(OnboardingWelcomeEffect.NavigateToEffortless)
+            OnboardingWelcomeIntent.GoogleSignInClicked ->
+                emitEffect(OnboardingWelcomeEffect.NavigateToLogin)
+            is OnboardingWelcomeIntent.OnPageChanged ->
+                updateState { it.copy(currentPage = intent.page) }
         }
     }
 }

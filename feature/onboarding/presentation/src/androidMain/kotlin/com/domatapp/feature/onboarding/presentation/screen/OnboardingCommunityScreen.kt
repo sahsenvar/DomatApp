@@ -2,7 +2,6 @@ package com.domatapp.feature.onboarding.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -35,44 +33,42 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatColors
-import com.domatapp.core.navigation.Route
-import com.domatapp.core.navigation.annotations.NavigationEffectHandler
-import com.domatapp.core.navigation.annotations.NavigationScreen
-import com.domatapp.core.presentation.component.button.DomatPrimaryButton
-import com.domatapp.core.presentation.component.indicator.DomatProgressDots
-import com.domatapp.core.presentation.compose.LocalNavigator
-import com.domatapp.feature.onboarding.presentation.model.community.OnboardingCommunityEffect
-import com.domatapp.feature.onboarding.presentation.model.community.OnboardingCommunityIntent
-import com.domatapp.feature.onboarding.presentation.model.community.OnboardingCommunityUiState
+import com.domatapp.core.design.theme.DomatTheme
+import com.domatapp.core.resource.MR
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.stringResource
 import domatapp.feature.onboarding.presentation.generated.resources.Res
-import domatapp.feature.onboarding.presentation.generated.resources.ic_arrow_forward
 import domatapp.feature.onboarding.presentation.generated.resources.ic_delivery_truck_green
 import domatapp.feature.onboarding.presentation.generated.resources.ic_person_community
 import domatapp.feature.onboarding.presentation.generated.resources.ic_person_community_white
 import domatapp.feature.onboarding.presentation.generated.resources.ic_trending_down
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
-@NavigationScreen(Route.OnboardingRoute.Community::class)
+data class CommunityHeroCardUiModel(
+    val currentPrice: String,
+    val originalPrice: String,
+)
+
 @Composable
-fun ColumnScope.OnboardingCommunityScreen(
-    uiState: OnboardingCommunityUiState,
-    onIntent: (OnboardingCommunityIntent) -> Unit,
-) {
+internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
     val primary = colorResource(DomatColors.primary)
     val surfaceDefault = colorResource(DomatColors.surfaceDefault)
     val textPrimary = colorResource(DomatColors.textPrimary)
     val textSecondary = colorResource(DomatColors.textSecondary)
 
+    val heroCard = CommunityHeroCardUiModel(
+        currentPrice = stringResource(MR.strings.onboarding_community_price_current),
+        originalPrice = stringResource(MR.strings.onboarding_community_price_original),
+    )
+
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(surfaceDefault),
     ) {
@@ -89,13 +85,14 @@ fun ColumnScope.OnboardingCommunityScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                CommunityHeroCard()
+                CommunityHeroCard(uiModel = heroCard)
 
                 Text(
                     text = buildAnnotatedString {
-                        append("Birlikte alalım,\n")
+                        append(stringResource(MR.strings.onboarding_community_title_line1))
+                        append("\n")
                         withStyle(SpanStyle(color = primary)) {
-                            append("daha az ödeyelim")
+                            append(stringResource(MR.strings.onboarding_community_title_highlight))
                         }
                     },
                     style = MaterialTheme.typography.headlineLarge,
@@ -105,10 +102,7 @@ fun ColumnScope.OnboardingCommunityScreen(
                 )
 
                 Text(
-                    text = "Mahallenizde ne kadar çok kişi sipariş\n" +
-                        "verirse, nakliye maliyeti o kadar düşer. Biz\n" +
-                        "de bu tasarrufu doğrudan size yansıtırız.\n" +
-                        "Birlikte sipariş verdiğimizde herkes kazanır.",
+                    text = stringResource(MR.strings.onboarding_community_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = textSecondary,
                     textAlign = TextAlign.Center,
@@ -117,35 +111,12 @@ fun ColumnScope.OnboardingCommunityScreen(
             }
 
             Spacer(modifier = Modifier.weight(1f))
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
-                    .padding(bottom = 40.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(32.dp),
-            ) {
-                DomatProgressDots(totalDots = 3, activeIndex = 2)
-                DomatPrimaryButton(
-                    text = "Uygunsa kalitesi kötü müdür?",
-                    onClick = { onIntent(OnboardingCommunityIntent.GoNext) },
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingContent = {
-                        Image(
-                            painter = painterResource(Res.drawable.ic_arrow_forward),
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                        )
-                    },
-                )
-            }
         }
     }
 }
 
 @Composable
-private fun CommunityHeroCard() {
+private fun CommunityHeroCard(uiModel: CommunityHeroCardUiModel) {
     val primary5 = colorResource(DomatColors.primary5)
     val primary10 = colorResource(DomatColors.primary10)
     val borderLight = colorResource(DomatColors.borderLight)
@@ -198,7 +169,11 @@ private fun CommunityHeroCard() {
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             OverlappingAvatars(primary20 = primary20, primary30 = primary30, primary = primary)
-            TruckWithPriceIndicator(primary = primary, borderLight = borderLight)
+            TruckWithPriceIndicator(
+                uiModel = uiModel,
+                primary = primary,
+                borderLight = borderLight,
+            )
         }
     }
 }
@@ -237,7 +212,13 @@ private fun PersonAvatarCircle(icon: DrawableResource, backgroundColor: Color, o
 }
 
 @Composable
-private fun TruckWithPriceIndicator(primary: Color, borderLight: Color) {
+private fun TruckWithPriceIndicator(
+    uiModel: CommunityHeroCardUiModel,
+    primary: Color,
+    borderLight: Color,
+) {
+    val textMuted = colorResource(DomatColors.textMuted)
+
     Box(
         modifier = Modifier
             .width(256.dp)
@@ -292,7 +273,7 @@ private fun TruckWithPriceIndicator(primary: Color, borderLight: Color) {
                     modifier = Modifier.size(width = 12.dp, height = 7.dp),
                 )
                 Text(
-                    text = "₺2.00",
+                    text = uiModel.currentPrice,
                     color = primary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -300,8 +281,8 @@ private fun TruckWithPriceIndicator(primary: Color, borderLight: Color) {
                 )
             }
             Text(
-                text = "₺12.50",
-                color = colorResource(DomatColors.textMuted),
+                text = uiModel.originalPrice,
+                color = textMuted,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 textDecoration = TextDecoration.LineThrough,
@@ -311,18 +292,10 @@ private fun TruckWithPriceIndicator(primary: Color, borderLight: Color) {
     }
 }
 
-@NavigationEffectHandler(Route.OnboardingRoute.Community::class)
+@Preview(showBackground = true)
 @Composable
-fun OnboardingCommunityEffectHandler(effectFlow: Flow<OnboardingCommunityEffect>) {
-    val navigator = LocalNavigator.current
-    LaunchedEffect(effectFlow) {
-        effectFlow.collectLatest { effect ->
-            when (effect) {
-                OnboardingCommunityEffect.NavigateToTrust ->
-                    navigator.navigate(Route.OnboardingRoute.Trust)
-                OnboardingCommunityEffect.NavigateBack ->
-                    navigator.popBack()
-            }
-        }
+private fun OnboardingCommunityPageContentPreview() {
+    DomatTheme {
+        OnboardingCommunityPageContent()
     }
 }

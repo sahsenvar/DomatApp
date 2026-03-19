@@ -2,7 +2,6 @@ package com.domatapp.feature.onboarding.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +18,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -29,48 +27,66 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatColors
-import com.domatapp.core.navigation.Route
-import com.domatapp.core.navigation.annotations.NavigationEffectHandler
-import com.domatapp.core.navigation.annotations.NavigationScreen
-import com.domatapp.core.presentation.component.button.DomatPrimaryButton
-import com.domatapp.core.presentation.component.indicator.DomatProgressDots
-import com.domatapp.core.presentation.compose.LocalNavigator
-import com.domatapp.feature.onboarding.presentation.model.pricing.OnboardingPricingEffect
-import com.domatapp.feature.onboarding.presentation.model.pricing.OnboardingPricingIntent
-import com.domatapp.feature.onboarding.presentation.model.pricing.OnboardingPricingUiState
+import com.domatapp.core.design.theme.DomatTheme
+import com.domatapp.core.resource.MR
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.stringResource
 import domatapp.feature.onboarding.presentation.generated.resources.Res
 import domatapp.feature.onboarding.presentation.generated.resources.ic_pricing_consumer
 import domatapp.feature.onboarding.presentation.generated.resources.ic_pricing_producer
 import domatapp.feature.onboarding.presentation.generated.resources.ic_pricing_retail
 import domatapp.feature.onboarding.presentation.generated.resources.ic_pricing_wholesaler
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
-@NavigationScreen(Route.OnboardingRoute.Pricing::class)
+enum class SupplyChainRowVariant { Producer, Inactive, Consumer }
+
+data class SupplyChainRowUiModel(
+    val icon: DrawableResource,
+    val variant: SupplyChainRowVariant,
+    val title: String,
+    val subtitle: String,
+    val showConnector: Boolean = true,
+)
+
 @Composable
-fun ColumnScope.OnboardingPricingScreen(
-    uiState: OnboardingPricingUiState,
-    onIntent: (OnboardingPricingIntent) -> Unit,
-) {
-    val primary = colorResource(DomatColors.primary)
-    val primary20 = colorResource(DomatColors.primary20)
-    val primary30 = colorResource(DomatColors.primary30)
-    val textPrimary = colorResource(DomatColors.textPrimary)
-    val textSecondary = colorResource(DomatColors.textSecondary)
-    val textTertiary = colorResource(DomatColors.textTertiary)
-    val textMuted = colorResource(DomatColors.textMuted)
-    val borderDefault = colorResource(DomatColors.borderDefault)
-    val borderLight = colorResource(DomatColors.borderLight)
+internal fun OnboardingPricingPageContent(modifier: Modifier = Modifier) {
     val surfaceDefault = colorResource(DomatColors.surfaceDefault)
 
+    val rows = listOf(
+        SupplyChainRowUiModel(
+            icon = Res.drawable.ic_pricing_producer,
+            variant = SupplyChainRowVariant.Producer,
+            title = stringResource(MR.strings.onboarding_pricing_producer_title),
+            subtitle = stringResource(MR.strings.onboarding_pricing_producer_subtitle),
+        ),
+        SupplyChainRowUiModel(
+            icon = Res.drawable.ic_pricing_wholesaler,
+            variant = SupplyChainRowVariant.Inactive,
+            title = stringResource(MR.strings.onboarding_pricing_wholesaler_title),
+            subtitle = stringResource(MR.strings.onboarding_pricing_wholesaler_subtitle),
+        ),
+        SupplyChainRowUiModel(
+            icon = Res.drawable.ic_pricing_retail,
+            variant = SupplyChainRowVariant.Inactive,
+            title = stringResource(MR.strings.onboarding_pricing_retail_title),
+            subtitle = stringResource(MR.strings.onboarding_pricing_retail_subtitle),
+        ),
+        SupplyChainRowUiModel(
+            icon = Res.drawable.ic_pricing_consumer,
+            variant = SupplyChainRowVariant.Consumer,
+            title = stringResource(MR.strings.onboarding_pricing_consumer_title),
+            subtitle = stringResource(MR.strings.onboarding_pricing_consumer_subtitle),
+            showConnector = false,
+        ),
+    )
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(surfaceDefault),
     ) {
@@ -88,18 +104,15 @@ fun ColumnScope.OnboardingPricingScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text = "Neden bu kadar\nuygun fiyatlı?",
+                    text = stringResource(MR.strings.onboarding_pricing_title),
                     style = MaterialTheme.typography.headlineLarge,
-                    color = textPrimary,
+                    color = colorResource(DomatColors.textPrimary),
                     textAlign = TextAlign.Center,
                 )
                 Text(
-                    text = "Çünkü arada aracı yok. Domatesler\n" +
-                        "doğrudan üreticiden size geliyor. Toptancı\n" +
-                        "yok, depo yok, dükkan kirası yok, gereksiz\n" +
-                        "maliyetler yok.",
+                    text = stringResource(MR.strings.onboarding_pricing_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = textSecondary,
+                    color = colorResource(DomatColors.textSecondary),
                     textAlign = TextAlign.Center,
                 )
             }
@@ -109,119 +122,51 @@ fun ColumnScope.OnboardingPricingScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 3.dp),
             ) {
-                SupplyChainRow(
-                    icon = Res.drawable.ic_pricing_producer,
-                    iconSize = 22.5f,
-                    iconBgColor = primary20,
-                    title = "Üretici",
-                    titleColor = textPrimary,
-                    titleFontWeight = FontWeight.Bold,
-                    subtitle = "Doğrudan Kaynak",
-                    subtitleColor = primary,
-                    showDivider = true,
-                    dividerColor = primary30,
-                    showBottomBorder = true,
-                    borderLightColor = borderLight,
-                )
-                SupplyChainRow(
-                    icon = Res.drawable.ic_pricing_wholesaler,
-                    iconSize = 25f,
-                    iconBgColor = borderDefault,
-                    title = "Toptancı",
-                    titleColor = textTertiary,
-                    titleFontWeight = FontWeight.Medium,
-                    titleStrikethrough = true,
-                    subtitle = "Kâr Marjı + Depolama",
-                    subtitleColor = textMuted,
-                    showCrossOut = true,
-                    showDivider = true,
-                    dividerColor = borderDefault,
-                    showBottomBorder = true,
-                    rowAlpha = 0.4f,
-                    borderLightColor = borderLight,
-                )
-                SupplyChainRow(
-                    icon = Res.drawable.ic_pricing_retail,
-                    iconSize = 25f,
-                    iconBgColor = borderDefault,
-                    title = "Perakende Mağaza",
-                    titleColor = textTertiary,
-                    titleFontWeight = FontWeight.Medium,
-                    titleStrikethrough = true,
-                    subtitle = "Kira + Personel",
-                    subtitleColor = textMuted,
-                    showCrossOut = true,
-                    showDivider = true,
-                    dividerColor = borderDefault,
-                    showBottomBorder = true,
-                    rowAlpha = 0.4f,
-                    borderLightColor = borderLight,
-                )
-                SupplyChainRow(
-                    icon = Res.drawable.ic_pricing_consumer,
-                    iconSize = 20f,
-                    iconBgColor = primary,
-                    iconShadow = true,
-                    shadowColor = primary30,
-                    title = "Siz",
-                    titleColor = textPrimary,
-                    titleFontWeight = FontWeight.Bold,
-                    subtitle = "Ortalama %40 tasarruf edin",
-                    subtitleColor = primary,
-                    subtitleFontWeight = FontWeight.SemiBold,
-                    showDivider = false,
-                    showBottomBorder = false,
-                    borderLightColor = borderLight,
-                )
+                rows.forEach { row -> SupplyChainRow(uiModel = row) }
             }
         }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp)
-                .padding(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-        ) {
-            DomatProgressDots(totalDots = 3, activeIndex = 1)
-            DomatPrimaryButton(
-                text = "Hmm.. Güzelmiş. Başka?",
-                onClick = { onIntent(OnboardingPricingIntent.GoNext) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
-private fun SupplyChainRow(
-    icon: DrawableResource,
-    iconSize: Float,
-    iconBgColor: Color,
-    title: String,
-    titleColor: Color,
-    titleFontWeight: FontWeight,
-    subtitle: String,
-    subtitleColor: Color,
-    showDivider: Boolean,
-    showBottomBorder: Boolean,
-    borderLightColor: Color,
-    modifier: Modifier = Modifier,
-    iconShadow: Boolean = false,
-    shadowColor: Color = Color.Transparent,
-    titleStrikethrough: Boolean = false,
-    subtitleFontWeight: FontWeight = FontWeight.Normal,
-    showCrossOut: Boolean = false,
-    dividerColor: Color = Color.Transparent,
-    rowAlpha: Float = 1f,
-) {
+private fun SupplyChainRow(uiModel: SupplyChainRowUiModel) {
+    val primary = colorResource(DomatColors.primary)
+    val primary20 = colorResource(DomatColors.primary20)
+    val primary30 = colorResource(DomatColors.primary30)
+    val textPrimary = colorResource(DomatColors.textPrimary)
+    val textTertiary = colorResource(DomatColors.textTertiary)
+    val textMuted = colorResource(DomatColors.textMuted)
+    val borderDefault = colorResource(DomatColors.borderDefault)
+    val borderLight = colorResource(DomatColors.borderLight)
+    val error = colorResource(DomatColors.error)
+
+    val isInactive = uiModel.variant == SupplyChainRowVariant.Inactive
+    val isConsumer = uiModel.variant == SupplyChainRowVariant.Consumer
+
+    val iconSize = when (uiModel.variant) {
+        SupplyChainRowVariant.Producer -> 22.5f
+        SupplyChainRowVariant.Inactive -> 25f
+        SupplyChainRowVariant.Consumer -> 20f
+    }
+    val iconBgColor = when (uiModel.variant) {
+        SupplyChainRowVariant.Producer -> primary20
+        SupplyChainRowVariant.Inactive -> borderDefault
+        SupplyChainRowVariant.Consumer -> primary
+    }
+    val titleColor = if (isInactive) textTertiary else textPrimary
+    val titleFontWeight = if (isInactive) FontWeight.Medium else FontWeight.Bold
+    val subtitleColor = if (isInactive) textMuted else primary
+    val subtitleFontWeight = if (isConsumer) FontWeight.SemiBold else FontWeight.Normal
+    val dividerColor = when (uiModel.variant) {
+        SupplyChainRowVariant.Producer -> primary30
+        SupplyChainRowVariant.Inactive -> borderDefault
+        SupplyChainRowVariant.Consumer -> Color.Transparent
+    }
+
     Row(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .alpha(rowAlpha),
+            .alpha(if (isInactive) 0.4f else 1f),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(
@@ -232,11 +177,10 @@ private fun SupplyChainRow(
                 modifier = Modifier
                     .size(48.dp)
                     .then(
-                        if (iconShadow) Modifier.shadow(
-                            10.dp,
-                            CircleShape,
-                            ambientColor = shadowColor,
-                            spotColor = shadowColor,
+                        if (isConsumer) Modifier.shadow(
+                            10.dp, CircleShape,
+                            ambientColor = primary30,
+                            spotColor = primary30,
                         ) else Modifier,
                     )
                     .clip(CircleShape)
@@ -244,21 +188,21 @@ private fun SupplyChainRow(
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
-                    painter = painterResource(icon),
+                    painter = painterResource(uiModel.icon),
                     contentDescription = null,
                     modifier = Modifier.size(iconSize.dp),
                 )
-                if (showCrossOut) {
+                if (isInactive) {
                     Text(
                         text = "✕",
-                        color = colorResource(DomatColors.error),
+                        color = error,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                     )
                 }
             }
 
-            if (showDivider) {
+            if (uiModel.showConnector) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Box(
                     modifier = Modifier
@@ -275,42 +219,34 @@ private fun SupplyChainRow(
                 .padding(vertical = 16.dp),
         ) {
             Text(
-                text = title,
+                text = uiModel.title,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = titleFontWeight,
-                    textDecoration = if (titleStrikethrough) TextDecoration.LineThrough else TextDecoration.None,
+                    textDecoration = if (isInactive) TextDecoration.LineThrough else TextDecoration.None,
                 ),
                 color = titleColor,
             )
             Text(
-                text = subtitle,
+                text = uiModel.subtitle,
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = subtitleFontWeight),
                 color = subtitleColor,
             )
         }
     }
 
-    if (showBottomBorder) {
+    if (uiModel.showConnector) {
         HorizontalDivider(
             modifier = Modifier.padding(start = 64.dp),
-            color = borderLightColor,
+            color = borderLight,
             thickness = 1.dp,
         )
     }
 }
 
-@NavigationEffectHandler(Route.OnboardingRoute.Pricing::class)
+@Preview(showBackground = true)
 @Composable
-fun OnboardingPricingEffectHandler(effectFlow: Flow<OnboardingPricingEffect>) {
-    val navigator = LocalNavigator.current
-    LaunchedEffect(effectFlow) {
-        effectFlow.collectLatest { effect ->
-            when (effect) {
-                OnboardingPricingEffect.NavigateToCommunity ->
-                    navigator.navigate(Route.OnboardingRoute.Community)
-                OnboardingPricingEffect.NavigateBack ->
-                    navigator.popBack()
-            }
-        }
+private fun OnboardingPricingPageContentPreview() {
+    DomatTheme {
+        OnboardingPricingPageContent()
     }
 }

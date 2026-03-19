@@ -8,8 +8,10 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import com.domatapp.core.design.theme.DomatTheme
 import dev.icerock.moko.resources.compose.colorResource
 
 @Composable
@@ -57,4 +59,17 @@ fun DomatTextField(
         keyboardOptions = keyboardOptions,
         singleLine = singleLine,
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatTextFieldPreview() {
+    DomatTheme {
+        DomatTextField(
+            value = "Örnek metin",
+            onValueChange = {},
+            placeholder = "Giriniz",
+            label = "Ad",
+        )
+    }
 }

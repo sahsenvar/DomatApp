@@ -21,8 +21,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import com.domatapp.core.design.theme.DomatTheme
 import dev.icerock.moko.resources.compose.colorResource
 
 @Composable
@@ -140,5 +142,41 @@ fun DomatPaymentCard(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatProductCardPreview() {
+    DomatTheme {
+        DomatProductCard(
+            name = "Domates",
+            price = "₺45,00",
+            description = "1 kg",
+            imageContent = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatSelectionCardPreview() {
+    DomatTheme {
+        DomatSelectionCard(
+            text = "A1",
+            isSelected = true,
+            onClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatPaymentCardPreview() {
+    DomatTheme {
+        DomatPaymentCard(
+            cardNumber = "**** **** **** 1234",
+            cardInfo = "Visa",
+        )
     }
 }

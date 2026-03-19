@@ -2,7 +2,6 @@ package com.domatapp.feature.onboarding.presentation.screen
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,50 +17,59 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
-import com.domatapp.core.navigation.Route
-import com.domatapp.core.navigation.annotations.NavigationEffectHandler
-import com.domatapp.core.navigation.annotations.NavigationScreen
-import com.domatapp.core.presentation.component.button.DomatPrimaryButton
-import com.domatapp.core.presentation.component.indicator.DomatProgressDots
+import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.presentation.component.list.DomatFeatureListItem
-import com.domatapp.core.presentation.compose.LocalNavigator
-import com.domatapp.feature.onboarding.presentation.model.trust.OnboardingTrustEffect
-import com.domatapp.feature.onboarding.presentation.model.trust.OnboardingTrustIntent
-import com.domatapp.feature.onboarding.presentation.model.trust.OnboardingTrustUiState
+import com.domatapp.core.resource.MR
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.stringResource
 import domatapp.feature.onboarding.presentation.generated.resources.Res
 import domatapp.feature.onboarding.presentation.generated.resources.ic_feature_location
 import domatapp.feature.onboarding.presentation.generated.resources.ic_feature_origin
 import domatapp.feature.onboarding.presentation.generated.resources.ic_feature_producer
 import domatapp.feature.onboarding.presentation.generated.resources.ic_shield_large
 import domatapp.feature.onboarding.presentation.generated.resources.ic_trust_wallet_badge
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
-@NavigationScreen(Route.OnboardingRoute.Trust::class)
+data class TrustFeatureUiModel(
+    val icon: DrawableResource,
+    val text: String,
+)
+
 @Composable
-fun ColumnScope.OnboardingTrustScreen(
-    uiState: OnboardingTrustUiState,
-    onIntent: (OnboardingTrustIntent) -> Unit,
-) {
+internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
     val primary10 = colorResource(DomatColors.primary10)
     val primary20 = colorResource(DomatColors.primary20)
     val textPrimary = colorResource(DomatColors.textPrimary)
     val textSecondary = colorResource(DomatColors.textSecondary)
     val surfaceDefault = colorResource(DomatColors.surfaceDefault)
 
+    val features = listOf(
+        TrustFeatureUiModel(
+            icon = Res.drawable.ic_feature_producer,
+            text = stringResource(MR.strings.onboarding_trust_feature_producer),
+        ),
+        TrustFeatureUiModel(
+            icon = Res.drawable.ic_feature_location,
+            text = stringResource(MR.strings.onboarding_trust_feature_location),
+        ),
+        TrustFeatureUiModel(
+            icon = Res.drawable.ic_feature_origin,
+            text = stringResource(MR.strings.onboarding_trust_feature_guarantee),
+        ),
+    )
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(surfaceDefault)
             .padding(horizontal = 16.dp),
@@ -120,13 +128,13 @@ fun ColumnScope.OnboardingTrustScreen(
             verticalArrangement = Arrangement.spacedBy(11.dp),
         ) {
             Text(
-                text = "Basit. Adil. Şeffaf.",
+                text = stringResource(MR.strings.onboarding_trust_title),
                 style = MaterialTheme.typography.headlineLarge,
                 color = textPrimary,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = "Siparişinizde eksik veya hasarlı bir ürün varsa,\ntutarı anında uygulama içi cüzdanınıza iade\nedilir.",
+                text = stringResource(MR.strings.onboarding_trust_body),
                 style = MaterialTheme.typography.bodyMedium,
                 color = textSecondary,
                 textAlign = TextAlign.Center,
@@ -141,52 +149,22 @@ fun ColumnScope.OnboardingTrustScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            DomatFeatureListItem(
-                iconPainter = painterResource(Res.drawable.ic_feature_producer),
-                text = "Üretici adı görünür",
-            )
-            DomatFeatureListItem(
-                iconPainter = painterResource(Res.drawable.ic_feature_location),
-                text = "Üretici şehri görünür",
-            )
-            DomatFeatureListItem(
-                iconPainter = painterResource(Res.drawable.ic_feature_origin),
-                text = "Memnun kalmazsanız paranız iade!",
-            )
+            features.forEach { feature ->
+                DomatFeatureListItem(
+                    iconPainter = painterResource(feature.icon),
+                    text = feature.text,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            DomatProgressDots(totalDots = 5, activeIndex = 4)
-            DomatPrimaryButton(
-                text = "Ben pazardan alıyorum \uD83D\uDE2C",
-                onClick = { onIntent(OnboardingTrustIntent.GoNext) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
     }
 }
 
-@NavigationEffectHandler(Route.OnboardingRoute.Trust::class)
+@Preview(showBackground = true)
 @Composable
-fun OnboardingTrustEffectHandler(effectFlow: Flow<OnboardingTrustEffect>) {
-    val navigator = LocalNavigator.current
-    LaunchedEffect(effectFlow) {
-        effectFlow.collectLatest { effect ->
-            when (effect) {
-                OnboardingTrustEffect.NavigateToLogin ->
-                    navigator.navigate(Route.OnboardingRoute.Login)
-                OnboardingTrustEffect.NavigateBack ->
-                    navigator.popBack()
-            }
-        }
+private fun OnboardingTrustPageContentPreview() {
+    DomatTheme {
+        OnboardingTrustPageContent()
     }
 }

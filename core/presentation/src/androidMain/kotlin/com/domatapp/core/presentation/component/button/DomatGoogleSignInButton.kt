@@ -15,15 +15,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import com.domatapp.core.design.theme.DomatTheme
 import dev.icerock.moko.resources.compose.colorResource
 
 @Composable
 fun DomatGoogleSignInButton(
     onClick: () -> Unit,
     iconPainter: Painter,
+    text: String,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -38,13 +43,28 @@ fun DomatGoogleSignInButton(
             Image(
                 painter = iconPainter,
                 contentDescription = "Google",
-                modifier = Modifier.align(Alignment.CenterStart).padding(start = 20.dp).size(24.dp),
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 20.dp)
+                    .size(24.dp),
             )
             Text(
-                text = "Google ile Devam Et",
+                text = text,
                 style = MaterialTheme.typography.titleMedium,
                 color = colorResource(DomatColors.textPrimary),
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatGoogleSignInButtonPreview() {
+    DomatTheme {
+        DomatGoogleSignInButton(
+            onClick = {},
+            iconPainter = ColorPainter(Color.Gray),
+            text = "Google ile Devam Et",
+        )
     }
 }

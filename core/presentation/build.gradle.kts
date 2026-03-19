@@ -30,6 +30,8 @@ kotlin {
             dependencies {
                 implementation(projects.core.design)
                 implementation(libs.compose.material3)
+                implementation(libs.compose.uiTooling)
+                implementation(libs.compose.uiToolingPreview)
             }
         }
         iosMain {
