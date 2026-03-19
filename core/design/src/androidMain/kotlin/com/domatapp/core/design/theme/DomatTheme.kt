@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 fun DomatTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
