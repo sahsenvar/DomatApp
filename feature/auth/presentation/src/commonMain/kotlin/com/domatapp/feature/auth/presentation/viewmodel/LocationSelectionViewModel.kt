@@ -1,14 +1,14 @@
-package com.domatapp.feature.onboarding.presentation.viewmodel
+package com.domatapp.feature.auth.presentation.viewmodel
 
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationViewModel
 import com.domatapp.core.presentation.base.BaseViewModel
-import com.domatapp.feature.onboarding.presentation.model.location.LocationSelectionEffect
-import com.domatapp.feature.onboarding.presentation.model.location.LocationSelectionIntent
-import com.domatapp.feature.onboarding.presentation.model.location.LocationSelectionUiState
+import com.domatapp.feature.auth.presentation.model.location.LocationSelectionEffect
+import com.domatapp.feature.auth.presentation.model.location.LocationSelectionIntent
+import com.domatapp.feature.auth.presentation.model.location.LocationSelectionUiState
 import org.koin.android.annotation.KoinViewModel
 
-@NavigationViewModel(Route.OnboardingRoute.LocationSelection::class)
+@NavigationViewModel(Route.AuthRoute.LocationSelection::class)
 @KoinViewModel
 class LocationSelectionViewModel : BaseViewModel<
     LocationSelectionUiState,

@@ -1,4 +1,4 @@
-package com.domatapp.feature.onboarding.presentation.screen
+package com.domatapp.feature.auth.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -28,9 +28,9 @@ import com.domatapp.core.presentation.component.indicator.DomatProgressSteps
 import com.domatapp.core.presentation.component.input.DomatInputDropdown
 import com.domatapp.core.presentation.compose.LocalNavigator
 import com.domatapp.core.resource.MR
-import com.domatapp.feature.onboarding.presentation.model.location.LocationSelectionEffect
-import com.domatapp.feature.onboarding.presentation.model.location.LocationSelectionIntent
-import com.domatapp.feature.onboarding.presentation.model.location.LocationSelectionUiState
+import com.domatapp.feature.auth.presentation.model.location.LocationSelectionEffect
+import com.domatapp.feature.auth.presentation.model.location.LocationSelectionIntent
+import com.domatapp.feature.auth.presentation.model.location.LocationSelectionUiState
 import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.emptyFlow
 private val blokItems = listOf("A1", "A2", "A3")
 private val daireItems = listOf("1", "2", "3", "4", "5", "6", "7", "8")
 
-@NavigationScreen(Route.OnboardingRoute.LocationSelection::class)
+@NavigationScreen(Route.AuthRoute.LocationSelection::class)
 @Composable
 fun ColumnScope.LocationSelectionScreen(
     uiState: LocationSelectionUiState,
@@ -153,7 +153,7 @@ fun ColumnScope.LocationSelectionScreen(
     }
 }
 
-@NavigationEffectHandler(Route.OnboardingRoute.LocationSelection::class)
+@NavigationEffectHandler(Route.AuthRoute.LocationSelection::class)
 @Composable
 fun LocationSelectionEffectHandler(effectFlow: Flow<LocationSelectionEffect>) {
     val navigator = LocalNavigator.current

@@ -161,7 +161,7 @@ fun OnboardingWelcomeEffectHandler(effectFlow: Flow<OnboardingWelcomeEffect>) {
         effectFlow.collectLatest { effect ->
             when (effect) {
                 OnboardingWelcomeEffect.NavigateToLogin ->
-                    navigator.navigate(Route.OnboardingRoute.Login)
+                    navigator.navigate(Route.AuthRoute.Login)
             }
         }
     }

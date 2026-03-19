@@ -1,4 +1,4 @@
-package com.domatapp.feature.onboarding.presentation.model.location
+package com.domatapp.feature.auth.presentation.model.location
 
 sealed interface LocationSelectionIntent {
     data class SelectBlock(val block: String) : LocationSelectionIntent

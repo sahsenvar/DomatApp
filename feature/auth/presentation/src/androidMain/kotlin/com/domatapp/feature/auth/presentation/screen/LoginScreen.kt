@@ -1,4 +1,4 @@
-package com.domatapp.feature.onboarding.presentation.screen
+package com.domatapp.feature.auth.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,20 +41,20 @@ import com.domatapp.core.presentation.component.badge.DomatHeroBadge
 import com.domatapp.core.presentation.component.button.DomatGoogleSignInButton
 import com.domatapp.core.presentation.compose.LocalNavigator
 import com.domatapp.core.resource.MR
-import com.domatapp.feature.onboarding.presentation.model.login.OnboardingLoginEffect
-import com.domatapp.feature.onboarding.presentation.model.login.OnboardingLoginIntent
-import com.domatapp.feature.onboarding.presentation.model.login.OnboardingLoginUiState
+import com.domatapp.feature.auth.presentation.model.login.LoginEffect
+import com.domatapp.feature.auth.presentation.model.login.LoginIntent
+import com.domatapp.feature.auth.presentation.model.login.LoginUiState
 import dev.icerock.moko.resources.compose.colorResource
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 
-@NavigationScreen(Route.OnboardingRoute.Login::class)
+@NavigationScreen(Route.AuthRoute.Login::class)
 @Composable
-fun ColumnScope.OnboardingLoginScreen(
-    uiState: OnboardingLoginUiState,
-    onIntent: (OnboardingLoginIntent) -> Unit,
+fun ColumnScope.LoginScreen(
+    uiState: LoginUiState,
+    onIntent: (LoginIntent) -> Unit,
 ) {
     val heroShape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
     val primary = colorResource(DomatColors.primary)
@@ -134,7 +134,7 @@ fun ColumnScope.OnboardingLoginScreen(
             Spacer(modifier = Modifier.height(124.dp))
 
             DomatGoogleSignInButton(
-                onClick = { onIntent(OnboardingLoginIntent.OnGoogleSignInClicked) },
+                onClick = { onIntent(LoginIntent.OnGoogleSignInClicked) },
                 iconPainter = painterResource(MR.images.ic_google),
                 text = stringResource(MR.strings.google_sign_in_button_text),
             )
@@ -177,15 +177,15 @@ fun ColumnScope.OnboardingLoginScreen(
     }
 }
 
-@NavigationEffectHandler(Route.OnboardingRoute.Login::class)
+@NavigationEffectHandler(Route.AuthRoute.Login::class)
 @Composable
-fun OnboardingLoginEffectHandler(effectFlow: Flow<OnboardingLoginEffect>) {
+fun LoginEffectHandler(effectFlow: Flow<LoginEffect>) {
     val navigator = LocalNavigator.current
     LaunchedEffect(effectFlow) {
         effectFlow.collectLatest { effect ->
             when (effect) {
-                OnboardingLoginEffect.NavigateToLocationSelection ->
-                    navigator.navigate(Route.OnboardingRoute.LocationSelection)
+                LoginEffect.NavigateToLocationSelection ->
+                    navigator.navigate(Route.AuthRoute.LocationSelection)
             }
         }
     }
@@ -193,21 +193,13 @@ fun OnboardingLoginEffectHandler(effectFlow: Flow<OnboardingLoginEffect>) {
 
 @Preview(showBackground = true)
 @Composable
-private fun OnboardingLoginScreenPreview() {
+private fun LoginScreenPreview() {
     DomatTheme {
         Column {
-            OnboardingLoginScreen(
-                uiState = OnboardingLoginUiState(),
+            LoginScreen(
+                uiState = LoginUiState(),
                 onIntent = {},
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun OnboardingLoginEffectHandlerPreview() {
-    DomatTheme {
-        OnboardingLoginEffectHandler(effectFlow = kotlinx.coroutines.flow.emptyFlow())
     }
 }

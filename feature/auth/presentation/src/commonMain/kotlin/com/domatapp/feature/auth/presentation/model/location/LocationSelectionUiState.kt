@@ -1,4 +1,4 @@
-package com.domatapp.feature.onboarding.presentation.model.location
+package com.domatapp.feature.auth.presentation.model.location
 
 data class LocationSelectionUiState(
     val selectedBlock: String? = null,

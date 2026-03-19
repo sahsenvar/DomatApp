@@ -218,6 +218,29 @@ compose.resources {
 
 ---
 
+## Kaynak Sistemi — Nereden Gelir?
+
+Projede renk, yazı tipi, string ve görsel için tek kaynak `core/resource` modülündeki `MR` nesnesidir.
+
+| Tür | Kullanım | Wrapper | Kaynak Dosya |
+|---|---|---|---|
+| **Color** | `colorResource(DomatColors.primary)` | `DomatColors.*` → `MR.colors.*` | `core/resource/.../moko-resources/base/colors.xml` |
+| **Color (tema)** | `MaterialTheme.colorScheme.*` | `domatLightColorScheme()` | `core/design/.../theme/Color.kt` |
+| **Typography** | `MaterialTheme.typography.displayMedium` | `DomatTypographyScale.DisplayMediumSize = 36sp` | `core/design/.../typography/DomatTypographyScale.kt` |
+| **Font** | `fontFamilyResource(MR.fonts.nunito_sans_regular)` | — | `core/resource/.../moko-resources/fonts/nunito_sans_regular.ttf` |
+| **String** | `stringResource(MR.strings.onboarding_btn_welcome)` | — | `core/resource/.../moko-resources/base/strings.xml` |
+| **Image (SVG)** | `painterResource(MR.images.ic_google)` | — | `core/resource/.../moko-resources/images/ic_google.svg` |
+| **Image (PNG)** | `painterResource(MR.images.img_welcome_neighborhood)` | — | `core/resource/.../moko-resources/images/img_welcome_neighborhood@1x.png` |
+
+### Kurallar
+
+- **Color:** Custom componentler `colorResource(DomatColors.*)` kullanır. `MaterialTheme.colorScheme.*` **kullanılmaz** — Material You dynamic color ile override riski vardır.
+- **Typography:** `MaterialTheme.typography.*` kullanılır (font ailesi `DomatTheme` içinde `MR.fonts` üzerinden otomatik set edilir).
+- **String:** Hardcoded string yasaktır, her zaman `stringResource(MR.strings.*)`.
+- **Image:** `Res.drawable.*` (Compose Resources) kullanılmaz, her zaman `MR.images.*`.
+
+---
+
 ## Dosya Organizasyonu
 
 ```
@@ -231,5 +254,19 @@ feature/onboarding/presentation/src/androidMain/screen/
 │                                  # data class CommunityHeroCardUiModel
 ├── OnboardingTrustScreen.kt       # internal fun OnboardingTrustPageContent()
 │                                  # data class TrustFeatureUiModel
+├── OnboardingBottomBar.kt         # internal fun OnboardingBottomBar(uiModel, onContinue)
+│                                  # data class OnboardingBottomBarUiModel
 └── OnboardingLoginScreen.kt       # @NavigationScreen — Google Sign-In ekranı
 ```
+
+### Sayfa Sıralaması
+
+`OnboardingPage` enum'u (`model/welcome/OnboardingPage.kt`) sıralamayı yönetir:
+
+```kotlin
+enum class OnboardingPage(val index: Int) {
+    WELCOME(0), PRICING(1), COMMUNITY(2), TRUST(3), EFFORTLESS(4)
+}
+```
+
+Sıralamayı değiştirmek için sadece enum'daki `index` değerleri güncellenir — Screen ve ViewModel otomatik adapte olur.
