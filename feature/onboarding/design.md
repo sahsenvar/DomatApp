@@ -1,272 +1,187 @@
-# Onboarding — Mimari & Tasarım Kararları
+# Onboarding — Feature Dökümanı
 
-## Renk Sistemi (moko-resources)
+## Genel Bakış
 
-### Kritik: Renk Format Farkı
+Kullanıcının uygulamayı ilk açtığında gördüğü tanıtım akışıdır. Tek bir navigasyon rotasından (`OnboardingRoute.Welcome`) oluşur; içerik 5 sayfalık `HorizontalPager` ile sunulur.
 
-moko-resources kaynak dosyaları `#RRGGBB` veya `#RRGGBBAA` (şeffaflık **sonda**) formatını bekler.
-Android'in native `colors.xml` formatı ise `#AARRGGBB` (şeffaflık **başta**) şeklindedir.
+### Ekran Akışı
 
-| Format | Örnek | Anlam |
-|--------|-------|-------|
-| moko kaynak | `#13EC49` | opak yeşil |
-| moko kaynak (şeffaf) | `#13EC4980` | yeşil %50 şeffaf |
-| Android native | `#FF13EC49` | opak yeşil |
+```
+OnboardingRoute.Welcome  (5-sayfalık HorizontalPager)
+    │
+    │  [Devam Et butonuna basınca]
+    │
+    ▼
+AuthRoute.Login          (Google Sign-In — auth modülünde)
+    │
+    │  [Google ile giriş yapınca]
+    │
+    ▼
+AuthRoute.LocationSelection  (Konum seçimi — auth modülünde)
+    │
+    │  [Devam Et'e basınca]
+    │
+    ▼
+Main.Home
+```
 
-**Hata:** Kaynak dosyaya `#FF13EC49` (Android formatı) yazılırsa moko bunu `#RRGGBBAA` olarak okur ve `#49FF13EC` (pembe, %29 opaklık) üretir.
-**Çözüm:** `core/resource/src/commonMain/moko-resources/base/colors.xml` dosyasında tüm renkler `#RRGGBB` / `#RRGGBBAA` formatında tutulmalıdır.
+> Login ve LocationSelection ekranları **auth modülündedir** (`feature/auth/presentation`). Onboarding sadece `AuthRoute.Login`'e navigate eder.
 
 ---
 
-## Onboarding Akışı Mimarisi
-
-### Navigasyon Yapısı
+## Pager Yapısı
 
 ```
-Route.OnboardingRoute.Welcome  →  HorizontalPager (5 sayfa)
-                                   ├── Sayfa 0: Welcome içeriği
-                                   ├── Sayfa 1: Effortless içeriği
-                                   ├── Sayfa 2: Pricing içeriği
-                                   ├── Sayfa 3: Community içeriği
-                                   └── Sayfa 4: Trust içeriği
-Route.OnboardingRoute.Login    →  Ayrı navigasyon hedefi (Google Sign-In)
-Route.OnboardingRoute.LocationSelection  →  Ayrı navigasyon hedefi
+OnboardingWelcomeScreen
+├── HorizontalPager (weight = 1f)
+│   ├── Page 0: OnboardingWelcomePageContent()
+│   ├── Page 1: OnboardingPricingPageContent()
+│   ├── Page 2: OnboardingCommunityPageContent()
+│   ├── Page 3: OnboardingTrustPageContent()
+│   └── Page 4: OnboardingEffortlessPageContent()
+└── OnboardingBottomBar (sabit — pager kayarken hareket etmez)
+    ├── DomatProgressDots (5 nokta, aktif = yeşil 24×6dp pill)
+    └── DomatPrimaryMediumButton (metin sayfaya göre değişir)
 ```
 
-Effortless / Pricing / Community / Trust artık birer navigasyon rotası değildir. `@NavigationScreen` ve `@NavigationEffectHandler` annotasyonları kaldırılmış, her biri `internal fun OnboardingXxxPageContent()` fonksiyonuna dönüştürülmüştür.
-
-### Paylaşılan Alt Bar
-
-`OnboardingWelcomeScreen` içindeki `HorizontalPager`'ın altında her sayfa için ortak bir alt bar bulunur:
-
-```
-┌─────────────────────────────────┐
-│          HorizontalPager        │
-│         (weight = 1f)           │
-├─────────────────────────────────┤
-│  ● ○ ○ ○ ○   (DomatProgressDots)│
-│  [ Google ile Devam Et ]        │
-└─────────────────────────────────┘
-```
-
-- **Nokta animasyonu:** `animateDpAsState` (genişlik 8dp→24dp) + `animateColorAsState`
-- **Aktif sayfa:** `uiState.currentPage` (ViewModel'dan, `LaunchedEffect` ile güncellenir)
-- **Herhangi bir sayfada** Google butonuna basınca Login rotasına gider (onboarding atlanabilir)
-
----
-
-## State Yönetimi
-
-### Kural: UiState > remember { mutableStateOf() }
-
-Composable içinde `remember { mutableStateOf() }` kullanılmaz. Tüm dinamik durum ViewModel'ın UiState'inden gelir.
+### Sayfa Sıralaması — OnboardingPage Enum
 
 ```kotlin
-// Yanlış ❌
-var currentPage by remember { mutableStateOf(0) }
+// feature/onboarding/presentation/src/commonMain/.../model/welcome/OnboardingPage.kt
+enum class OnboardingPage(val index: Int) {
+    WELCOME(0), PRICING(1), COMMUNITY(2), TRUST(3), EFFORTLESS(4);
 
-// Doğru ✓
-// ViewModel'da: OnboardingWelcomeUiState(currentPage = 0)
-// Ekranda:
-LaunchedEffect(pagerState.currentPage) {
-    onIntent(OnboardingWelcomeIntent.OnPageChanged(pagerState.currentPage))
+    fun next(): OnboardingPage?   // son sayfada null döner → NavigateToLogin
+    companion object { fun fromIndex(index: Int): OnboardingPage }
 }
-DomatProgressDots(activeIndex = uiState.currentPage)
 ```
 
-`rememberPagerState()` ve `rememberScrollState()` Compose altyapı state tutucularıdır, kullanıcı tanımlı state değildir — bunlar muaf tutulur.
+Sıralamayı değiştirmek için sadece `index` değerleri güncellenir — Screen ve ViewModel otomatik adapte olur.
+
+### Buton Metinleri (strings.xml)
+
+| Sayfa | String Key | Metin |
+|---|---|---|
+| WELCOME | `onboarding_btn_welcome` | Devam Et |
+| PRICING | `onboarding_btn_pricing` | Hmm.. Güzelmiş. Başka? |
+| COMMUNITY | `onboarding_btn_community` | Uygunsa kalitesi kötü müdür? |
+| TRUST | `onboarding_btn_trust` | Ben pazardan alıyorum 😬 |
+| EFFORTLESS | `onboarding_btn_effortless` | Süpermiş! Hadi başlayalım |
 
 ---
 
-## UiModel Paterni
+## MVI — OnboardingWelcome
 
-### Kural
-
-- **Screen composable'lar** (sadece `@NavigationScreen` ile işaretlenenler) → UiState alır
-- **Alt composable'lar** (özel bileşenler) → UiModel veri sınıfı alır, ham primitifler değil
-
-### Örnekler
-
+### UiState
 ```kotlin
-// Doğru ✓ — SupplyChainRow UiModel ile çalışır
-data class SupplyChainRowUiModel(
-    val icon: ImageResource,          // dev.icerock.moko.resources.ImageResource
-    val variant: SupplyChainRowVariant,
-    val title: String,
-    val subtitle: String,
-    val showConnector: Boolean = true,
+data class OnboardingWelcomeUiState(
+    val currentPage: OnboardingPage = OnboardingPage.WELCOME,
+    val targetPage: OnboardingPage? = null,   // pager scroll animasyonu için
 )
-
-@Composable
-private fun SupplyChainRow(uiModel: SupplyChainRowUiModel) { ... }
-
-// Yanlış ❌ — 12 ham parametre ile çağrı
-SupplyChainRow(icon, iconSize, iconBgColor, title, titleColor, titleFontWeight, ...)
 ```
 
-**SupplyChainRowVariant enum:** `Producer | Inactive | Consumer`
-Composable, variant'tan renk/boyut/opacity gibi görsel özellikleri türetir. UiModel Compose tiplerini (Color, FontWeight) taşımaz.
-
+### Intent
 ```kotlin
-// Doğru ✓ — variant'tan türetme
-val iconBgColor = when (uiModel.variant) {
-    Producer -> primary20
-    Inactive -> borderDefault
-    Consumer -> primary
+sealed interface OnboardingWelcomeIntent {
+    data object OnContinueClicked   // buton tıklaması
+    data object OnScrollConsumed    // scroll animasyonu tamamlandı → targetPage = null
+    data class OnPageChanged(val page: Int)  // pager swipe
 }
 ```
 
----
-
-## String Kaynakları
-
-Tüm görüntülenen metinler `MR.strings.*` aracılığıyla moko-resources'tan gelir.
-
+### Effect
 ```kotlin
-// Yanlış ❌
-Text(text = "Haftalık alışverişi\nzahmetsiz hale\ngetiriyoruz")
-
-// Doğru ✓
-Text(text = stringResource(MR.strings.onboarding_effortless_title))
-```
-
-Özel durumlar:
-- **Yüzde işareti:** `%%40` → strings.xml'de `%%` ile escape edilir, composable'a `%40` olarak gelir
-- **Annotated string parçaları:** `buildAnnotatedString { append(stringResource(MR.strings.xyz)) }` şeklinde ayrı parçalar halinde birleştirilir
-- **HTML entity:** `&amp;` → strings.xml'de `&amp;` olarak yazılır (`Taze &amp; Yerel` → "Taze & Yerel")
-
----
-
-## Image / Drawable Sistemi
-
-### Kural: Her şey MR.images üzerinden
-
-Projede Compose Resources (`Res.drawable.*`) kullanılmaz. Tüm görseller moko-resources `MR.images.*` üzerinden alınır.
-
-```kotlin
-// Yanlış ❌ — Compose Resources
-import domatapp.feature.onboarding.presentation.generated.resources.Res
-import org.jetbrains.compose.resources.painterResource
-
-painterResource(Res.drawable.ic_arrow_back)
-
-// Doğru ✓ — moko-resources
-import com.domatapp.core.resource.MR
-import dev.icerock.moko.resources.compose.painterResource
-
-painterResource(MR.images.ic_arrow_back)
-```
-
-### Image Tipi
-
-UiModel içinde image referansı tutulurken:
-
-```kotlin
-// Yanlış ❌
-import org.jetbrains.compose.resources.DrawableResource
-val icon: DrawableResource
-
-// Doğru ✓
-import dev.icerock.moko.resources.ImageResource
-val icon: ImageResource
-```
-
-### Kaynak Dosya Konumu ve Format Kuralları
-
-Tüm görseller `core/resource/src/commonMain/moko-resources/images/` altına eklenir.
-
-| Format | Davranış |
-|--------|----------|
-| `.svg` | Doğrudan `images/` içine koyulur |
-| `.png` / `.jpg` | Dosya adına density suffix eklenir: `img_name@1x.png`, `img_name@2x.png` |
-
-**PNG Kritik Kural:** PNG dosyaları `@1x` / `@2x` / `@3x` suffix'i olmadan koyulursa moko-resources "unknown scale" hatası verir ve Android drawable olarak üretilmez.
-
-```
-images/
-├── ic_arrow_back.svg              ✓ doğru
-├── img_welcome@1x.png             ✓ doğru (@1x suffix zorunlu)
-├── img_welcome.png                ✗ yanlış (scale bilinmiyor, ignore edilir)
-└── 1x/img_welcome.png             ✗ yanlış (subdirectory çalışmıyor)
-```
-
-### VectorDrawable XML → SVG Dönüşümü
-
-Android VectorDrawable XML formatı (`<vector xmlns:android=...>`) moko-resources tarafından desteklenmez. SVG formatına dönüştürülmesi gerekir.
-
-| VectorDrawable | SVG |
-|----------------|-----|
-| `<vector android:width android:height android:viewportWidth android:viewportHeight>` | `<svg width height viewBox="0 0 W H">` |
-| `<path android:pathData android:fillColor>` | `<path d fill>` |
-| `<group android:translateX android:translateY>` | `<g transform="translate(x, y)">` |
-| `#AARRGGBB` renk (Android) | `#RRGGBB` + `fill-opacity` (SVG) |
-
-Dönüşüm scripti: `/tmp/convert_drawables.py`
-
-### Compose Resources Üretimini Engelleme
-
-`composeMultiplatform` plugin'i olan her modülde `Res.kt` üretimi kapatılır:
-
-```kotlin
-// Her modülün build.gradle.kts dosyasına eklenir
-compose.resources {
-    generateResClass = never
+sealed interface OnboardingWelcomeEffect {
+    data object NavigateToLogin   // son sayfadan sonra
 }
 ```
 
-`composeResources/` klasörü oluşturulmaz. `compose.components.resources` bağımlılığı eklenmez.
+### ViewModel Mantığı
+- `OnContinueClicked`: `currentPage.next()` varsa `targetPage` set eder (scroll animasyonu); yoksa `NavigateToLogin` emitler.
+- `OnPageChanged`: `OnboardingPage.fromIndex(page)` ile `currentPage` güncellenir.
+- `OnScrollConsumed`: `targetPage = null` yapılır.
 
----
-
-## Kaynak Sistemi — Nereden Gelir?
-
-Projede renk, yazı tipi, string ve görsel için tek kaynak `core/resource` modülündeki `MR` nesnesidir.
-
-| Tür | Kullanım | Wrapper | Kaynak Dosya |
-|---|---|---|---|
-| **Color** | `colorResource(DomatColors.primary)` | `DomatColors.*` → `MR.colors.*` | `core/resource/.../moko-resources/base/colors.xml` |
-| **Color (tema)** | `MaterialTheme.colorScheme.*` | `domatLightColorScheme()` | `core/design/.../theme/Color.kt` |
-| **Typography** | `MaterialTheme.typography.displayMedium` | `DomatTypographyScale.DisplayMediumSize = 36sp` | `core/design/.../typography/DomatTypographyScale.kt` |
-| **Font** | `fontFamilyResource(MR.fonts.nunito_sans_regular)` | — | `core/resource/.../moko-resources/fonts/nunito_sans_regular.ttf` |
-| **String** | `stringResource(MR.strings.onboarding_btn_welcome)` | — | `core/resource/.../moko-resources/base/strings.xml` |
-| **Image (SVG)** | `painterResource(MR.images.ic_google)` | — | `core/resource/.../moko-resources/images/ic_google.svg` |
-| **Image (PNG)** | `painterResource(MR.images.img_welcome_neighborhood)` | — | `core/resource/.../moko-resources/images/img_welcome_neighborhood@1x.png` |
-
-### Kurallar
-
-- **Color:** Custom componentler `colorResource(DomatColors.*)` kullanır. `MaterialTheme.colorScheme.*` **kullanılmaz** — Material You dynamic color ile override riski vardır.
-- **Typography:** `MaterialTheme.typography.*` kullanılır (font ailesi `DomatTheme` içinde `MR.fonts` üzerinden otomatik set edilir).
-- **String:** Hardcoded string yasaktır, her zaman `stringResource(MR.strings.*)`.
-- **Image:** `Res.drawable.*` (Compose Resources) kullanılmaz, her zaman `MR.images.*`.
+### Pager Scroll Akışı (Effect yerine UiState)
+```kotlin
+// Screen'de:
+LaunchedEffect(uiState.targetPage) {
+    uiState.targetPage?.let { page ->
+        pagerState.animateScrollToPage(page.index)
+        onIntent(OnboardingWelcomeIntent.OnScrollConsumed)
+    }
+}
+```
+Scroll bir UI altyapı işlemi olduğu için Effect yerine `UiState.targetPage` tercih edilir.
 
 ---
 
 ## Dosya Organizasyonu
 
 ```
-feature/onboarding/presentation/src/androidMain/screen/
-├── OnboardingWelcomeScreen.kt   # @NavigationScreen — HorizontalPager + paylaşılan alt bar
-│                                # private fun OnboardingWelcomePageContent()
-├── OnboardingEffortlessScreen.kt  # internal fun OnboardingEffortlessPageContent()
-├── OnboardingPricingScreen.kt     # internal fun OnboardingPricingPageContent()
-│                                  # enum SupplyChainRowVariant, data class SupplyChainRowUiModel
-├── OnboardingCommunityScreen.kt   # internal fun OnboardingCommunityPageContent()
-│                                  # data class CommunityHeroCardUiModel
-├── OnboardingTrustScreen.kt       # internal fun OnboardingTrustPageContent()
-│                                  # data class TrustFeatureUiModel
-├── OnboardingBottomBar.kt         # internal fun OnboardingBottomBar(uiModel, onContinue)
-│                                  # data class OnboardingBottomBarUiModel
-└── OnboardingLoginScreen.kt       # @NavigationScreen — Google Sign-In ekranı
+feature/onboarding/presentation/src/
+├── commonMain/
+│   ├── model/welcome/
+│   │   ├── OnboardingPage.kt          # enum — sayfa sıralaması
+│   │   ├── OnboardingWelcomeUiState.kt
+│   │   ├── OnboardingWelcomeIntent.kt
+│   │   └── OnboardingWelcomeEffect.kt
+│   └── viewmodel/
+│       └── OnboardingWelcomeViewModel.kt
+└── androidMain/screen/
+    ├── OnboardingWelcomeScreen.kt     # @NavigationScreen + HorizontalPager + EffectHandler
+    ├── OnboardingWelcomePageContent   # private — sadece WelcomeScreen içinden çağrılır
+    ├── OnboardingPricingScreen.kt     # internal fun OnboardingPricingPageContent()
+    │                                  # enum SupplyChainRowVariant, SupplyChainRowUiModel
+    ├── OnboardingCommunityScreen.kt   # internal fun OnboardingCommunityPageContent()
+    │                                  # data class CommunityHeroCardUiModel
+    ├── OnboardingTrustScreen.kt       # internal fun OnboardingTrustPageContent()
+    │                                  # data class TrustFeatureUiModel
+    ├── OnboardingEffortlessScreen.kt  # internal fun OnboardingEffortlessPageContent()
+    └── OnboardingBottomBar.kt         # internal fun OnboardingBottomBar(uiModel, onContinue)
+                                       # data class OnboardingBottomBarUiModel
 ```
 
-### Sayfa Sıralaması
+---
 
-`OnboardingPage` enum'u (`model/welcome/OnboardingPage.kt`) sıralamayı yönetir:
+## State Yönetimi Kuralları
+
+### UiState > remember { mutableStateOf() }
 
 ```kotlin
-enum class OnboardingPage(val index: Int) {
-    WELCOME(0), PRICING(1), COMMUNITY(2), TRUST(3), EFFORTLESS(4)
+// ❌ Yanlış
+var currentPage by remember { mutableStateOf(0) }
+
+// ✓ Doğru
+LaunchedEffect(pagerState.currentPage) {
+    onIntent(OnboardingWelcomeIntent.OnPageChanged(pagerState.currentPage))
 }
 ```
 
-Sıralamayı değiştirmek için sadece enum'daki `index` değerleri güncellenir — Screen ve ViewModel otomatik adapte olur.
+`rememberPagerState()` ve `rememberScrollState()` Compose altyapı state'leridir — bu kuraldan muaftır.
+
+### UiModel Paterni
+
+- `@NavigationScreen` composable'lar → `UiState` alır
+- Alt composable'lar → `data class XxxUiModel` alır, ham primitifler değil
+- `UiModel` Compose tipleri (`Color`, `FontWeight`) taşımaz — variant/enum üzerinden türetilir
+
+---
+
+## Kaynak Sistemi
+
+| Tür | Kullanım | Kaynak Dosya |
+|---|---|---|
+| **Color** | `colorResource(DomatColors.primary)` | `core/resource/.../moko-resources/base/colors.xml` |
+| **Typography** | `MaterialTheme.typography.displayMedium` | `core/design/.../typography/DomatTypographyScale.kt` |
+| **String** | `stringResource(MR.strings.onboarding_btn_welcome)` | `core/resource/.../moko-resources/base/strings.xml` |
+| **Image (SVG)** | `painterResource(MR.images.ic_google)` | `core/resource/.../moko-resources/images/*.svg` |
+| **Image (PNG)** | `painterResource(MR.images.img_welcome_neighborhood)` | `core/resource/.../moko-resources/images/*@1x.png` |
+
+### Kritik Kurallar
+- `colorResource(DomatColors.*)` kullan, `MaterialTheme.colorScheme.*` **kullanma** (Material You dynamic color riski)
+- `MR.images.*` kullan, `Res.drawable.*` **kullanma**
+- PNG dosyalarına `@1x` / `@2x` suffix zorunlu, aksi halde moko ignore eder
+- `compose.resources { generateResClass = never }` her modülde tanımlı olmalı
+
+### moko-resources Renk Format Kuralı
+`colors.xml` dosyasında `#RRGGBB` / `#RRGGBBAA` formatı kullanılır. Android native `#AARRGGBB` formatı **yasaktır** — moko bunu yanlış okur (örn. `#FF13EC49` → pembe üretir).
