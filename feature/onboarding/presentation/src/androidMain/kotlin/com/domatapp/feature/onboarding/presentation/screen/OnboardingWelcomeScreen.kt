@@ -40,13 +40,10 @@ import com.domatapp.feature.onboarding.presentation.model.welcome.OnboardingWelc
 import com.domatapp.feature.onboarding.presentation.model.welcome.OnboardingWelcomeIntent
 import com.domatapp.feature.onboarding.presentation.model.welcome.OnboardingWelcomeUiState
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import domatapp.feature.onboarding.presentation.generated.resources.Res
-import domatapp.feature.onboarding.presentation.generated.resources.ic_google
-import domatapp.feature.onboarding.presentation.generated.resources.img_welcome_neighborhood
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import org.jetbrains.compose.resources.painterResource
 
 @NavigationScreen(Route.OnboardingRoute.Welcome::class)
 @Composable
@@ -96,7 +93,7 @@ fun ColumnScope.OnboardingWelcomeScreen(
             )
             DomatGoogleSignInButton(
                 onClick = { onIntent(OnboardingWelcomeIntent.GoogleSignInClicked) },
-                iconPainter = painterResource(Res.drawable.ic_google),
+                iconPainter = painterResource(MR.images.ic_google),
                 text = stringResource(MR.strings.google_sign_in_button_text),
             )
         }
@@ -120,7 +117,7 @@ private fun OnboardingWelcomePageContent(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                painter = painterResource(Res.drawable.img_welcome_neighborhood),
+                painter = painterResource(MR.images.img_welcome_neighborhood),
                 contentDescription = stringResource(MR.strings.onboarding_image_neighborhood_desc),
                 modifier = Modifier
                     .fillMaxWidth()

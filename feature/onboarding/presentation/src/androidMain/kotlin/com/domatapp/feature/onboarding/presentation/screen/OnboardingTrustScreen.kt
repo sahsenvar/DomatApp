@@ -29,19 +29,13 @@ import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.presentation.component.list.DomatFeatureListItem
 import com.domatapp.core.resource.MR
+import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import domatapp.feature.onboarding.presentation.generated.resources.Res
-import domatapp.feature.onboarding.presentation.generated.resources.ic_feature_location
-import domatapp.feature.onboarding.presentation.generated.resources.ic_feature_origin
-import domatapp.feature.onboarding.presentation.generated.resources.ic_feature_producer
-import domatapp.feature.onboarding.presentation.generated.resources.ic_shield_large
-import domatapp.feature.onboarding.presentation.generated.resources.ic_trust_wallet_badge
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
 
 data class TrustFeatureUiModel(
-    val icon: DrawableResource,
+    val icon: ImageResource,
     val text: String,
 )
 
@@ -55,15 +49,15 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
 
     val features = listOf(
         TrustFeatureUiModel(
-            icon = Res.drawable.ic_feature_producer,
+            icon = MR.images.ic_feature_producer,
             text = stringResource(MR.strings.onboarding_trust_feature_producer),
         ),
         TrustFeatureUiModel(
-            icon = Res.drawable.ic_feature_location,
+            icon = MR.images.ic_feature_location,
             text = stringResource(MR.strings.onboarding_trust_feature_location),
         ),
         TrustFeatureUiModel(
-            icon = Res.drawable.ic_feature_origin,
+            icon = MR.images.ic_feature_origin,
             text = stringResource(MR.strings.onboarding_trust_feature_guarantee),
         ),
     )
@@ -103,12 +97,12 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
 
             Box(contentAlignment = Alignment.Center) {
                 Image(
-                    painter = painterResource(Res.drawable.ic_shield_large),
+                    painter = painterResource(MR.images.ic_shield_large),
                     contentDescription = null,
                     modifier = Modifier.size(width = 70.dp, height = 90.dp),
                 )
                 Image(
-                    painter = painterResource(Res.drawable.ic_trust_wallet_badge),
+                    painter = painterResource(MR.images.ic_trust_wallet_badge),
                     contentDescription = null,
                     modifier = Modifier
                         .size(width = 42.dp, height = 41.dp)

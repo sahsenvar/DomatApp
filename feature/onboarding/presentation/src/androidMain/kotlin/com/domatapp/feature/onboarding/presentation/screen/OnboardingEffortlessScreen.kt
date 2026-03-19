@@ -28,10 +28,8 @@ import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.MR
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import domatapp.feature.onboarding.presentation.generated.resources.Res
-import domatapp.feature.onboarding.presentation.generated.resources.img_effortless_illustration
-import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
@@ -83,7 +81,7 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
-                    painter = painterResource(Res.drawable.img_effortless_illustration),
+                    painter = painterResource(MR.images.img_effortless_illustration),
                     contentDescription = null,
                     modifier = Modifier.size(320.dp),
                     contentScale = ContentScale.Fit,

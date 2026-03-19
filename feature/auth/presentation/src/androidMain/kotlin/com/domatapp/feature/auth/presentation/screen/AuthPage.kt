@@ -33,10 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatColors
+import com.domatapp.core.resource.MR
 import dev.icerock.moko.resources.compose.colorResource
-import domatapp.feature.auth.presentation.generated.resources.Res
-import domatapp.feature.auth.presentation.generated.resources.ic_google
-import org.jetbrains.compose.resources.painterResource
+import dev.icerock.moko.resources.compose.painterResource
 import com.domatapp.core.navigation.Route.AuthRoute
 import com.domatapp.core.navigation.annotations.NavigationScreen
 import com.domatapp.feature.auth.presentation.model.AuthIntent
@@ -192,7 +191,7 @@ private fun ContentSection(
 @Composable
 private fun GoogleIcon(modifier: Modifier = Modifier) {
     Icon(
-        painter = painterResource(Res.drawable.ic_google),
+        painter = painterResource(MR.images.ic_google),
         contentDescription = null,
         tint = Color.Unspecified,
         modifier = modifier,

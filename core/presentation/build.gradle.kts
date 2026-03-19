@@ -4,6 +4,10 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+compose.resources {
+    generateResClass = never
+}
+
 kotlin {
     iosX64()
     iosArm64()

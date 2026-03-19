@@ -22,7 +22,6 @@ kotlin {
                 implementation(projects.core.resource)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.koin.core.viewmodel)
-                implementation(libs.compose.components.resources)
             }
         }
         androidMain {
@@ -53,7 +52,6 @@ tasks.matching { it.name == "kspAndroidMain" }.configureEach {
 }
 
 compose.resources {
-    publicResClass = false
-    packageOfResClass = "domatapp.feature.onboarding.presentation.generated.resources"
-    generateResClass = always
+    generateResClass = never
 }
+

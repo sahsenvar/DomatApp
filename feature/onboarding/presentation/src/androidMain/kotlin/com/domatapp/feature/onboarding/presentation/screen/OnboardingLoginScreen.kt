@@ -45,14 +45,10 @@ import com.domatapp.feature.onboarding.presentation.model.login.OnboardingLoginE
 import com.domatapp.feature.onboarding.presentation.model.login.OnboardingLoginIntent
 import com.domatapp.feature.onboarding.presentation.model.login.OnboardingLoginUiState
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import domatapp.feature.onboarding.presentation.generated.resources.Res
-import domatapp.feature.onboarding.presentation.generated.resources.ic_google
-import domatapp.feature.onboarding.presentation.generated.resources.ic_leaf_badge
-import domatapp.feature.onboarding.presentation.generated.resources.img_hero_login
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import org.jetbrains.compose.resources.painterResource
 
 @NavigationScreen(Route.OnboardingRoute.Login::class)
 @Composable
@@ -85,7 +81,7 @@ fun ColumnScope.OnboardingLoginScreen(
                 .clip(heroShape),
         ) {
             Image(
-                painter = painterResource(Res.drawable.img_hero_login),
+                painter = painterResource(MR.images.img_hero_login),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
@@ -110,7 +106,7 @@ fun ColumnScope.OnboardingLoginScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 DomatHeroBadge(
-                    iconPainter = painterResource(Res.drawable.ic_leaf_badge),
+                    iconPainter = painterResource(MR.images.ic_leaf_badge),
                     text = stringResource(MR.strings.onboarding_login_hero_badge),
                 )
                 Text(
@@ -139,7 +135,7 @@ fun ColumnScope.OnboardingLoginScreen(
 
             DomatGoogleSignInButton(
                 onClick = { onIntent(OnboardingLoginIntent.OnGoogleSignInClicked) },
-                iconPainter = painterResource(Res.drawable.ic_google),
+                iconPainter = painterResource(MR.images.ic_google),
                 text = stringResource(MR.strings.google_sign_in_button_text),
             )
         }

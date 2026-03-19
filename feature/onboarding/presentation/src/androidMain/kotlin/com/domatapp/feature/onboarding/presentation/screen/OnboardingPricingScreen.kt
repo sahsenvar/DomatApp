@@ -33,20 +33,15 @@ import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.MR
+import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import domatapp.feature.onboarding.presentation.generated.resources.Res
-import domatapp.feature.onboarding.presentation.generated.resources.ic_pricing_consumer
-import domatapp.feature.onboarding.presentation.generated.resources.ic_pricing_producer
-import domatapp.feature.onboarding.presentation.generated.resources.ic_pricing_retail
-import domatapp.feature.onboarding.presentation.generated.resources.ic_pricing_wholesaler
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
 
 enum class SupplyChainRowVariant { Producer, Inactive, Consumer }
 
 data class SupplyChainRowUiModel(
-    val icon: DrawableResource,
+    val icon: ImageResource,
     val variant: SupplyChainRowVariant,
     val title: String,
     val subtitle: String,
@@ -59,25 +54,25 @@ internal fun OnboardingPricingPageContent(modifier: Modifier = Modifier) {
 
     val rows = listOf(
         SupplyChainRowUiModel(
-            icon = Res.drawable.ic_pricing_producer,
+            icon = MR.images.ic_pricing_producer,
             variant = SupplyChainRowVariant.Producer,
             title = stringResource(MR.strings.onboarding_pricing_producer_title),
             subtitle = stringResource(MR.strings.onboarding_pricing_producer_subtitle),
         ),
         SupplyChainRowUiModel(
-            icon = Res.drawable.ic_pricing_wholesaler,
+            icon = MR.images.ic_pricing_wholesaler,
             variant = SupplyChainRowVariant.Inactive,
             title = stringResource(MR.strings.onboarding_pricing_wholesaler_title),
             subtitle = stringResource(MR.strings.onboarding_pricing_wholesaler_subtitle),
         ),
         SupplyChainRowUiModel(
-            icon = Res.drawable.ic_pricing_retail,
+            icon = MR.images.ic_pricing_retail,
             variant = SupplyChainRowVariant.Inactive,
             title = stringResource(MR.strings.onboarding_pricing_retail_title),
             subtitle = stringResource(MR.strings.onboarding_pricing_retail_subtitle),
         ),
         SupplyChainRowUiModel(
-            icon = Res.drawable.ic_pricing_consumer,
+            icon = MR.images.ic_pricing_consumer,
             variant = SupplyChainRowVariant.Consumer,
             title = stringResource(MR.strings.onboarding_pricing_consumer_title),
             subtitle = stringResource(MR.strings.onboarding_pricing_consumer_subtitle),

@@ -40,15 +40,10 @@ import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.MR
+import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.colorResource
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import domatapp.feature.onboarding.presentation.generated.resources.Res
-import domatapp.feature.onboarding.presentation.generated.resources.ic_delivery_truck_green
-import domatapp.feature.onboarding.presentation.generated.resources.ic_person_community
-import domatapp.feature.onboarding.presentation.generated.resources.ic_person_community_white
-import domatapp.feature.onboarding.presentation.generated.resources.ic_trending_down
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
 
 data class CommunityHeroCardUiModel(
     val currentPrice: String,
@@ -185,15 +180,15 @@ private fun OverlappingAvatars(primary20: Color, primary30: Color, primary: Colo
             .width(48.dp + 48.dp + 48.dp + 48.dp - 16.dp - 16.dp - 16.dp)
             .height(48.dp),
     ) {
-        PersonAvatarCircle(icon = Res.drawable.ic_person_community, backgroundColor = primary20, offsetX = 0.dp)
-        PersonAvatarCircle(icon = Res.drawable.ic_person_community, backgroundColor = primary30, offsetX = 32.dp)
-        PersonAvatarCircle(icon = Res.drawable.ic_person_community, backgroundColor = primary30, offsetX = 64.dp)
-        PersonAvatarCircle(icon = Res.drawable.ic_person_community_white, backgroundColor = primary, offsetX = 96.dp)
+        PersonAvatarCircle(icon = MR.images.ic_person_community, backgroundColor = primary20, offsetX = 0.dp)
+        PersonAvatarCircle(icon = MR.images.ic_person_community, backgroundColor = primary30, offsetX = 32.dp)
+        PersonAvatarCircle(icon = MR.images.ic_person_community, backgroundColor = primary30, offsetX = 64.dp)
+        PersonAvatarCircle(icon = MR.images.ic_person_community_white, backgroundColor = primary, offsetX = 96.dp)
     }
 }
 
 @Composable
-private fun PersonAvatarCircle(icon: DrawableResource, backgroundColor: Color, offsetX: Dp) {
+private fun PersonAvatarCircle(icon: ImageResource, backgroundColor: Color, offsetX: Dp) {
     Box(
         modifier = Modifier
             .offset(x = offsetX)
@@ -251,7 +246,7 @@ private fun TruckWithPriceIndicator(
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                painter = painterResource(Res.drawable.ic_delivery_truck_green),
+                painter = painterResource(MR.images.ic_delivery_truck_green),
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
             )
@@ -268,7 +263,7 @@ private fun TruckWithPriceIndicator(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Image(
-                    painter = painterResource(Res.drawable.ic_trending_down),
+                    painter = painterResource(MR.images.ic_trending_down),
                     contentDescription = null,
                     modifier = Modifier.size(width = 12.dp, height = 7.dp),
                 )

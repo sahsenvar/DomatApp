@@ -27,21 +27,14 @@ import com.domatapp.core.presentation.component.header.DomatScreenHeader
 import com.domatapp.core.presentation.component.indicator.DomatProgressSteps
 import com.domatapp.core.presentation.component.input.DomatInputDropdown
 import com.domatapp.core.presentation.compose.LocalNavigator
+import com.domatapp.core.resource.MR
 import com.domatapp.feature.onboarding.presentation.model.location.LocationSelectionEffect
 import com.domatapp.feature.onboarding.presentation.model.location.LocationSelectionIntent
 import com.domatapp.feature.onboarding.presentation.model.location.LocationSelectionUiState
-import domatapp.feature.onboarding.presentation.generated.resources.Res
-import domatapp.feature.onboarding.presentation.generated.resources.ic_arrow_back
-import domatapp.feature.onboarding.presentation.generated.resources.ic_arrow_forward_white
-import domatapp.feature.onboarding.presentation.generated.resources.ic_building
-import domatapp.feature.onboarding.presentation.generated.resources.ic_checkmark
-import domatapp.feature.onboarding.presentation.generated.resources.ic_chevron_down
-import domatapp.feature.onboarding.presentation.generated.resources.ic_door
-import domatapp.feature.onboarding.presentation.generated.resources.ic_lock
+import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
-import org.jetbrains.compose.resources.painterResource
 
 private val blokItems = listOf("A1", "A2", "A3")
 private val daireItems = listOf("1", "2", "3", "4", "5", "6", "7", "8")
@@ -52,10 +45,10 @@ fun ColumnScope.LocationSelectionScreen(
     uiState: LocationSelectionUiState,
     onIntent: (LocationSelectionIntent) -> Unit,
 ) {
-    val checkmarkPainter = painterResource(Res.drawable.ic_checkmark)
-    val lockPainter = painterResource(Res.drawable.ic_lock)
-    val backPainter = painterResource(Res.drawable.ic_arrow_back)
-    val chevronPainter = painterResource(Res.drawable.ic_chevron_down)
+    val checkmarkPainter = painterResource(MR.images.ic_checkmark)
+    val lockPainter = painterResource(MR.images.ic_lock)
+    val backPainter = painterResource(MR.images.ic_arrow_back)
+    val chevronPainter = painterResource(MR.images.ic_chevron_down)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -108,7 +101,7 @@ fun ColumnScope.LocationSelectionScreen(
                     DomatInputDropdown(
                         label = "Blok No",
                         value = uiState.selectedBlock ?: "Seçiniz",
-                        iconPainter = painterResource(Res.drawable.ic_building),
+                        iconPainter = painterResource(MR.images.ic_building),
                         chevronPainter = chevronPainter,
                         checkmarkPainter = checkmarkPainter,
                         onClick = { onIntent(LocationSelectionIntent.ToggleBlokDropdown) },
@@ -122,7 +115,7 @@ fun ColumnScope.LocationSelectionScreen(
                     DomatInputDropdown(
                         label = "Daire No",
                         value = uiState.selectedApartment ?: "Seçiniz",
-                        iconPainter = painterResource(Res.drawable.ic_door),
+                        iconPainter = painterResource(MR.images.ic_door),
                         chevronPainter = chevronPainter,
                         checkmarkPainter = checkmarkPainter,
                         onClick = { onIntent(LocationSelectionIntent.ToggleDaireDropdown) },
@@ -149,7 +142,7 @@ fun ColumnScope.LocationSelectionScreen(
                     enabled = uiState.isConfirmEnabled,
                     trailingContent = {
                         Image(
-                            painter = painterResource(Res.drawable.ic_arrow_forward_white),
+                            painter = painterResource(MR.images.ic_arrow_forward_white),
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                         )

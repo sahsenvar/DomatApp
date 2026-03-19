@@ -33,9 +33,6 @@ kotlin {
                 // Resources (Moko Resources for i18n)
                 implementation(projects.core.resource)
 
-                // Compose Resources
-                implementation(libs.compose.components.resources)
-
                 // Coroutines
                 implementation(libs.kotlinx.coroutines.core)
 
@@ -79,7 +76,5 @@ tasks.matching { it.name == "kspAndroidMain" }.configureEach {
 }
 
 compose.resources {
-    publicResClass = false
-    packageOfResClass = "domatapp.feature.auth.presentation.generated.resources"
-    generateResClass = always
+    generateResClass = never
 }
