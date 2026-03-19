@@ -1,64 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Primary -->
-    <color name="primary_default">#FF13EC49</color>
-    <color name="primary_dark">#FF102215</color>
-    <color name="primary_20">#3313EC49</color>
-    <color name="primary_30">#4D13EC49</color>
-    <color name="primary_10">#1A13EC49</color>
-    <color name="primary_5">#0D13EC49</color>
+    <color name="primary_default">#13EC49</color>
+    <color name="primary_dark">#102215</color>
+    <color name="primary_20">#13EC4933</color>
+    <color name="primary_30">#13EC494D</color>
+    <color name="primary_10">#13EC491A</color>
+    <color name="primary_5">#13EC490D</color>
 
     <!-- Text -->
-    <color name="text_primary">#FF0F172A</color>
-    <color name="text_secondary">#FF475569</color>
-    <color name="text_tertiary">#FF64748B</color>
-    <color name="text_muted">#FF94A3B8</color>
-    <color name="text_disabled">#FF9CA3AF</color>
-    <color name="text_inverse">#FFFFFFFF</color>
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#475569</color>
+    <color name="text_tertiary">#64748B</color>
+    <color name="text_muted">#94A3B8</color>
+    <color name="text_disabled">#9CA3AF</color>
+    <color name="text_inverse">#FFFFFF</color>
 
     <!-- Surface -->
-    <color name="surface_default">#FFFFFFFF</color>
-    <color name="surface_subtle">#FFF8FAFC</color>
-    <color name="surface_base">#FFF6F8F6</color>
-    <color name="surface_muted">#FFF1F5F9</color>
-    <color name="surface_dark">#FF0F172A</color>
+    <color name="surface_default">#FFFFFF</color>
+    <color name="surface_subtle">#F8FAFC</color>
+    <color name="surface_base">#F6F8F6</color>
+    <color name="surface_muted">#F1F5F9</color>
+    <color name="surface_dark">#0F172A</color>
 
     <!-- Border -->
-    <color name="border_default">#FFE2E8F0</color>
-    <color name="border_light">#FFF1F5F9</color>
-    <color name="border_medium">#FFCBD5E1</color>
-    <color name="border_strong">#FF94A3B8</color>
+    <color name="border_default">#E2E8F0</color>
+    <color name="border_light">#F1F5F9</color>
+    <color name="border_medium">#CBD5E1</color>
+    <color name="border_strong">#94A3B8</color>
 
     <!-- Semantic -->
-    <color name="semantic_error">#FFEF4444</color>
-    <color name="semantic_success">#FF059669</color>
-    <color name="semantic_success_light">#FFD1FAE5</color>
-    <color name="semantic_warning">#FFFB923C</color>
-    <color name="semantic_info">#FF1E3A8A</color>
-    <color name="semantic_info_light">#FFDBEAFE</color>
+    <color name="semantic_error">#EF4444</color>
+    <color name="semantic_success">#059669</color>
+    <color name="semantic_success_light">#D1FAE5</color>
+    <color name="semantic_warning">#FB923C</color>
+    <color name="semantic_info">#1E3A8A</color>
+    <color name="semantic_info_light">#DBEAFE</color>
 
     <!-- Overlay -->
-    <color name="overlay_white_80">#CCFFFFFF</color>
-    <color name="overlay_white_90">#E5FFFFFF</color>
-    <color name="overlay_black">#FF000000</color>
-    <color name="overlay_dark">#FF111827</color>
+    <color name="overlay_white_80">#FFFFFFCC</color>
+    <color name="overlay_white_90">#FFFFFFE5</color>
+    <color name="overlay_black">#000000</color>
+    <color name="overlay_dark">#111827</color>
 
     <!-- Dark mode surface variants -->
-    <color name="surface_dark_variant">#FF1E293B</color>
-    <color name="surface_dark_outline">#FF334155</color>
+    <color name="surface_dark_variant">#1E293B</color>
+    <color name="surface_dark_outline">#334155</color>
 
     <!-- Error container -->
-    <color name="error_container_light">#FFFEE2E2</color>
-    <color name="error_container_on_light">#FF991B1B</color>
-    <color name="error_container_dark">#FF7F1D1D</color>
+    <color name="error_container_light">#FEE2E2</color>
+    <color name="error_container_on_light">#991B1B</color>
+    <color name="error_container_dark">#7F1D1D</color>
 
     <!-- White -->
-    <color name="white">#FFFFFFFF</color>
+    <color name="white">#FFFFFF</color>
 
     <!-- Hero -->
-    <color name="hero_gradient_start">#FF1A4731</color>
-    <color name="hero_gradient_end">#FF0D2418</color>
+    <color name="hero_gradient_start">#1A4731</color>
+    <color name="hero_gradient_end">#0D2418</color>
 
     <!-- Overlay with alpha -->
-    <color name="overlay_black_55">#8C000000</color>
+    <color name="overlay_black_55">#0000008C</color>
 </resources>
