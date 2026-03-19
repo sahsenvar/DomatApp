@@ -8,7 +8,9 @@
 
 ## Overview
 
-Migrate 7 onboarding screens from the CMPKMP project into DomatApp's `feature:onboarding` module following DomatApp's strict KMP/Clean Architecture conventions. All screens, ViewModels, and reusable components are fully adapted to DomatApp's design system (DomatColors, colorResource), MVI pattern (BaseViewModel), and KSP-based navigation code generation.
+Migrate 7 onboarding screens from a separate KMP project into DomatApp's `feature:onboarding` module following DomatApp's strict Clean Architecture, KSP-based navigation code generation, and MVI conventions. All naming, colors, and patterns are fully adapted to DomatApp conventions — no external project references remain.
+
+**Navigation flow:** Welcome → Effortless → Pricing → Community → Trust → Login → LocationSelection → `Route.Main.Home`
 
 ---
 
@@ -16,21 +18,22 @@ Migrate 7 onboarding screens from the CMPKMP project into DomatApp's `feature:on
 
 ### Changes to `core:navigation/Route.kt`
 
-Remove the existing `data object Onboarding : Route` and replace with a nested sealed interface:
+Remove `data object Onboarding : Route` and replace with a nested sealed interface. Each entry requires `@Serializable` (consistent with `AuthRoute` pattern):
 
 ```kotlin
+@Serializable
 sealed interface OnboardingRoute : Route {
-    data object Welcome           : OnboardingRoute
-    data object Effortless        : OnboardingRoute
-    data object Pricing           : OnboardingRoute
-    data object Community         : OnboardingRoute
-    data object Trust             : OnboardingRoute
-    data object Login             : OnboardingRoute
-    data object LocationSelection : OnboardingRoute
+    @Serializable data object Welcome           : OnboardingRoute
+    @Serializable data object Effortless        : OnboardingRoute
+    @Serializable data object Pricing           : OnboardingRoute
+    @Serializable data object Community         : OnboardingRoute
+    @Serializable data object Trust             : OnboardingRoute
+    @Serializable data object Login             : OnboardingRoute
+    @Serializable data object LocationSelection : OnboardingRoute
 }
 ```
 
-Navigation flow: Welcome → Effortless → Pricing → Community → Trust → Login → LocationSelection
+Any existing reference to `Route.Onboarding` in `composeApp` navigation setup must be updated to `Route.OnboardingRoute.Welcome`.
 
 ---
 
@@ -38,50 +41,93 @@ Navigation flow: Welcome → Effortless → Pricing → Community → Trust → 
 
 ### `feature:onboarding:presentation/build.gradle.kts`
 
-Add to existing dependencies:
+Mirror the auth presentation module exactly:
+
 ```kotlin
-androidMain {
-    dependencies {
-        implementation(projects.core.design)
-        implementation(projects.core.presentation)
-        implementation(libs.compose.material3)
-        implementation(libs.compose.ui)
-        implementation(libs.compose.foundation)
-        implementation(libs.compose.uiToolingPreview)
+plugins {
+    alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.domatapp.kmp.di)
+    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinSerialization)
+}
+
+kotlin {
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation(libs.kotlin.stdlib)
+                implementation(projects.core.presentation)
+                implementation(projects.core.common)
+                implementation(projects.core.navigation)
+                implementation(projects.core.resource)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.koin.core.viewmodel)
+                implementation(libs.compose.components.resources)
+            }
+        }
+        androidMain {
+            dependencies {
+                implementation(projects.core.design)
+                implementation(libs.compose.runtime)
+                implementation(libs.compose.foundation)
+                implementation(libs.compose.material3)
+                implementation(libs.compose.ui)
+                implementation(libs.compose.uiTooling)
+                implementation(libs.compose.uiToolingPreview)
+                implementation(libs.koin.compose)
+                implementation(libs.navigation3.runtime)
+            }
+        }
+        iosMain {
+            dependencies {}
+        }
     }
 }
+
+// @NavigationViewModel import style (use fully qualified form):
+// import com.domatapp.core.navigation.Route
+// @NavigationViewModel(Route.OnboardingRoute.Welcome::class)
+
 dependencies {
     add("kspAndroid", projects.core.processor)
+}
+
+// Ensure kspAndroidMain runs after kspCommonMainKotlinMetadata (Koin KSP)
+tasks.matching { it.name == "kspAndroidMain" }.configureEach {
+    dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
 }
 ```
 
 ---
 
-## 3. MVI Contract Structure
+## 3. Koin DI Module
 
-Each screen has its own contract files in `commonMain`:
-
-```
-feature/onboarding/presentation/src/commonMain/.../model/
-├── welcome/
-│   ├── OnboardingWelcomeUiState.kt
-│   ├── OnboardingWelcomeIntent.kt
-│   └── OnboardingWelcomeEffect.kt
-├── effortless/   (same structure)
-├── pricing/      (same structure)
-├── community/    (same structure)
-├── trust/        (same structure)
-├── login/        (same structure)
-└── location/
-    ├── LocationSelectionUiState.kt
-    ├── LocationSelectionIntent.kt
-    └── LocationSelectionEffect.kt
-```
-
-### Contract Pattern
+**Location:** `feature/onboarding/presentation/src/commonMain/.../di/OnboardingPresentationModule.kt`
 
 ```kotlin
-// UiState — minimal, no business data needed for simple screens
+@Module
+@ComponentScan("com.domatapp.feature.onboarding.presentation")
+class OnboardingPresentationModule
+```
+
+No domain module dependency needed (onboarding screens are navigation-only, no use cases required initially).
+
+---
+
+## 4. MVI Contract Structure
+
+**Location:** `feature/onboarding/presentation/src/commonMain/.../model/`
+
+Each screen has its own contract files. Pattern for simple screens (Welcome, Effortless, Pricing, Community, Trust):
+
+```kotlin
+// UiState
 data class OnboardingWelcomeUiState(val isLoading: Boolean = false)
 
 // Intent
@@ -95,7 +141,23 @@ sealed interface OnboardingWelcomeEffect {
 }
 ```
 
-### LocationSelection Contract (more complex)
+### Login Contract
+
+```kotlin
+data class OnboardingLoginUiState(val isLoading: Boolean = false)
+
+sealed interface OnboardingLoginIntent {
+    data object OnGoogleSignInClicked : OnboardingLoginIntent
+}
+
+sealed interface OnboardingLoginEffect {
+    data object NavigateToLocationSelection : OnboardingLoginEffect
+}
+```
+
+> **Note:** `OnboardingLoginScreen` coexists with the existing `AuthPage` in `feature:auth:presentation`. They serve different flows — onboarding login leads to location selection, while `AuthPage` leads directly to home. Both are kept independently.
+
+### LocationSelection Contract
 
 ```kotlin
 data class LocationSelectionUiState(
@@ -105,75 +167,88 @@ data class LocationSelectionUiState(
 )
 
 sealed interface LocationSelectionIntent {
-    data class SelectBlock(val block: String) : LocationSelectionIntent
-    data class SelectApartment(val apartment: String) : LocationSelectionIntent
-    data object Confirm : LocationSelectionIntent
-    data object GoBack : LocationSelectionIntent
+    data class SelectBlock(val block: String)     : LocationSelectionIntent
+    data class SelectApartment(val apt: String)   : LocationSelectionIntent
+    data object Confirm                           : LocationSelectionIntent
+    data object GoBack                            : LocationSelectionIntent
 }
 
 sealed interface LocationSelectionEffect {
-    data object NavigateToHome : LocationSelectionEffect
-    data object NavigateBack : LocationSelectionEffect
+    data object NavigateToHome : LocationSelectionEffect   // → Route.Main.Home
+    data object NavigateBack   : LocationSelectionEffect
 }
 ```
 
 ---
 
-## 4. ViewModel Architecture
+## 5. ViewModel Architecture
 
-**Location:** `feature/onboarding/presentation/src/androidMain/.../viewmodel/`
+**Location:** `feature/onboarding/presentation/src/commonMain/.../viewmodel/` (shared with iOS)
 
-### Pattern
+### Pattern (consistent with `AuthViewModel`)
+
+- `@NavigationViewModel(Route.OnboardingRoute.Welcome::class)` — fully qualified route
+- `@KoinViewModel` — required for Koin factory generation
+- Override `onIntent()` (not `handleIntent`) — matches `BaseViewModel.onIntent()`
 
 ```kotlin
-@NavigationViewModel(OnboardingRoute.Welcome::class)
+@NavigationViewModel(Route.OnboardingRoute.Welcome::class)
+@KoinViewModel
 class OnboardingWelcomeViewModel : BaseViewModel<
     OnboardingWelcomeUiState,
     OnboardingWelcomeIntent,
     OnboardingWelcomeEffect
 >(OnboardingWelcomeUiState()) {
 
-    override fun handleIntent(intent: OnboardingWelcomeIntent) {
+    override fun onIntent(intent: OnboardingWelcomeIntent) {
         when (intent) {
-            GoNext -> emitEffect(NavigateToEffortless)
+            OnboardingWelcomeIntent.GoNext -> emitEffect(OnboardingWelcomeEffect.NavigateToEffortless)
         }
     }
 }
 ```
 
-7 ViewModels total, each with `@NavigationViewModel` annotation for KSP code generation.
+7 ViewModels total: Welcome, Effortless, Pricing, Community, Trust, Login, LocationSelection.
 
-### Effect Handlers
+---
 
-Each screen has a `@NavigationEffectHandler` composable for navigation side effects:
+## 6. Effect Handler Architecture
+
+**Location:** `feature/onboarding/presentation/src/androidMain/.../screen/`
+
+Pattern mirrors `AuthEffectHandler` exactly — no navigator parameter, uses `LocalNavigator.current` + `collectLatest`:
 
 ```kotlin
-@NavigationEffectHandler(OnboardingRoute.Welcome::class)
+@NavigationEffectHandler(Route.OnboardingRoute.Welcome::class)
 @Composable
 fun OnboardingWelcomeEffectHandler(
     effectFlow: Flow<OnboardingWelcomeEffect>,
-    navigator: Navigator,
 ) {
-    LaunchedEffect(Unit) {
-        effectFlow.collect { effect ->
+    val navigator = LocalNavigator.current
+
+    LaunchedEffect(effectFlow) {
+        effectFlow.collectLatest { effect ->
             when (effect) {
-                NavigateToEffortless -> navigator.navigate(OnboardingRoute.Effortless)
+                OnboardingWelcomeEffect.NavigateToEffortless ->
+                    navigator.navigate(Route.OnboardingRoute.Effortless)
             }
         }
     }
 }
 ```
 
+LocationSelection effect handler navigates to `Route.Main.Home` via `navigator.replaceAll(Route.Main.Home)`.
+
 ---
 
-## 5. Screen Architecture
+## 7. Screen Architecture
 
 **Location:** `feature/onboarding/presentation/src/androidMain/.../screen/`
 
-### Pattern
+Pattern mirrors `AuthPage`:
 
 ```kotlin
-@NavigationScreen(OnboardingRoute.Welcome::class)
+@NavigationScreen(Route.OnboardingRoute.Welcome::class)
 @Composable
 fun OnboardingWelcomeScreen(
     uiState: OnboardingWelcomeUiState,
@@ -181,84 +256,94 @@ fun OnboardingWelcomeScreen(
 ) { ... }
 ```
 
-### Screens List
+### Screens
 
 | Screen | Route | Key Content |
 |--------|-------|-------------|
-| `OnboardingWelcomeScreen` | `Welcome` | Hero image, progress dots, title, button |
-| `OnboardingEffortlessScreen` | `Effortless` | Illustration, glow effects, title, button |
-| `OnboardingPricingScreen` | `Pricing` | Supply chain diagram (onboarding-specific) |
-| `OnboardingCommunityScreen` | `Community` | Community hero card (onboarding-specific) |
-| `OnboardingTrustScreen` | `Trust` | Shield icon, feature items |
-| `OnboardingLoginScreen` | `Login` | Hero image, Google Sign-In |
-| `LocationSelectionScreen` | `LocationSelection` | Location cards, dropdowns |
+| `OnboardingWelcomeScreen` | `Welcome` | Hero image, progress dots (step 1/5), title, next button |
+| `OnboardingEffortlessScreen` | `Effortless` | Illustration, glow effects, progress dots (step 2/5), next button |
+| `OnboardingPricingScreen` | `Pricing` | Supply chain diagram, progress dots (step 3/5), next button |
+| `OnboardingCommunityScreen` | `Community` | Community hero card, progress dots (step 4/5), next button |
+| `OnboardingTrustScreen` | `Trust` | Shield icon, feature items, progress dots (step 5/5), next button |
+| `OnboardingLoginScreen` | `Login` | Hero image, Google Sign-In button, terms text |
+| `LocationSelectionScreen` | `LocationSelection` | Location cards hierarchy, block/apartment dropdowns, confirm button |
 
 ---
 
-## 6. Design System Adaptation
+## 8. Design System Adaptation
 
 ### Color Mapping
 
-| CMPKMP | DomatApp |
+| Source | DomatApp |
 |--------|----------|
-| `AppColors.primaryAlpha10` | `colorResource(DomatColors.primary10)` |
-| `AppColors.primaryAlpha20` | `colorResource(DomatColors.primary20)` |
-| `AppColors.textPrimary` | `colorResource(DomatColors.textPrimary)` |
-| `AppColors.textBody` | `colorResource(DomatColors.textPrimary)` |
-| `AppColors.textSecondary` | `colorResource(DomatColors.textSecondary)` |
-| `AppColors.textMuted` | `colorResource(DomatColors.textMuted)` |
-| `AppColors.textTertiary` | `colorResource(DomatColors.textTertiary)` |
-| `AppColors.borderDefault` | `colorResource(DomatColors.borderDefault)` |
-| `AppColors.borderLight` | `colorResource(DomatColors.borderLight)` |
-| `AppColors.surfaceSubtle` | `colorResource(DomatColors.surfaceSubtle)` |
-| `MaterialTheme.colorScheme.primary` | `colorResource(DomatColors.primary)` |
-| `MaterialTheme.colorScheme.background` | `colorResource(DomatColors.surfaceDefault)` |
+| `primary alpha 10%` | `colorResource(DomatColors.primary10)` |
+| `primary alpha 20%` | `colorResource(DomatColors.primary20)` |
+| `text primary` | `colorResource(DomatColors.textPrimary)` |
+| `text body` | `colorResource(DomatColors.textPrimary)` |
+| `text secondary` | `colorResource(DomatColors.textSecondary)` |
+| `text muted` | `colorResource(DomatColors.textMuted)` |
+| `text tertiary` | `colorResource(DomatColors.textTertiary)` |
+| `border default` | `colorResource(DomatColors.borderDefault)` |
+| `border light` | `colorResource(DomatColors.borderLight)` |
+| `surface subtle` | `colorResource(DomatColors.surfaceSubtle)` |
+| `colorScheme.primary` | `colorResource(DomatColors.primary)` |
+| `colorScheme.background` | `colorResource(DomatColors.surfaceDefault)` |
 
 ### Spacing
 
-CMPKMP `AppSpacing.*` values are converted to direct `dp` constants or `DomatSpacing.*` equivalents.
+All spacing values converted to direct `dp` constants or `DomatSpacing.*` equivalents.
 
 ---
 
-## 7. Component Migration to `core:presentation`
+## 9. Component Migration to `core:presentation`
 
-### Migrated Components
+All components renamed with `Domat` prefix, colors adapted to `DomatColors + colorResource`.
 
-| Component | Source | Target File |
-|-----------|--------|-------------|
-| `ProgressSteps` | ProgressIndicator.kt | `component/indicator/DomatProgressSteps.kt` |
-| `ProgressDots` | ProgressIndicator.kt | `component/indicator/DomatProgressDots.kt` |
-| `FeatureListItem` | FeatureListItem.kt | `component/list/DomatFeatureListItem.kt` |
-| `HeroBadge` | HeroBadge.kt | `component/badge/DomatHeroBadge.kt` |
-| `BottomActionBar` | BottomActionBar.kt | `component/bar/DomatBottomActionBar.kt` |
-| `ScreenHeader` | ScreenHeader.kt | `component/header/DomatScreenHeader.kt` |
-| `LocationCard` + `LocationCardConnector` | LocationCard.kt | `component/card/DomatLocationCard.kt` |
-| `InputDropdown` | InputDropdown.kt | `component/input/DomatInputDropdown.kt` |
-| `GoogleSignInButton` | GoogleSignInButton.kt | `component/button/DomatGoogleSignInButton.kt` |
+### Migrated
 
-All components: renamed with `Domat` prefix, colors adapted to DomatColors + colorResource.
+| New Name | Target File |
+|----------|-------------|
+| `DomatProgressSteps` | `component/indicator/DomatProgressSteps.kt` |
+| `DomatProgressDots` | `component/indicator/DomatProgressDots.kt` |
+| `DomatFeatureListItem` | `component/list/DomatFeatureListItem.kt` |
+| `DomatHeroBadge` | `component/badge/DomatHeroBadge.kt` |
+| `DomatBottomActionBar` | `component/bar/DomatBottomActionBar.kt` |
+| `DomatScreenHeader` | `component/header/DomatScreenHeader.kt` |
+| `DomatLocationCard` + `DomatLocationCardConnector` | `component/card/DomatLocationCard.kt` |
+| `DomatInputDropdown` | `component/input/DomatInputDropdown.kt` |
+| `DomatGoogleSignInButton` | `component/button/DomatGoogleSignInButton.kt` |
 
-### Stays in `feature:onboarding:presentation`
+### Stays in `feature:onboarding:presentation` (onboarding-specific)
 
-| Component | Reason |
-|-----------|--------|
-| `SupplyChainRow` | Only used in OnboardingPricingScreen |
-| `CommunityGoalCard` | Only used in OnboardingCommunityScreen |
-| `DeliveryInfoCard` | Only used in OnboardingCommunityScreen |
-
----
-
-## 8. Navigation Registration
-
-KSP generates `OnboardingPresentationEntries.kt` with all 7 route composables. This extension function is added to the `NavDisplay` entry provider in `composeApp`'s navigation setup.
+| Component | Used By |
+|-----------|---------|
+| `SupplyChainRow` | `OnboardingPricingScreen` only |
+| `CommunityGoalCard` | `OnboardingCommunityScreen` only |
+| `DeliveryInfoCard` | `OnboardingCommunityScreen` only |
 
 ---
 
-## 9. File Structure Summary
+## 10. Navigation Registration
+
+KSP generates `OnboardingPresentationEntries.kt`. The generated `onboardingPresentationEntries()` extension is added to `composeApp`'s `NavDisplay` entry provider alongside `authPresentationEntries()`.
+
+---
+
+## 11. File Structure Summary
 
 ```
 feature/onboarding/presentation/src/
 ├── commonMain/kotlin/com/domatapp/feature/onboarding/presentation/
+│   ├── di/
+│   │   └── OnboardingPresentationModule.kt
+│   ├── viewmodel/
+│   │   ├── OnboardingWelcomeViewModel.kt
+│   │   ├── OnboardingEffortlessViewModel.kt
+│   │   ├── OnboardingPricingViewModel.kt
+│   │   ├── OnboardingCommunityViewModel.kt
+│   │   ├── OnboardingTrustViewModel.kt
+│   │   ├── OnboardingLoginViewModel.kt
+│   │   └── LocationSelectionViewModel.kt
 │   └── model/
 │       ├── welcome/   {UiState, Intent, Effect}
 │       ├── effortless/{UiState, Intent, Effect}
@@ -268,39 +353,22 @@ feature/onboarding/presentation/src/
 │       ├── login/     {UiState, Intent, Effect}
 │       └── location/  {UiState, Intent, Effect}
 └── androidMain/kotlin/com/domatapp/feature/onboarding/presentation/
-    ├── viewmodel/
-    │   ├── OnboardingWelcomeViewModel.kt
-    │   ├── OnboardingEffortlessViewModel.kt
-    │   ├── OnboardingPricingViewModel.kt
-    │   ├── OnboardingCommunityViewModel.kt
-    │   ├── OnboardingTrustViewModel.kt
-    │   ├── OnboardingLoginViewModel.kt
-    │   └── LocationSelectionViewModel.kt
     └── screen/
-        ├── OnboardingWelcomeScreen.kt
-        ├── OnboardingEffortlessScreen.kt
-        ├── OnboardingPricingScreen.kt
-        ├── OnboardingCommunityScreen.kt
-        ├── OnboardingTrustScreen.kt
-        ├── OnboardingLoginScreen.kt
-        └── LocationSelectionScreen.kt
+        ├── OnboardingWelcomeScreen.kt        (+ OnboardingWelcomeEffectHandler)
+        ├── OnboardingEffortlessScreen.kt     (+ OnboardingEffortlessEffectHandler)
+        ├── OnboardingPricingScreen.kt        (+ OnboardingPricingEffectHandler)
+        ├── OnboardingCommunityScreen.kt      (+ OnboardingCommunityEffectHandler)
+        ├── OnboardingTrustScreen.kt          (+ OnboardingTrustEffectHandler)
+        ├── OnboardingLoginScreen.kt          (+ OnboardingLoginEffectHandler)
+        └── LocationSelectionScreen.kt        (+ LocationSelectionEffectHandler)
 
 core/presentation/src/androidMain/.../component/
-├── indicator/
-│   ├── DomatProgressSteps.kt
-│   └── DomatProgressDots.kt
-├── list/
-│   └── DomatFeatureListItem.kt
-├── bar/
-│   └── DomatBottomActionBar.kt
-├── header/
-│   └── DomatScreenHeader.kt
-├── input/
-│   └── DomatInputDropdown.kt   (+ existing DomatTextField.kt)
-├── card/
-│   └── DomatLocationCard.kt    (+ existing DomatCard.kt)
-├── badge/
-│   └── DomatHeroBadge.kt       (+ existing DomatBadge.kt)
-└── button/
-    └── DomatGoogleSignInButton.kt (+ existing DomatButton.kt)
+├── indicator/  DomatProgressSteps.kt, DomatProgressDots.kt
+├── list/       DomatFeatureListItem.kt
+├── bar/        DomatBottomActionBar.kt
+├── header/     DomatScreenHeader.kt
+├── input/      DomatInputDropdown.kt
+├── card/       DomatLocationCard.kt
+├── badge/      DomatHeroBadge.kt
+└── button/     DomatGoogleSignInButton.kt
 ```
