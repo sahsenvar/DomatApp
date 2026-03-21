@@ -7,12 +7,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
-import dev.icerock.moko.resources.compose.colorResource
+import com.domatapp.core.resource.R
 
 enum class DomatTagVariant { New, Sale, Discount, Limited }
 
@@ -22,7 +21,12 @@ fun DomatTag(
     variant: DomatTagVariant,
     modifier: Modifier = Modifier,
 ) {
-    val (containerColor, contentColor) = tagColors(variant)
+    val (containerColor, contentColor) = when (variant) {
+        DomatTagVariant.New -> colorResource(R.color.malachite) to colorResource(R.color.slate_900)
+        DomatTagVariant.Sale -> colorResource(R.color.orange_400) to colorResource(R.color.white)
+        DomatTagVariant.Discount -> colorResource(R.color.red_500) to colorResource(R.color.white)
+        DomatTagVariant.Limited -> colorResource(R.color.slate_900) to colorResource(R.color.white)
+    }
 
     Surface(
         modifier = modifier,
@@ -36,14 +40,6 @@ fun DomatTag(
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
         )
     }
-}
-
-@Composable
-private fun tagColors(variant: DomatTagVariant): Pair<Color, Color> = when (variant) {
-    DomatTagVariant.New -> colorResource(DomatColors.primary) to colorResource(DomatColors.textPrimary)
-    DomatTagVariant.Sale -> colorResource(DomatColors.warning) to colorResource(DomatColors.textInverse)
-    DomatTagVariant.Discount -> colorResource(DomatColors.error) to colorResource(DomatColors.textInverse)
-    DomatTagVariant.Limited -> colorResource(DomatColors.surfaceDark) to colorResource(DomatColors.textInverse)
 }
 
 @Preview(showBackground = true)

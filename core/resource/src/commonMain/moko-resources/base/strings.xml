@@ -66,4 +66,25 @@
     <string name="onboarding_login_tos_connector"> ve </string>
     <string name="onboarding_login_tos_link2">Gizlilik Politikamızı</string>
     <string name="onboarding_login_tos_suffix"> kabul etmiş olursunuz.</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back_button">Geri</string>
+    <string name="cd_google_icon">Google</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_screen_title">Auth</string>
+    <string name="auth_tos_text">Devam ederek, Hizmet Şartlarımızı ve Gizlilik Politikamızı kabul etmiş olursunuz.</string>
+
+    <!-- Location Selection -->
+    <string name="location_selection_title">Teslimat Bölgesi</string>
+    <string name="location_district_label">İlçe / İl</string>
+    <string name="location_neighborhood_label">Mahalle</string>
+    <string name="location_building_label">Site / Apartman</string>
+    <string name="location_block_label">Blok No</string>
+    <string name="location_apartment_label">Daire No</string>
+    <string name="placeholder_select">Seçiniz</string>
+    <string name="button_continue">Devam Et</string>
+    <string name="location_mock_district">Tuzla/İstanbul</string>
+    <string name="location_mock_neighborhood">Aydınlı Mh.</string>
+    <string name="location_mock_building">Dumankaya Adres Lobi.</string>
 </resources>

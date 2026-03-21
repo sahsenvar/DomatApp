@@ -12,7 +12,7 @@ final class NavigationRouter: ObservableObject {
     @Published var currentTab: MainTab = .home
 
     /// Represents the root flow state (auth vs main content).
-    @Published var rootFlow: RootFlow = .auth
+    @Published var rootFlow: RootFlow = .onboarding
 
     enum RootFlow: Equatable {
         case auth

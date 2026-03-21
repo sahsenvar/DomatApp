@@ -183,5 +183,44 @@ LaunchedEffect(pagerState.currentPage) {
 - PNG dosyalarına `@1x` / `@2x` suffix zorunlu, aksi halde moko ignore eder
 - `compose.resources { generateResClass = never }` her modülde tanımlı olmalı
 
+### Canvas Yasağı — Modifier.drawBehind Kullan
+
+Compose'da `Canvas { }` composable **yasaktır**. Şu alternatifleri kullan:
+
+| İhtiyaç | Çözüm |
+|---|---|
+| Dashed/dotted kenarlık | `Modifier.drawBehind { }` — composable node oluşturmaz, crash riski yok |
+| SVG ikonu | Figma'dan SVG export → `moko-resources/images/*.svg` |
+| Diğer görseller | Standart Compose layout bileşenleri |
+
+**Örnek — noktalı daire kenarlık** (`OnboardingTrustScreen.kt`):
+```kotlin
+val dottedBorderColor = colorResource(R.color.malachite_20)
+Box(
+    modifier = Modifier
+        .size(280.dp)
+        .clip(CircleShape)
+        .background(colorResource(R.color.malachite_10))
+        .drawBehind {
+            val insetPx = 16.dp.toPx()
+            val strokeWidthPx = 2.dp.toPx()
+            val radius = (size.minDimension / 2f) - insetPx - (strokeWidthPx / 2f)
+            drawCircle(
+                color = dottedBorderColor,
+                radius = radius,
+                style = Stroke(
+                    width = strokeWidthPx,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f), 0f),
+                ),
+            )
+        },
+    contentAlignment = Alignment.Center,
+)
+```
+
+> ⚠️ **`painterResource()` ile Android XML `<shape>` drawable kullanma.** `DrawablePainter` implements `RememberObserver` — `HorizontalPager` prefetch mekanizması ile çakışır → `Cannot disable reuse from root` crash'i.
+>
+> `stroke-dasharray` VectorDrawable'da desteklenmez — SVG doğrudan moko'ya eklense bile dashes kaybolur.
+
 ### moko-resources Renk Format Kuralı
 `colors.xml` dosyasında `#RRGGBB` / `#RRGGBBAA` formatı kullanılır. Android native `#AARRGGBB` formatı **yasaktır** — moko bunu yanlış okur (örn. `#FF13EC49` → pembe üretir).

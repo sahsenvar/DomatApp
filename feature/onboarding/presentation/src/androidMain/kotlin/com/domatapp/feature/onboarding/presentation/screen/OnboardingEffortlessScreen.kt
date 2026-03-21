@@ -21,26 +21,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.MR
-import dev.icerock.moko.resources.compose.colorResource
-import dev.icerock.moko.resources.compose.painterResource
-import dev.icerock.moko.resources.compose.stringResource
+import com.domatapp.core.resource.R
 
 @Composable
 internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
-    val glowColorBottomLeft = colorResource(DomatColors.primary5)
-    val glowColorTopRight = colorResource(DomatColors.primary10)
-    val bgColor = colorResource(DomatColors.surfaceDefault)
-
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(bgColor),
+            .background(colorResource(R.color.white)),
     ) {
         Box(
             modifier = Modifier
@@ -49,7 +44,7 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
                 .offset(x = (-96).dp, y = 96.dp)
                 .background(
                     brush = Brush.radialGradient(
-                        colors = listOf(glowColorBottomLeft, Color.Transparent),
+                        colors = listOf(colorResource(R.color.malachite_5), Color.Transparent),
                     ),
                     shape = CircleShape,
                 ),
@@ -61,7 +56,7 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
                 .offset(x = 96.dp, y = (-96).dp)
                 .background(
                     brush = Brush.radialGradient(
-                        colors = listOf(glowColorTopRight, Color.Transparent),
+                        colors = listOf(colorResource(R.color.malachite_10), Color.Transparent),
                     ),
                     shape = CircleShape,
                 ),
@@ -81,7 +76,7 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
-                    painter = painterResource(MR.images.img_effortless_illustration),
+                    painter = painterResource(R.drawable.img_effortless_illustration),
                     contentDescription = null,
                     modifier = Modifier.size(320.dp),
                     contentScale = ContentScale.Fit,
@@ -97,15 +92,15 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text = stringResource(MR.strings.onboarding_effortless_title),
+                    text = stringResource(R.string.onboarding_effortless_title),
                     style = MaterialTheme.typography.headlineLarge,
-                    color = colorResource(DomatColors.textPrimary),
+                    color = colorResource(R.color.slate_900),
                     textAlign = TextAlign.Center,
                 )
                 Text(
-                    text = stringResource(MR.strings.onboarding_effortless_body),
+                    text = stringResource(R.string.onboarding_effortless_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colorResource(DomatColors.textSecondary),
+                    color = colorResource(R.color.slate_600),
                     textAlign = TextAlign.Center,
                 )
             }

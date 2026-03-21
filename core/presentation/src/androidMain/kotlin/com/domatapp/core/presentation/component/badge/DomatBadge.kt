@@ -7,12 +7,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
-import dev.icerock.moko.resources.compose.colorResource
+import com.domatapp.core.resource.R
 
 enum class DomatBadgeVariant { Primary, Warning, Error, Dark, Info, Success }
 
@@ -22,7 +21,14 @@ fun DomatBadge(
     variant: DomatBadgeVariant = DomatBadgeVariant.Primary,
     modifier: Modifier = Modifier,
 ) {
-    val (containerColor, contentColor) = badgeColors(variant)
+    val (containerColor, contentColor) = when (variant) {
+        DomatBadgeVariant.Primary -> colorResource(R.color.malachite) to colorResource(R.color.slate_900)
+        DomatBadgeVariant.Warning -> colorResource(R.color.orange_400) to colorResource(R.color.white)
+        DomatBadgeVariant.Error -> colorResource(R.color.red_500) to colorResource(R.color.white)
+        DomatBadgeVariant.Dark -> colorResource(R.color.slate_900) to colorResource(R.color.white)
+        DomatBadgeVariant.Info -> colorResource(R.color.blue_100) to colorResource(R.color.blue_900)
+        DomatBadgeVariant.Success -> colorResource(R.color.emerald_100) to colorResource(R.color.emerald_600)
+    }
 
     Surface(
         modifier = modifier,
@@ -36,16 +42,6 @@ fun DomatBadge(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
         )
     }
-}
-
-@Composable
-private fun badgeColors(variant: DomatBadgeVariant): Pair<Color, Color> = when (variant) {
-    DomatBadgeVariant.Primary -> colorResource(DomatColors.primary) to colorResource(DomatColors.textPrimary)
-    DomatBadgeVariant.Warning -> colorResource(DomatColors.warning) to colorResource(DomatColors.textInverse)
-    DomatBadgeVariant.Error -> colorResource(DomatColors.error) to colorResource(DomatColors.textInverse)
-    DomatBadgeVariant.Dark -> colorResource(DomatColors.surfaceDark) to colorResource(DomatColors.textInverse)
-    DomatBadgeVariant.Info -> colorResource(DomatColors.infoLight) to colorResource(DomatColors.info)
-    DomatBadgeVariant.Success -> colorResource(DomatColors.successLight) to colorResource(DomatColors.success)
 }
 
 @Preview(showBackground = true)

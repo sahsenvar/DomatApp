@@ -20,12 +20,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
-import dev.icerock.moko.resources.compose.colorResource
+import com.domatapp.core.resource.R
 
 @Composable
 fun DomatScreenHeader(
@@ -38,8 +39,8 @@ fun DomatScreenHeader(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(colorResource(DomatColors.surfaceDefault))
-            .border(width = 1.dp, color = colorResource(DomatColors.borderLight)),
+            .background(colorResource(R.color.white))
+            .border(width = 1.dp, color = colorResource(R.color.slate_100)),
     ) {
         Row(
             modifier = Modifier
@@ -56,14 +57,14 @@ fun DomatScreenHeader(
             ) {
                 Image(
                     painter = backIconPainter,
-                    contentDescription = "Geri",
+                    contentDescription = stringResource(R.string.cd_back_button),
                     modifier = Modifier.size(16.dp),
                 )
             }
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineSmall,
-                color = colorResource(DomatColors.textPrimary),
+                color = colorResource(R.color.slate_900),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .weight(1f)

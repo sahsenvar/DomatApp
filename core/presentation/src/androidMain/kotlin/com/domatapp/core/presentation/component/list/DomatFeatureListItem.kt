@@ -17,11 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
-import dev.icerock.moko.resources.compose.colorResource
+import com.domatapp.core.resource.R
 
 @Composable
 fun DomatFeatureListItem(
@@ -32,8 +32,8 @@ fun DomatFeatureListItem(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
-        color = colorResource(DomatColors.surfaceSubtle),
-        border = BorderStroke(1.dp, colorResource(DomatColors.borderLight)),
+        color = colorResource(R.color.slate_50),
+        border = BorderStroke(1.dp, colorResource(R.color.slate_100)),
     ) {
         Row(
             modifier = Modifier.padding(13.dp),
@@ -48,7 +48,7 @@ fun DomatFeatureListItem(
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodySmall,
-                color = colorResource(DomatColors.textPrimary),
+                color = colorResource(R.color.slate_900),
             )
         }
     }

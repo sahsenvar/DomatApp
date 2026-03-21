@@ -27,12 +27,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
-import dev.icerock.moko.resources.compose.colorResource
+import com.domatapp.core.resource.R
 
 @Composable
 fun DomatInputDropdown(
@@ -60,10 +60,10 @@ fun DomatInputDropdown(
                 .fillMaxWidth()
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(12.dp),
-            color = colorResource(DomatColors.surfaceDefault),
+            color = colorResource(R.color.white),
             border = BorderStroke(
                 width = if (isActive) 2.dp else 1.dp,
-                color = if (isActive) colorResource(DomatColors.primary) else colorResource(DomatColors.borderDefault),
+                color = if (isActive) colorResource(R.color.malachite) else colorResource(R.color.slate_200),
             ),
             shadowElevation = 1.dp,
         ) {
@@ -80,13 +80,13 @@ fun DomatInputDropdown(
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         colorFilter = ColorFilter.tint(
-                            if (isActive) colorResource(DomatColors.primary) else colorResource(DomatColors.textTertiary),
+                            if (isActive) colorResource(R.color.malachite) else colorResource(R.color.slate_500),
                         ),
                     )
                     Text(
                         text = label.uppercase(),
                         style = MaterialTheme.typography.labelLarge,
-                        color = colorResource(DomatColors.textTertiary),
+                        color = colorResource(R.color.slate_500),
                     )
                 }
                 Row(
@@ -97,7 +97,7 @@ fun DomatInputDropdown(
                     Text(
                         text = value,
                         style = MaterialTheme.typography.titleLarge,
-                        color = colorResource(DomatColors.textPrimary),
+                        color = colorResource(R.color.slate_900),
                         modifier = Modifier.weight(1f),
                     )
                     Image(
@@ -105,7 +105,7 @@ fun DomatInputDropdown(
                         contentDescription = null,
                         modifier = Modifier.size(12.dp).rotate(chevronRotation),
                         colorFilter = ColorFilter.tint(
-                            if (isActive) colorResource(DomatColors.primary) else colorResource(DomatColors.textMuted),
+                            if (isActive) colorResource(R.color.malachite) else colorResource(R.color.slate_400),
                         ),
                     )
                 }
@@ -125,8 +125,8 @@ fun DomatInputDropdown(
                         spotColor = Color.Black.copy(alpha = 0.1f),
                     ),
                 shape = RoundedCornerShape(12.dp),
-                color = colorResource(DomatColors.surfaceDefault),
-                border = BorderStroke(2.dp, colorResource(DomatColors.primary)),
+                color = colorResource(R.color.white),
+                border = BorderStroke(2.dp, colorResource(R.color.malachite)),
             ) {
                 Column(modifier = Modifier.padding(2.dp)) {
                     items.forEachIndexed { index, item ->
@@ -135,8 +135,8 @@ fun DomatInputDropdown(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    if (isSelected) colorResource(DomatColors.primary10)
-                                    else colorResource(DomatColors.surfaceDefault),
+                                    if (isSelected) colorResource(R.color.malachite_10)
+                                    else colorResource(R.color.white),
                                 )
                                 .clickable { onItemSelected(item) }
                                 .padding(horizontal = 16.dp, vertical = 13.dp),
@@ -146,19 +146,19 @@ fun DomatInputDropdown(
                             Text(
                                 text = item,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = colorResource(DomatColors.textPrimary),
+                                color = colorResource(R.color.slate_900),
                             )
                             if (isSelected) {
                                 Image(
                                     painter = checkmarkPainter,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
-                                    colorFilter = ColorFilter.tint(colorResource(DomatColors.primary)),
+                                    colorFilter = ColorFilter.tint(colorResource(R.color.malachite)),
                                 )
                             }
                         }
                         if (index < items.lastIndex) {
-                            HorizontalDivider(color = colorResource(DomatColors.borderLight), thickness = 1.dp)
+                            HorizontalDivider(color = colorResource(R.color.slate_100), thickness = 1.dp)
                         }
                     }
                 }

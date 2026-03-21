@@ -8,6 +8,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.navigation.Route.AuthRoute
 import com.domatapp.core.navigation.annotations.TopBar
+import androidx.compose.ui.res.stringResource
+import com.domatapp.core.resource.R
 import com.domatapp.feature.auth.presentation.model.AuthIntent
 import com.domatapp.feature.auth.presentation.model.AuthUiState
 
@@ -19,7 +21,7 @@ fun AuthTopBar(
 ) {
     @OptIn(ExperimentalMaterial3Api::class)
     CenterAlignedTopAppBar(
-        title = { Text(text = "Auth") }
+        title = { Text(text = stringResource(R.string.auth_screen_title)) }
     )
 }
 

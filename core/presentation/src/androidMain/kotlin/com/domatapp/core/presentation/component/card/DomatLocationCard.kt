@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,12 +20,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
-import dev.icerock.moko.resources.compose.colorResource
+import com.domatapp.core.resource.R
 
 @Composable
 fun DomatLocationCard(
@@ -44,7 +42,7 @@ fun DomatLocationCard(
             .fillMaxWidth()
             .alpha(cardAlpha)
             .clip(RoundedCornerShape(12.dp))
-            .background(colorResource(DomatColors.surfaceSubtle))
+            .background(colorResource(R.color.slate_50))
             .padding(17.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -53,7 +51,7 @@ fun DomatLocationCard(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(colorResource(DomatColors.primary20)),
+                .background(colorResource(R.color.malachite_20)),
             contentAlignment = Alignment.Center,
         ) {
             Image(
@@ -66,12 +64,12 @@ fun DomatLocationCard(
             Text(
                 text = label.uppercase(),
                 style = MaterialTheme.typography.labelLarge,
-                color = colorResource(DomatColors.textTertiary),
+                color = colorResource(R.color.slate_500),
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleLarge,
-                color = colorResource(DomatColors.textPrimary),
+                color = colorResource(R.color.slate_900),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -86,17 +84,6 @@ fun DomatLocationCard(
     }
 }
 
-@Composable
-fun DomatLocationCardConnector(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .padding(start = 36.dp)
-            .width(2.dp)
-            .height(24.dp)
-            .background(colorResource(DomatColors.borderDefault)),
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun DomatLocationCardPreview() {
@@ -106,13 +93,5 @@ private fun DomatLocationCardPreview() {
             value = "Aydınlı Mh.",
             checkmarkPainter = ColorPainter(Color.Green),
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun DomatLocationCardConnectorPreview() {
-    DomatTheme {
-        DomatLocationCardConnector()
     }
 }

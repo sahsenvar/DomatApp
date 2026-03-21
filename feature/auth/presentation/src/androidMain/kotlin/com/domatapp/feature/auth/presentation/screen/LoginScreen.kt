@@ -17,7 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,23 +31,17 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.navigation.Route
-import com.domatapp.core.navigation.annotations.NavigationEffectHandler
 import com.domatapp.core.navigation.annotations.NavigationScreen
 import com.domatapp.core.presentation.component.badge.DomatHeroBadge
 import com.domatapp.core.presentation.component.button.DomatGoogleSignInButton
-import com.domatapp.core.presentation.compose.LocalNavigator
-import com.domatapp.core.resource.MR
-import com.domatapp.feature.auth.presentation.model.login.LoginEffect
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.domatapp.core.resource.R
 import com.domatapp.feature.auth.presentation.model.login.LoginIntent
 import com.domatapp.feature.auth.presentation.model.login.LoginUiState
-import dev.icerock.moko.resources.compose.colorResource
-import dev.icerock.moko.resources.compose.painterResource
-import dev.icerock.moko.resources.compose.stringResource
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
 
 @NavigationScreen(Route.AuthRoute.Login::class)
 @Composable
@@ -57,15 +50,11 @@ fun ColumnScope.LoginScreen(
     onIntent: (LoginIntent) -> Unit,
 ) {
     val heroShape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
-    val primary = colorResource(DomatColors.primary)
-    val textSecondary = colorResource(DomatColors.textSecondary)
-    val textMuted = colorResource(DomatColors.textMuted)
-    val surfaceDefault = colorResource(DomatColors.surfaceDefault)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(surfaceDefault)
+            .background(colorResource(R.color.white))
             .verticalScroll(rememberScrollState()),
     ) {
         Box(
@@ -81,7 +70,7 @@ fun ColumnScope.LoginScreen(
                 .clip(heroShape),
         ) {
             Image(
-                painter = painterResource(MR.images.img_hero_login),
+                painter = painterResource(R.drawable.img_hero_login),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
@@ -106,11 +95,11 @@ fun ColumnScope.LoginScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 DomatHeroBadge(
-                    iconPainter = painterResource(MR.images.ic_leaf_badge),
-                    text = stringResource(MR.strings.onboarding_login_hero_badge),
+                    iconPainter = painterResource(R.drawable.ic_leaf_badge),
+                    text = stringResource(R.string.onboarding_login_hero_badge),
                 )
                 Text(
-                    text = stringResource(MR.strings.app_name),
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.displayLarge,
                     color = Color.White,
                 )
@@ -125,9 +114,9 @@ fun ColumnScope.LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = stringResource(MR.strings.onboarding_login_subtitle),
+                text = stringResource(R.string.onboarding_login_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
-                color = textSecondary,
+                color = colorResource(R.color.slate_600),
                 textAlign = TextAlign.Center,
             )
 
@@ -135,8 +124,8 @@ fun ColumnScope.LoginScreen(
 
             DomatGoogleSignInButton(
                 onClick = { onIntent(LoginIntent.OnGoogleSignInClicked) },
-                iconPainter = painterResource(MR.images.ic_google),
-                text = stringResource(MR.strings.google_sign_in_button_text),
+                iconPainter = painterResource(R.drawable.ic_google),
+                text = stringResource(R.string.google_sign_in_button_text),
             )
         }
 
@@ -149,44 +138,30 @@ fun ColumnScope.LoginScreen(
         ) {
             Text(
                 text = buildAnnotatedString {
-                    append(stringResource(MR.strings.onboarding_login_tos_prefix))
+                    append(stringResource(R.string.onboarding_login_tos_prefix))
                     withStyle(
                         SpanStyle(
-                            color = primary,
+                            color = colorResource(R.color.malachite),
                             textDecoration = TextDecoration.Underline,
                         ),
                     ) {
-                        append(stringResource(MR.strings.onboarding_login_tos_link1))
+                        append(stringResource(R.string.onboarding_login_tos_link1))
                     }
-                    append(stringResource(MR.strings.onboarding_login_tos_connector))
+                    append(stringResource(R.string.onboarding_login_tos_connector))
                     withStyle(
                         SpanStyle(
-                            color = primary,
+                            color = colorResource(R.color.malachite),
                             textDecoration = TextDecoration.Underline,
                         ),
                     ) {
-                        append(stringResource(MR.strings.onboarding_login_tos_link2))
+                        append(stringResource(R.string.onboarding_login_tos_link2))
                     }
-                    append(stringResource(MR.strings.onboarding_login_tos_suffix))
+                    append(stringResource(R.string.onboarding_login_tos_suffix))
                 },
                 style = MaterialTheme.typography.labelMedium,
-                color = textMuted,
+                color = colorResource(R.color.slate_400),
                 textAlign = TextAlign.Center,
             )
-        }
-    }
-}
-
-@NavigationEffectHandler(Route.AuthRoute.Login::class)
-@Composable
-fun LoginEffectHandler(effectFlow: Flow<LoginEffect>) {
-    val navigator = LocalNavigator.current
-    LaunchedEffect(effectFlow) {
-        effectFlow.collectLatest { effect ->
-            when (effect) {
-                LoginEffect.NavigateToLocationSelection ->
-                    navigator.navigate(Route.AuthRoute.LocationSelection)
-            }
         }
     }
 }

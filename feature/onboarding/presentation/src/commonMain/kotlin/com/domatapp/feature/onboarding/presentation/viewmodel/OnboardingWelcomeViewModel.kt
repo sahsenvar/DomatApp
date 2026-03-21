@@ -19,6 +19,7 @@ class OnboardingWelcomeViewModel : BaseViewModel<
     override fun onIntent(intent: OnboardingWelcomeIntent) {
         when (intent) {
             OnboardingWelcomeIntent.OnContinueClicked -> {
+                if (state.value.targetPage != null) return
                 val next = state.value.currentPage.next()
                 if (next != null) {
                     updateState { it.copy(targetPage = next) }

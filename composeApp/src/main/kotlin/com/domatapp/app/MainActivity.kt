@@ -3,6 +3,11 @@ package com.domatapp.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -50,6 +55,9 @@ fun DomatApp() {
         Scaffold(
             bottomBar = {},
             floatingActionButton = {},
+            topBar = {
+
+            },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
@@ -68,7 +76,15 @@ fun DomatApp() {
                     onboardingPresentationEntries()
                     homeEntries()
                 },
-                onBack = { mainViewModel.popBack() }
+                onBack = { mainViewModel.popBack() },
+                transitionSpec = {
+                    slideInHorizontally(animationSpec = tween(300, easing = LinearEasing)) { it } togetherWith
+                            slideOutHorizontally(animationSpec = tween(300, easing = LinearEasing)) { -it }
+                },
+                popTransitionSpec = {
+                    slideInHorizontally(animationSpec = tween(300, easing = LinearEasing)) { -it } togetherWith
+                            slideOutHorizontally(animationSpec = tween(300, easing = LinearEasing)) { it }
+                },
             )
         }
     }

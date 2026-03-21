@@ -1,17 +1,16 @@
 package com.domatapp.core.design.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.typography.DomatTypographyScale
-import com.domatapp.core.resource.MR
-import dev.icerock.moko.resources.compose.fontFamilyResource
+import com.domatapp.core.resource.R
 
-@Composable
 internal fun domatTypography(): Typography {
-    val nunito = fontFamilyResource(MR.fonts.nunito_sans_regular)
+    val nunito = FontFamily(Font(R.font.nunito_sans_regular))
 
     return Typography(
         displayLarge = TextStyle(

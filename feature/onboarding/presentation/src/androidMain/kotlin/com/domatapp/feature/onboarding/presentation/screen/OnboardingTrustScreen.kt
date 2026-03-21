@@ -1,6 +1,6 @@
 package com.domatapp.feature.onboarding.presentation.screen
 
-import androidx.compose.foundation.Canvas
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,89 +20,82 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.presentation.component.list.DomatFeatureListItem
-import com.domatapp.core.resource.MR
-import dev.icerock.moko.resources.ImageResource
-import dev.icerock.moko.resources.compose.colorResource
-import dev.icerock.moko.resources.compose.painterResource
-import dev.icerock.moko.resources.compose.stringResource
+import com.domatapp.core.resource.R
 
 data class TrustFeatureUiModel(
-    val icon: ImageResource,
+    @DrawableRes val icon: Int,
     val text: String,
 )
 
 @Composable
 internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
-    val primary10 = colorResource(DomatColors.primary10)
-    val primary20 = colorResource(DomatColors.primary20)
-    val textPrimary = colorResource(DomatColors.textPrimary)
-    val textSecondary = colorResource(DomatColors.textSecondary)
-    val surfaceDefault = colorResource(DomatColors.surfaceDefault)
-
     val features = listOf(
         TrustFeatureUiModel(
-            icon = MR.images.ic_feature_producer,
-            text = stringResource(MR.strings.onboarding_trust_feature_producer),
+            icon = R.drawable.ic_feature_producer,
+            text = stringResource(R.string.onboarding_trust_feature_producer),
         ),
         TrustFeatureUiModel(
-            icon = MR.images.ic_feature_location,
-            text = stringResource(MR.strings.onboarding_trust_feature_location),
+            icon = R.drawable.ic_feature_location,
+            text = stringResource(R.string.onboarding_trust_feature_location),
         ),
         TrustFeatureUiModel(
-            icon = MR.images.ic_feature_origin,
-            text = stringResource(MR.strings.onboarding_trust_feature_guarantee),
+            icon = R.drawable.ic_feature_origin,
+            text = stringResource(R.string.onboarding_trust_feature_guarantee),
         ),
     )
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(surfaceDefault)
+            .background(colorResource(R.color.white))
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(48.dp))
 
+        val dottedBorderColor = colorResource(R.color.malachite_20)
         Box(
             modifier = Modifier
                 .size(280.dp)
                 .clip(CircleShape)
-                .background(primary10),
+                .background(colorResource(R.color.malachite_10))
+                .drawBehind {
+                    val insetPx = 16.dp.toPx()
+                    val strokeWidthPx = 2.dp.toPx()
+                    val radius = (size.minDimension / 2f) - insetPx - (strokeWidthPx / 2f)
+                    drawCircle(
+                        color = dottedBorderColor,
+                        radius = radius,
+                        style = Stroke(
+                            width = strokeWidthPx,
+                            pathEffect = PathEffect.dashPathEffect(
+                                intervals = floatArrayOf(6f, 6f),
+                                phase = 0f,
+                            ),
+                        ),
+                    )
+                },
             contentAlignment = Alignment.Center,
         ) {
-            Canvas(modifier = Modifier.matchParentSize()) {
-                val insetPx = 16.dp.toPx()
-                val strokeWidthPx = 2.dp.toPx()
-                val radius = (size.minDimension / 2f) - insetPx - (strokeWidthPx / 2f)
-                drawCircle(
-                    color = primary20,
-                    radius = radius,
-                    style = Stroke(
-                        width = strokeWidthPx,
-                        pathEffect = PathEffect.dashPathEffect(
-                            intervals = floatArrayOf(6f, 6f),
-                            phase = 0f,
-                        ),
-                    ),
-                )
-            }
-
             Box(contentAlignment = Alignment.Center) {
                 Image(
-                    painter = painterResource(MR.images.ic_shield_large),
+                    painter = painterResource(R.drawable.ic_shield_large),
                     contentDescription = null,
                     modifier = Modifier.size(width = 70.dp, height = 90.dp),
                 )
                 Image(
-                    painter = painterResource(MR.images.ic_trust_wallet_badge),
+                    painter = painterResource(R.drawable.ic_trust_wallet_badge),
                     contentDescription = null,
                     modifier = Modifier
                         .size(width = 42.dp, height = 41.dp)
@@ -122,15 +115,15 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(11.dp),
         ) {
             Text(
-                text = stringResource(MR.strings.onboarding_trust_title),
+                text = stringResource(R.string.onboarding_trust_title),
                 style = MaterialTheme.typography.headlineLarge,
-                color = textPrimary,
+                color = colorResource(R.color.slate_900),
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = stringResource(MR.strings.onboarding_trust_body),
+                text = stringResource(R.string.onboarding_trust_body),
                 style = MaterialTheme.typography.bodyMedium,
-                color = textSecondary,
+                color = colorResource(R.color.slate_600),
                 textAlign = TextAlign.Center,
             )
         }

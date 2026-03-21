@@ -18,11 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.domatapp.core.design.theme.DomatColors
 import com.domatapp.core.design.theme.DomatTheme
-import dev.icerock.moko.resources.compose.colorResource
+import com.domatapp.core.resource.R
 
 @Composable
 fun DomatGoogleSignInButton(
@@ -35,14 +36,14 @@ fun DomatGoogleSignInButton(
         onClick = onClick,
         modifier = modifier.fillMaxWidth().height(56.dp),
         shape = RoundedCornerShape(12.dp),
-        color = colorResource(DomatColors.surfaceDefault),
-        border = BorderStroke(1.dp, colorResource(DomatColors.borderDefault)),
+        color = colorResource(R.color.white),
+        border = BorderStroke(1.dp, colorResource(R.color.slate_200)),
         shadowElevation = 1.dp,
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Image(
                 painter = iconPainter,
-                contentDescription = "Google",
+                contentDescription = stringResource(R.string.cd_google_icon),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .padding(start = 20.dp)
@@ -51,7 +52,7 @@ fun DomatGoogleSignInButton(
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
-                color = colorResource(DomatColors.textPrimary),
+                color = colorResource(R.color.slate_900),
             )
         }
     }
