@@ -1,0 +1,12 @@
+appId: com.domatapp
+---
+- launchApp:
+    clearState: true
+- tapOn: Devam Et
+- tapOn: Hmm.. Güzelmiş. Başka?
+- tapOn: Uygunsa kalitesi kötü müdür?
+- tapOn: Ben pazardan alıyorum 😬
+- tapOn: Süpermiş! Hadi başlayalım
+- tapOn: Google ile Devam Et
+
+

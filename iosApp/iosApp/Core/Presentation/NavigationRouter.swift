@@ -12,7 +12,7 @@ final class NavigationRouter: ObservableObject {
     @Published var currentTab: MainTab = .home
 
     /// Represents the root flow state (auth vs main content).
-    @Published var rootFlow: RootFlow = .auth
+    @Published var rootFlow: RootFlow = .onboarding
 
     enum RootFlow: Equatable {
         case auth
@@ -68,6 +68,9 @@ enum AppRoute: Hashable {
     // Main (tab-based, handled separately)
     // These are for push-navigation within tabs:
 
+    // Auth sub-screens
+    case locationSelection
+
     // Product
     case productList
     case productDetail(productId: String)
@@ -122,6 +125,8 @@ struct RouteDestination: View {
             RegisterView()
         case .forgotPassword:
             ForgotPasswordView()
+        case .locationSelection:
+            LocationSelectionView()
         case .productList:
             ProductListView()
         case .productDetail(let productId):

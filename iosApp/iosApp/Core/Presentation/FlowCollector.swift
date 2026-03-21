@@ -25,7 +25,7 @@ final class StateFlowCollector<T: AnyObject>: ObservableObject {
                     guard !Task.isCancelled, let self else {
                         break
                     }
-                    if let typedValue = newValue as ? T {
+                    if let typedValue = newValue as? T {
                         self.value = typedValue
                     }
                 }

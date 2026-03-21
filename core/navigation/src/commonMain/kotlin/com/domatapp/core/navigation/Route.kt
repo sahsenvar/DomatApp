@@ -7,8 +7,8 @@ sealed interface Route {
 
     @Serializable
     sealed interface AuthRoute : Route {
-        @Serializable
-        data object AuthScreen : AuthRoute
+        @Serializable data object Login             : AuthRoute
+        @Serializable data object LocationSelection : AuthRoute
 
         @Serializable
         data class AddressValidationScreen(
@@ -17,7 +17,13 @@ sealed interface Route {
     }
 
     @Serializable
-    data object Onboarding : Route
+    sealed interface OnboardingRoute : Route {
+        @Serializable data object Welcome           : OnboardingRoute
+        @Serializable data object Effortless        : OnboardingRoute
+        @Serializable data object Pricing           : OnboardingRoute
+        @Serializable data object Community         : OnboardingRoute
+        @Serializable data object Trust             : OnboardingRoute
+    }
 
     @Serializable
     sealed interface Main : Route {

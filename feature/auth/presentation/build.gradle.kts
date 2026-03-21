@@ -38,15 +38,22 @@ kotlin {
 
                 // Koin ViewModel (for @KoinViewModel generated code)
                 implementation(libs.koin.core.viewmodel)
+
+
             }
         }
         androidMain {
             dependencies {
+                // Design system
+                implementation(projects.core.design)
+
                 // Compose
                 implementation(libs.compose.runtime)
                 implementation(libs.compose.foundation)
                 implementation(libs.compose.material3)
                 implementation(libs.compose.ui)
+                implementation(libs.compose.uiTooling)
+                implementation(libs.compose.uiToolingPreview)
                 implementation(libs.koin.compose)
 
                 // Navigation3 (for generated entries extension)
@@ -66,4 +73,8 @@ dependencies {
 // Ensure kspAndroidMain runs after kspCommonMainKotlinMetadata (Koin KSP)
 tasks.matching { it.name == "kspAndroidMain" }.configureEach {
     dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
+}
+
+compose.resources {
+    generateResClass = never
 }

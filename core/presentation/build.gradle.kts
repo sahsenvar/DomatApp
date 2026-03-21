@@ -4,6 +4,10 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+compose.resources {
+    generateResClass = never
+}
+
 kotlin {
     iosX64()
     iosArm64()
@@ -28,7 +32,10 @@ kotlin {
         }
         androidMain {
             dependencies {
+                implementation(projects.core.design)
                 implementation(libs.compose.material3)
+                implementation(libs.compose.uiTooling)
+                implementation(libs.compose.uiToolingPreview)
             }
         }
         iosMain {

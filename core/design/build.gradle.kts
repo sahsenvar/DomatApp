@@ -4,11 +4,15 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+compose.resources {
+    generateResClass = never
+}
+
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(projects.core.resource)
+                api(projects.core.resource)
             }
         }
         androidMain {
