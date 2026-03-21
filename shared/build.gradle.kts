@@ -48,6 +48,7 @@ kotlin {
             api(projects.core.resulting)
             api(projects.core.serialization)
             api(projects.core.presentation)
+            api(projects.core.mapping)
 
             api(projects.feature.auth.domain)
             api(projects.feature.auth.data)

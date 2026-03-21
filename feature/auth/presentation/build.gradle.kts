@@ -7,6 +7,13 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+composeCompiler {
+    if (project.findProperty("compose.compiler.metrics") == "true") {
+        metricsDestination = layout.buildDirectory.dir("compose-metrics")
+        reportsDestination = layout.buildDirectory.dir("compose-reports")
+    }
+}
+
 kotlin {
     iosX64()
     iosArm64()
@@ -19,6 +26,9 @@ kotlin {
 
                 // Presentation layer only depends on domain
                 implementation(projects.feature.auth.domain)
+
+                // Core domain (for DomainModel marker interface)
+                implementation(projects.core.domain)
 
                 // Core presentation (for BaseViewModel)
                 implementation(projects.core.presentation)

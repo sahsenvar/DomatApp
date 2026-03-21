@@ -1,6 +1,7 @@
 package com.domatapp.shared.di
 
 import com.domatapp.core.config.di.CoreConfigModule
+import com.domatapp.core.mapping.PlatformConverters
 import com.domatapp.core.remote.di.CoreRemoteModule
 import com.domatapp.core.resource.di.CoreResourceModule
 import com.domatapp.core.serialization.di.CoreSerializationModule
@@ -22,6 +23,9 @@ private val databaseModule = module {
 }
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication {
+    // Register all platform-specific and built-in type converters
+    PlatformConverters.register()
+
     return startKoin {
         appDeclaration()
         modules(
