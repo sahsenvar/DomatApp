@@ -16,15 +16,12 @@ fun doInitKoin() = initKoin {}
  * ```
  */
 class KoinHelper : KoinComponent {
-    fun authViewModel() =
-        getKoin().get<com.domatapp.feature.auth.presentation.viewmodel.AuthViewModel>()
-
     fun loginViewModel() =
-        getKoin().get<com.domatapp.feature.auth.presentation.viewmodel.LoginViewModel>()
+        getKoin().get<com.domatapp.feature.auth.presentation.login.LoginViewModel>()
 
     fun onboardingWelcomeViewModel() =
-        getKoin().get<com.domatapp.feature.onboarding.presentation.viewmodel.OnboardingWelcomeViewModel>()
+        getKoin().get<com.domatapp.feature.onboarding.presentation.welcome.OnboardingWelcomeViewModel>()
 
     fun locationSelectionViewModel() =
-        getKoin().get<com.domatapp.feature.auth.presentation.viewmodel.LocationSelectionViewModel>()
+        getKoin().get<com.domatapp.feature.auth.presentation.location.LocationSelectionViewModel>()
 }

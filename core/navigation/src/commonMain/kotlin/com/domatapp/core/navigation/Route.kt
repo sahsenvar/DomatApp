@@ -7,7 +7,6 @@ sealed interface Route {
 
     @Serializable
     sealed interface AuthRoute : Route {
-        @Serializable data object AuthScreen        : AuthRoute
         @Serializable data object Login             : AuthRoute
         @Serializable data object LocationSelection : AuthRoute
 
