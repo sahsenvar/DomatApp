@@ -7,6 +7,14 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+composeCompiler {
+    // Stability reports için
+    if (project.findProperty("compose.compiler.metrics") == "true") {
+        metricsDestination = layout.buildDirectory.dir("compose-metrics")
+        reportsDestination = layout.buildDirectory.dir("compose-reports")
+    }
+}
+
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)

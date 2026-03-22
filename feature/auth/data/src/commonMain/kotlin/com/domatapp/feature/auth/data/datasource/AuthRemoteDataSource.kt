@@ -7,8 +7,8 @@ import com.domatapp.core.remote.annotations.Header
 import com.domatapp.core.remote.annotations.POST
 import com.domatapp.core.remote.annotations.RemoteDataSource
 import com.domatapp.core.remote.annotations.Subscribe
+import com.domatapp.feature.auth.data.deneme.UserRemoteModel
 import com.domatapp.feature.auth.data.dto.GoogleSignInRequest
-import com.domatapp.feature.auth.data.dto.RemoteUserDto
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -24,7 +24,7 @@ interface AuthRemoteDataSource {
     @POST("auth/google")
     suspend fun signInWithGoogle(
         @Body request: GoogleSignInRequest
-    ): RemoteUserDto
+    ): UserRemoteModel
 
     /**
      * Retrieve current session.
@@ -32,7 +32,7 @@ interface AuthRemoteDataSource {
     @GET("auth/session")
     suspend fun getSession(
         @Header("Authorization") token: String
-    ): RemoteUserDto
+    ): UserRemoteModel
 
     /**
      * Logout current user.

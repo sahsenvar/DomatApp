@@ -18,6 +18,7 @@ kotlin {
                 implementation(projects.core.remote)
                 implementation(projects.core.config)
                 implementation(projects.core.data)
+                implementation(projects.core.mapping)
 
 
                 // Libraries =======================================================================

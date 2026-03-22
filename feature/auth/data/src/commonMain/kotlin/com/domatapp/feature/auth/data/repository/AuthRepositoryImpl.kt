@@ -1,18 +1,13 @@
 package com.domatapp.feature.auth.data.repository
 
-import com.domatapp.core.resulting.error.RemoteError
 import com.domatapp.feature.auth.data.datasource.AuthConfigDataSource
 import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSource
-import com.domatapp.feature.auth.data.dto.GoogleSignInRequest
 import com.domatapp.feature.auth.data.mapper.toAuthError
-import com.domatapp.feature.auth.data.mapper.toDomain
 import com.domatapp.feature.auth.domain.model.AuthSession
 import com.domatapp.feature.auth.domain.repository.AuthRepository
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.retryWhen
 
 class AuthRepositoryImpl(
     private val remoteDataSource: AuthRemoteDataSource,
@@ -20,22 +15,22 @@ class AuthRepositoryImpl(
     private val configDataSource: AuthConfigDataSource
 ) : AuthRepository {
 
-    override fun loginWithGoogle(idToken: String): Flow<AuthSession> = flow {
-        val dto = remoteDataSource.signInWithGoogle(GoogleSignInRequest(idToken))
-
-        // TODO: Save to local data source
-        // configDataSource.saveToken("sample")
-        // localDataSource.saveSession(...)
-
-        emit(dto.toDomain())
-    }.retryWhen { cause, attempt ->
-        if (cause is RemoteError.NoConnection && attempt < 3) {
-            delay(1000 * (attempt + 1))
-            true
-        } else {
-            false
-        }
-    }.catch { throw it.toAuthError() }
+    override fun loginWithGoogle(idToken: String): Flow<AuthSession> = TODO()
+    //    val dto = remoteDataSource.signInWithGoogle(GoogleSignInRequest(idToken))
+//
+    //    // TODO: Save to local data source
+    //    // configDataSource.saveToken("sample")
+    //    // localDataSource.saveSession(...)
+//
+    //    emit(dto.toAuthSession())
+    //}.retryWhen { cause, attempt ->
+    //    if (cause is RemoteError.NoConnection && attempt < 3) {
+    //        delay(1000 * (attempt + 1))
+    //        true
+    //    } else {
+    //        false
+    //    }
+    //}.catch { throw it.toAuthError() }
 
     override fun observeAuthSession(): Flow<AuthSession?> = flow {
         // TODO: Observe from config data source

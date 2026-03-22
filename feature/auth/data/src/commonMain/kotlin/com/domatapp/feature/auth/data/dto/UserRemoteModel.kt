@@ -1,5 +1,6 @@
 package com.domatapp.feature.auth.data.dto
 
+import com.domatapp.core.data.model.RemoteModel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -10,7 +11,6 @@ import kotlinx.serialization.Serializable
 data class RemoteUserDto(
     @SerialName("user_id")
     val userId: String,
-    @SerialName("email")
     val email: String,
     @SerialName("display_name")
     val displayName: String? = null,
@@ -20,4 +20,6 @@ data class RemoteUserDto(
     val accessToken: String,
     @SerialName("refresh_token")
     val refreshToken: String? = null
-)
+) : RemoteModel
+
+//val a = UserRemoteModel("","","","","").to

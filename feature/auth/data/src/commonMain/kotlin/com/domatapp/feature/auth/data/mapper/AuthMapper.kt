@@ -1,24 +1,7 @@
 package com.domatapp.feature.auth.data.mapper
 
 import com.domatapp.core.resulting.error.RemoteError
-import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSource
-import com.domatapp.feature.auth.data.dto.RemoteUserDto
 import com.domatapp.feature.auth.domain.error.AuthError
-import com.domatapp.feature.auth.domain.model.AuthSession
-
-/**
- * Map RemoteUserDto to domain AuthSession.
- */
-fun RemoteUserDto.toDomain(): AuthSession {
-    return AuthSession(
-        userId = userId,
-        email = email,
-        displayName = displayName,
-        photoUrl = photoUrl,
-        accessToken = accessToken,
-        refreshToken = refreshToken
-    )
-}
 
 /**
  * Map exceptions to AuthError domain errors.
