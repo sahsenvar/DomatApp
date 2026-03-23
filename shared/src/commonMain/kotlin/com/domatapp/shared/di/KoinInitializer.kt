@@ -8,19 +8,10 @@ import com.domatapp.core.serialization.di.CoreSerializationModule
 import com.domatapp.feature.auth.data.di.AuthDataModule
 import com.domatapp.feature.auth.domain.di.AuthDomainModule
 import com.domatapp.feature.auth.presentation.di.AuthPresentationModule
-import com.domatapp.shared.database.AppDatabase
-import com.domatapp.shared.database.getDatabaseBuilder
-import com.domatapp.shared.database.getRoomDatabase
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
-import org.koin.dsl.module
 import org.koin.ksp.generated.module
-
-private val databaseModule = module {
-    single<AppDatabase> { getRoomDatabase(getDatabaseBuilder()) }
-    single { get<AppDatabase>().authLocalDataSource() }
-}
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication {
     // Register all platform-specific and built-in type converters
@@ -33,7 +24,6 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication {
             CoreRemoteModule().module,
             CoreConfigModule().module,
             CoreResourceModule().module,
-            databaseModule,
             AuthDomainModule().module,
             AuthDataModule().module,
             AuthPresentationModule().module,

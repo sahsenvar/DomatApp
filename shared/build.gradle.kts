@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.skie)
     alias(libs.plugins.mokoResources)
-    alias(libs.plugins.androidxRoom)
 }
 
 kotlin {
@@ -61,16 +60,8 @@ kotlin {
             api(libs.moko.resources)
             api(libs.moko.graphics)
 
-            // Room
-            implementation(libs.androidx.room.runtime)
-            implementation(libs.androidx.sqlite.bundled)
         }
     }
-}
-
-room {
-    schemaDirectory("$projectDir/schemas")
-    generateKotlin = true
 }
 
 multiplatformResources {
@@ -79,10 +70,6 @@ multiplatformResources {
 
 dependencies {
     kspCommonMainMetadata(libs.koin.ksp.compiler)
-    add("kspAndroid", libs.androidx.room.compiler)
-    add("kspIosX64", libs.androidx.room.compiler)
-    add("kspIosArm64", libs.androidx.room.compiler)
-    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
 }
 
 ksp {

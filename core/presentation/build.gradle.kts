@@ -1,38 +1,12 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.domatapp.cmp.library)
 }
 
-kotlin {
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
-    sourceSets {
-        commonMain {
-            dependencies {
-                implementation(projects.core.domain)
-                implementation(projects.core.common)
-                implementation(projects.core.navigation)
-
-                implementation(libs.kotlin.stdlib)
-                implementation(libs.kotlinx.coroutines.core)
-
-                // Lifecycle ViewModel for KMP
-                api(libs.androidx.lifecycle.viewmodel)
-
-                // Compose Runtime (For ViewModels/State)
-                api(libs.compose.runtime)
-            }
-        }
-        androidMain {
-            dependencies {
-                implementation(libs.compose.material3)
-            }
-        }
-        iosMain {
-            dependencies {}
-        }
-    }
+dependencies {
+    commonMainImplementation(projects.core.domain)
+    commonMainImplementation(projects.core.common)
+    commonMainImplementation(projects.core.navigation)
+    commonMainImplementation(libs.kotlinx.coroutines.core)
+    commonMainApi(libs.androidx.lifecycle.viewmodel)
 }

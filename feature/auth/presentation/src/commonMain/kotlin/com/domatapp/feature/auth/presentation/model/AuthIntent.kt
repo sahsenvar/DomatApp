@@ -19,9 +19,4 @@ sealed class AuthIntent {
      * User cancelled Google Sign-In dialog.
      */
     data object OnGoogleSignInCancelled : AuthIntent()
-
-    /**
-     * User clicked "Dismiss" on error message.
-     */
-    data object OnErrorDismissed : AuthIntent()
 }

@@ -1,11 +1,12 @@
 package com.domatapp.core.mapping.converter.builtin
 
 import com.domatapp.core.mapping.converter.MapTypeConverter
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /**
  * Converts ISO-8601 String to Instant.
  */
+
 object StringToInstantConverter : MapTypeConverter<String, Instant>(String::class, Instant::class) {
     override fun convertToNonNull(value: String): Instant = Instant.parse(value)
     override fun convertFromNonNull(value: Instant): String = value.toString()

@@ -5,26 +5,9 @@ plugins {
     alias(libs.plugins.mokoResources)
 }
 
-kotlin {
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
-    sourceSets {
-        commonMain {
-            dependencies {
-                implementation(libs.kotlin.stdlib)
-                api(libs.moko.resources)
-                api(libs.moko.resources.compose)
-            }
-        }
-        androidMain {
-            dependencies {}
-        }
-        iosMain {
-            dependencies {}
-        }
-    }
+dependencies {
+    commonMainApi(libs.moko.resources)
+    commonMainApi(libs.moko.resources.compose)
 }
 
 multiplatformResources {

@@ -38,7 +38,7 @@ abstract class BaseViewModel<UiState : Any, Intent : Any, Effect : Any>(
      * Update the UI state.
      * Call this from concrete ViewModels to update state.
      */
-    protected fun updateState(reducer: (UiState) -> UiState) {
+    protected fun updateState(reducer: UiState.() -> UiState) {
         _state.value = reducer(_state.value)
     }
 

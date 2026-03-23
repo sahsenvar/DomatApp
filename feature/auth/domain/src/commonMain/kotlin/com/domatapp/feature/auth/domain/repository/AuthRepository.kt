@@ -1,6 +1,6 @@
 package com.domatapp.feature.auth.domain.repository
 
-import com.domatapp.feature.auth.domain.model.AuthSession
+import com.domatapp.feature.auth.domain.model.AuthSessionDomainModel
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -10,16 +10,10 @@ import kotlinx.coroutines.flow.Flow
 interface AuthRepository {
 
     /**
-     * Login with Google ID token.
-     * Returns Flow that emits AuthSession on success, throws exception on error.
+     * Login with Google ID token via Supabase auth endpoint.
+     * Returns Flow that emits AuthSessionDomainModel on success, throws exception on error.
      */
-    fun loginWithGoogle(idToken: String): Flow<AuthSession>
-
-    /**
-     * Observe current auth session.
-     * Emits null if no active session.
-     */
-    fun observeAuthSession(): Flow<AuthSession?>
+    fun loginWithGoogle(idToken: String): Flow<AuthSessionDomainModel>
 
     /**
      * Logout current user.

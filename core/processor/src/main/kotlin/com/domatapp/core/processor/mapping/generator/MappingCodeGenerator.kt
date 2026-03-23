@@ -26,11 +26,11 @@ class MappingCodeGenerator(private val logger: KSPLogger) {
                 isReverse
             )
 
-            is MappingStrategy.Nested -> CodeBlock.of(
-                "%N?.%N()",
-                sourceField.name,
-                strategy.mapperFunctionName
-            )
+            is MappingStrategy.Nested -> if (sourceField.isNullable) {
+                CodeBlock.of("%N?.%N()", sourceField.name, strategy.mapperFunctionName)
+            } else {
+                CodeBlock.of("%N.%N()", sourceField.name, strategy.mapperFunctionName)
+            }
 
             is MappingStrategy.Collection -> generateCollectionMapping(
                 sourceField,

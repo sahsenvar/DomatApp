@@ -60,7 +60,6 @@ fun ColumnScope.AuthPage(
 
             ContentSection(
                 isLoading = uiState.isLoading,
-                isSignInInProgress = uiState.isGoogleSignInInProgress,
                 onGoogleSignInClick = { onIntent(AuthIntent.OnGoogleSignInClicked) }
             )
         }
@@ -141,7 +140,6 @@ private fun HeroSection() {
 @Composable
 private fun ContentSection(
     isLoading: Boolean,
-    isSignInInProgress: Boolean,
     onGoogleSignInClick: () -> Unit
 ) {
     Column(
@@ -206,7 +204,7 @@ private fun ContentSection(
 
         Button(
             onClick = onGoogleSignInClick,
-            enabled = !isLoading && !isSignInInProgress,
+            enabled = !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -218,7 +216,7 @@ private fun ContentSection(
             border = ButtonDefaults.outlinedButtonBorder(enabled = true),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
         ) {
-            if (isLoading || isSignInInProgress) {
+            if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
                     strokeWidth = 2.dp,
