@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.tooling.preview.Preview
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.presentation.component.header.DomatScreenHeader
+import com.domatapp.feature.auth.presentation.screen.component.ScreenHeader
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.domatapp.core.resource.R
@@ -14,7 +14,7 @@ import com.domatapp.core.resource.R
 internal fun LocationSelectionTopBar(
     onBackClick: () -> Unit,
 ) {
-    DomatScreenHeader(
+    ScreenHeader(
         title = stringResource(R.string.location_selection_title),
         onBackClick = onBackClick,
         backIconPainter = painterResource(R.drawable.ic_arrow_back),

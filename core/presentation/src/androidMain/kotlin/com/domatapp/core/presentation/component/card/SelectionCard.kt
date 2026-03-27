@@ -19,7 +19,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatSelectionCard(
+fun SelectionCard(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -50,9 +50,9 @@ fun DomatSelectionCard(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatSelectionCardPreview() {
+private fun SelectionCardPreview() {
     DomatTheme {
-        DomatSelectionCard(
+        SelectionCard(
             text = "A1",
             isSelected = true,
             onClick = {},

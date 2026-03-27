@@ -1,4 +1,4 @@
-package com.domatapp.core.presentation.component.card
+package com.domatapp.feature.auth.presentation.screen.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,7 +28,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatLocationCard(
+fun LocationCard(
     label: String,
     value: String,
     checkmarkPainter: Painter,
@@ -86,9 +86,9 @@ fun DomatLocationCard(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatLocationCardPreview() {
+private fun LocationCardPreview() {
     DomatTheme {
-        DomatLocationCard(
+        LocationCard(
             label = "Mahalle",
             value = "Aydınlı Mh.",
             checkmarkPainter = ColorPainter(Color.Green),

@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.presentation.component.list.DomatFeatureListItem
+import com.domatapp.feature.onboarding.presentation.screen.component.FeatureListItem
 import com.domatapp.core.resource.R
 
 data class TrustFeatureUiModel(
@@ -137,7 +137,7 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             features.forEach { feature ->
-                DomatFeatureListItem(
+                FeatureListItem(
                     iconPainter = painterResource(feature.icon),
                     text = feature.text,
                 )

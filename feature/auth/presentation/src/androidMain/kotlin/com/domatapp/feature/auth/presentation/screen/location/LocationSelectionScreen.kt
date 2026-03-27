@@ -17,11 +17,11 @@ import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationScreen
-import com.domatapp.core.presentation.component.bar.DomatBottomActionBar
-import com.domatapp.core.presentation.component.button.DomatPrimaryButton
-import com.domatapp.core.presentation.component.card.DomatLocationCard
-import com.domatapp.core.presentation.component.card.DomatLocationCardConnector
-import com.domatapp.core.presentation.component.input.DomatInputDropdown
+import com.domatapp.core.presentation.component.bar.BottomActionBar
+import com.domatapp.core.presentation.component.button.PrimaryButton
+import com.domatapp.feature.auth.presentation.screen.component.LocationCard
+import com.domatapp.feature.auth.presentation.screen.component.LocationCardConnector
+import com.domatapp.feature.auth.presentation.screen.component.InputDropdown
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.domatapp.core.resource.R
@@ -45,7 +45,7 @@ fun ColumnScope.LocationSelectionScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(0.dp),
             ) {
-                DomatLocationCard(
+                LocationCard(
                     label = stringResource(R.string.location_district_label),
                     value = stringResource(R.string.location_mock_district),
                     checkmarkPainter = painterResource(R.drawable.ic_checkmark),
@@ -53,8 +53,8 @@ fun ColumnScope.LocationSelectionScreen(
                     lockPainter = painterResource(R.drawable.ic_lock),
                     cardAlpha = 0.6f,
                 )
-                DomatLocationCardConnector()
-                DomatLocationCard(
+                LocationCardConnector()
+                LocationCard(
                     label = stringResource(R.string.location_neighborhood_label),
                     value = stringResource(R.string.location_mock_neighborhood),
                     checkmarkPainter = painterResource(R.drawable.ic_checkmark),
@@ -62,43 +62,37 @@ fun ColumnScope.LocationSelectionScreen(
                     lockPainter = painterResource(R.drawable.ic_lock),
                     cardAlpha = 0.8f,
                 )
-                DomatLocationCardConnector()
-                DomatLocationCard(
+                LocationCardConnector()
+                LocationCard(
                     label = stringResource(R.string.location_building_label),
                     value = stringResource(R.string.location_mock_building),
                     checkmarkPainter = painterResource(R.drawable.ic_checkmark),
                     isLocked = true,
                     lockPainter = painterResource(R.drawable.ic_lock),
                 )
-                DomatLocationCardConnector()
+                LocationCardConnector()
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    DomatInputDropdown(
+                    InputDropdown(
                         label = stringResource(R.string.location_block_label),
                         value = uiState.selectedBlock ?: stringResource(R.string.placeholder_select),
                         iconPainter = painterResource(R.drawable.ic_building),
                         chevronPainter = painterResource(R.drawable.ic_chevron_down),
                         checkmarkPainter = painterResource(R.drawable.ic_checkmark),
-                        onClick = { onIntent(LocationSelectionIntent.ToggleBlokDropdown) },
-                        isActive = uiState.isBlokDropdownOpen || uiState.selectedBlock != null,
-                        isOpen = uiState.isBlokDropdownOpen,
                         items = uiState.blockItems,
                         selectedItem = uiState.selectedBlock,
                         onItemSelected = { item -> onIntent(LocationSelectionIntent.SelectBlock(item)) },
                         modifier = Modifier.weight(1f),
                     )
-                    DomatInputDropdown(
+                    InputDropdown(
                         label = stringResource(R.string.location_apartment_label),
                         value = uiState.selectedApartment ?: stringResource(R.string.placeholder_select),
                         iconPainter = painterResource(R.drawable.ic_door),
                         chevronPainter = painterResource(R.drawable.ic_chevron_down),
                         checkmarkPainter = painterResource(R.drawable.ic_checkmark),
-                        onClick = { onIntent(LocationSelectionIntent.ToggleDaireDropdown) },
-                        isActive = uiState.isDaireDropdownOpen || uiState.selectedApartment != null,
-                        isOpen = uiState.isDaireDropdownOpen,
                         items = uiState.apartmentItems,
                         selectedItem = uiState.selectedApartment,
                         onItemSelected = { item -> onIntent(LocationSelectionIntent.SelectApartment(item)) },
@@ -112,8 +106,8 @@ fun ColumnScope.LocationSelectionScreen(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Bottom,
         ) {
-            DomatBottomActionBar {
-                DomatPrimaryButton(
+            BottomActionBar {
+                PrimaryButton(
                     text = stringResource(R.string.button_continue),
                     onClick = { onIntent(LocationSelectionIntent.Confirm) },
                     modifier = Modifier.fillMaxWidth(),

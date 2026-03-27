@@ -13,19 +13,19 @@ import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
-enum class DomatTagVariant { New, Sale, Discount, Limited }
+enum class TagVariant { New, Sale, Discount, Limited }
 
 @Composable
-fun DomatTag(
+fun Tag(
     text: String,
-    variant: DomatTagVariant,
+    variant: TagVariant,
     modifier: Modifier = Modifier,
 ) {
     val (containerColor, contentColor) = when (variant) {
-        DomatTagVariant.New -> colorResource(R.color.malachite) to colorResource(R.color.slate_900)
-        DomatTagVariant.Sale -> colorResource(R.color.orange_400) to colorResource(R.color.white)
-        DomatTagVariant.Discount -> colorResource(R.color.red_500) to colorResource(R.color.white)
-        DomatTagVariant.Limited -> colorResource(R.color.slate_900) to colorResource(R.color.white)
+        TagVariant.New -> colorResource(R.color.malachite) to colorResource(R.color.slate_900)
+        TagVariant.Sale -> colorResource(R.color.orange_400) to colorResource(R.color.white)
+        TagVariant.Discount -> colorResource(R.color.red_500) to colorResource(R.color.white)
+        TagVariant.Limited -> colorResource(R.color.slate_900) to colorResource(R.color.white)
     }
 
     Surface(
@@ -44,8 +44,8 @@ fun DomatTag(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatTagPreview() {
+private fun TagPreview() {
     DomatTheme {
-        DomatTag(text = "YENİ", variant = DomatTagVariant.New)
+        Tag(text = "YENİ", variant = TagVariant.New)
     }
 }

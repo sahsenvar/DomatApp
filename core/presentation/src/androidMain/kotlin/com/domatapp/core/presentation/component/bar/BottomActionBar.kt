@@ -15,7 +15,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatBottomActionBar(
+fun BottomActionBar(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -32,9 +32,9 @@ fun DomatBottomActionBar(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatBottomActionBarPreview() {
+private fun BottomActionBarPreview() {
     DomatTheme {
-        DomatBottomActionBar {
+        BottomActionBar {
             Text(text = "İçerik")
         }
     }

@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationScreen
-import com.domatapp.core.presentation.component.badge.DomatHeroBadge
-import com.domatapp.core.presentation.component.button.DomatGoogleSignInButton
+import com.domatapp.feature.auth.presentation.screen.component.IconBadge
+import com.domatapp.feature.auth.presentation.screen.component.GoogleSignInButton
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -94,7 +94,7 @@ fun ColumnScope.LoginScreen(
                     .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                DomatHeroBadge(
+                IconBadge(
                     iconPainter = painterResource(R.drawable.ic_leaf_badge),
                     text = stringResource(R.string.onboarding_login_hero_badge),
                 )
@@ -122,7 +122,7 @@ fun ColumnScope.LoginScreen(
 
             Spacer(modifier = Modifier.height(124.dp))
 
-            DomatGoogleSignInButton(
+            GoogleSignInButton(
                 onClick = { onIntent(LoginIntent.OnGoogleSignInClicked) },
                 iconPainter = painterResource(R.drawable.ic_google),
                 text = stringResource(R.string.google_sign_in_button_text),

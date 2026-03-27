@@ -19,7 +19,6 @@ class LocationSelectionViewModel : BaseViewModel<
                     it.copy(
                         selectedBlock = intent.block,
                         isConfirmEnabled = it.selectedApartment != null,
-                        isBlokDropdownOpen = false,
                     )
                 }
             is LocationSelectionIntent.SelectApartment ->
@@ -27,27 +26,8 @@ class LocationSelectionViewModel : BaseViewModel<
                     it.copy(
                         selectedApartment = intent.apartment,
                         isConfirmEnabled = it.selectedBlock != null,
-                        isDaireDropdownOpen = false,
                     )
                 }
-            LocationSelectionIntent.ToggleBlokDropdown -> {
-                val newOpen = !currentState.isBlokDropdownOpen
-                updateState {
-                    it.copy(
-                        isBlokDropdownOpen = newOpen,
-                        isDaireDropdownOpen = if (newOpen) false else it.isDaireDropdownOpen,
-                    )
-                }
-            }
-            LocationSelectionIntent.ToggleDaireDropdown -> {
-                val newOpen = !currentState.isDaireDropdownOpen
-                updateState {
-                    it.copy(
-                        isDaireDropdownOpen = newOpen,
-                        isBlokDropdownOpen = if (newOpen) false else it.isBlokDropdownOpen,
-                    )
-                }
-            }
             LocationSelectionIntent.Confirm -> emitEffect(LocationSelectionEffect.NavigateToHome)
             LocationSelectionIntent.GoBack -> emitEffect(LocationSelectionEffect.NavigateBack)
         }

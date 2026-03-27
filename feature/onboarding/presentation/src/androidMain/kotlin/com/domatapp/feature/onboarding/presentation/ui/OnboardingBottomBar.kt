@@ -10,8 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.presentation.component.button.DomatPrimaryMediumButton
-import com.domatapp.core.presentation.component.indicator.DomatProgressDots
+import com.domatapp.core.presentation.component.button.ButtonSize
+import com.domatapp.core.presentation.component.button.PrimaryButton
+import com.domatapp.core.presentation.component.indicator.ProgressDots
 
 data class OnboardingBottomBarUiModel(
     val buttonText: String,
@@ -33,13 +34,14 @@ internal fun OnboardingBottomBar(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        DomatProgressDots(
+        ProgressDots(
             totalDots = uiModel.totalDots,
             activeIndex = uiModel.activeDotIndex,
         )
-        DomatPrimaryMediumButton(
+        PrimaryButton(
             text = uiModel.buttonText,
             onClick = onContinue,
+            size = ButtonSize.Medium,
             modifier = Modifier.fillMaxWidth(),
         )
     }

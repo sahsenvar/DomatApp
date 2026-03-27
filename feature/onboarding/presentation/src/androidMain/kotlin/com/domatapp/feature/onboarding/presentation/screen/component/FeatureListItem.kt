@@ -1,18 +1,20 @@
-package com.domatapp.core.presentation.component.badge
+package com.domatapp.feature.onboarding.presentation.screen.component
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
@@ -23,42 +25,40 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatHeroBadge(
+fun FeatureListItem(
     text: String,
     iconPainter: Painter,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(9999.dp),
-        color = colorResource(R.color.malachite_20),
-        border = BorderStroke(1.dp, colorResource(R.color.malachite_30)),
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(colorResource(R.color.slate_50))
+            .border(1.dp, colorResource(R.color.slate_100), RoundedCornerShape(8.dp))
+            .padding(13.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 13.dp, vertical = 5.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Image(
-                painter = iconPainter,
-                contentDescription = null,
-                modifier = Modifier.size(13.dp),
-            )
-            Text(
-                text = text.uppercase(),
-                style = MaterialTheme.typography.labelLarge,
-                color = colorResource(R.color.malachite),
-            )
-        }
+        Image(
+            painter = iconPainter,
+            contentDescription = null,
+            modifier = Modifier.size(17.dp),
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = colorResource(R.color.slate_900),
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatHeroBadgePreview() {
+private fun FeatureListItemPreview() {
     DomatTheme {
-        DomatHeroBadge(
-            text = "Taze & Yerel",
+        FeatureListItem(
+            text = "Üretici adı görünür",
             iconPainter = ColorPainter(Color.Green),
         )
     }

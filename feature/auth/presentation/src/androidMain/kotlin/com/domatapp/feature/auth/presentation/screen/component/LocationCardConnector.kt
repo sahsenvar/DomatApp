@@ -1,4 +1,4 @@
-package com.domatapp.core.presentation.component.card
+package com.domatapp.feature.auth.presentation.screen.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -14,7 +14,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatLocationCardConnector(modifier: Modifier = Modifier) {
+fun LocationCardConnector(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .padding(start = 36.dp)
@@ -26,8 +26,8 @@ fun DomatLocationCardConnector(modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatLocationCardConnectorPreview() {
+private fun LocationCardConnectorPreview() {
     DomatTheme {
-        DomatLocationCardConnector()
+        LocationCardConnector()
     }
 }

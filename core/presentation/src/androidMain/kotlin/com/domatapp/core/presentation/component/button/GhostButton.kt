@@ -17,7 +17,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatGhostButton(
+fun GhostButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -47,8 +47,8 @@ fun DomatGhostButton(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatGhostButtonPreview() {
+private fun GhostButtonPreview() {
     DomatTheme {
-        DomatGhostButton(text = "Atla", onClick = {})
+        GhostButton(text = "Atla", onClick = {})
     }
 }

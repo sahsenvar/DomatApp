@@ -25,7 +25,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatProgressSteps(
+fun ProgressSteps(
     totalSteps: Int,
     currentStep: Int,
     modifier: Modifier = Modifier,
@@ -75,8 +75,8 @@ fun DomatProgressSteps(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatProgressStepsPreview() {
+private fun ProgressStepsPreview() {
     DomatTheme {
-        DomatProgressSteps(totalSteps = 4, currentStep = 1)
+        ProgressSteps(totalSteps = 4, currentStep = 1)
     }
 }

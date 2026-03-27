@@ -6,15 +6,12 @@ import SwiftUI
 enum DomatTypography {
 
     // MARK: - Font Family
-    // Projede mevcut font: NunitoSans-12ptExtraLight (nunito_sans_regular.ttf)
-    // ExtraBold/Bold varyantları henüz eklenmemiş — gerekli font dosyaları eklenirse
-    // PostScript isimlerini buraya ekleyip fontFamily güncellenmeli.
 
-    private static let fontRegular = "NunitoSans-12ptExtraLight"
+    private static let fontFamily = "NunitoSans"
 
     private static func font(size: CGFloat, weight: Font.Weight) -> Font {
-        if let _ = UIFont(name: fontRegular, size: size) {
-            return .custom(fontRegular, size: size).weight(weight)
+        if let _ = UIFont(name: "\(fontFamily)-Regular", size: size) {
+            return .custom(fontFamily, size: size).weight(weight)
         }
         return .system(size: size, weight: weight, design: .default)
     }
@@ -24,7 +21,6 @@ enum DomatTypography {
     static let displayLarge = font(size: 57, weight: .regular)
     static let displayMedium = font(size: 45, weight: .regular)
     static let displaySmall = font(size: 36, weight: .regular)
-    static let displaySmallExtraBold = font(size: 36, weight: .heavy)
 
     // MARK: - Headline
 

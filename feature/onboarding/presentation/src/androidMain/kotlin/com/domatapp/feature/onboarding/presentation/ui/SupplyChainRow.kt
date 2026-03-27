@@ -73,45 +73,70 @@ internal fun SupplyChainRow(uiModel: SupplyChainRowUiModel) {
         modifier = Modifier
             .fillMaxWidth()
             .alpha(if (isInactive) 0.4f else 1f),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(
-            modifier = Modifier.width(64.dp),
+            modifier = Modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .then(
-                        if (isConsumer) Modifier.shadow(
-                            10.dp, CircleShape,
-                            ambientColor = colorResource(R.color.malachite_30),
-                            spotColor = colorResource(R.color.malachite_30),
-                        ) else Modifier,
+            Row(
+                modifier = Modifier.width(200.dp)
+            ){
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .then(
+                            if (isConsumer) Modifier.shadow(
+                                10.dp, CircleShape,
+                                ambientColor = colorResource(R.color.malachite_30),
+                                spotColor = colorResource(R.color.malachite_30),
+                            ) else Modifier,
+                        )
+                        .clip(CircleShape)
+                        .background(iconBgColor),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        painter = painterResource(uiModel.icon),
+                        contentDescription = null,
+                        modifier = Modifier.size(iconSize.dp),
                     )
-                    .clip(CircleShape)
-                    .background(iconBgColor),
-                contentAlignment = Alignment.Center,
-            ) {
-                Image(
-                    painter = painterResource(uiModel.icon),
-                    contentDescription = null,
-                    modifier = Modifier.size(iconSize.dp),
-                )
-                if (isInactive) {
+                    if (isInactive) {
+                        Text(
+                            text = "✕",
+                            color = colorResource(R.color.red_500),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .align(Alignment.CenterVertically)
+                ) {
                     Text(
-                        text = "✕",
-                        color = colorResource(R.color.red_500),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
+                        text = uiModel.title,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = titleFontWeight,
+                            textDecoration = if (isInactive) TextDecoration.LineThrough else TextDecoration.None,
+                        ),
+                        color = titleColor,
+                    )
+                    Text(
+                        text = uiModel.subtitle,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = subtitleFontWeight),
+                        color = subtitleColor,
                     )
                 }
             }
 
             if (uiModel.showConnector) {
-                Spacer(modifier = Modifier.height(4.dp))
                 Box(
                     modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(start = 24.dp)
                         .width(2.dp)
                         .height(40.dp)
                         .background(dividerColor),
@@ -119,25 +144,7 @@ internal fun SupplyChainRow(uiModel: SupplyChainRowUiModel) {
             }
         }
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 16.dp),
-        ) {
-            Text(
-                text = uiModel.title,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = titleFontWeight,
-                    textDecoration = if (isInactive) TextDecoration.LineThrough else TextDecoration.None,
-                ),
-                color = titleColor,
-            )
-            Text(
-                text = uiModel.subtitle,
-                style = MaterialTheme.typography.bodySmall.copy(fontWeight = subtitleFontWeight),
-                color = subtitleColor,
-            )
-        }
+
     }
 
     if (uiModel.showConnector) {

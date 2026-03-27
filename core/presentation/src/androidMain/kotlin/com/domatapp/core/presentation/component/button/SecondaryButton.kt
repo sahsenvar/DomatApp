@@ -15,7 +15,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatSecondaryButton(
+fun SecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -39,8 +39,8 @@ fun DomatSecondaryButton(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatSecondaryButtonPreview() {
+private fun SecondaryButtonPreview() {
     DomatTheme {
-        DomatSecondaryButton(text = "İptal", onClick = {})
+        SecondaryButton(text = "İptal", onClick = {})
     }
 }

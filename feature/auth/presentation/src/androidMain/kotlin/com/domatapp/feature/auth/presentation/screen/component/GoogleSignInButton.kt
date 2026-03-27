@@ -1,4 +1,4 @@
-package com.domatapp.core.presentation.component.button
+package com.domatapp.feature.auth.presentation.screen.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -26,7 +26,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatGoogleSignInButton(
+fun GoogleSignInButton(
     onClick: () -> Unit,
     iconPainter: Painter,
     text: String,
@@ -60,9 +60,9 @@ fun DomatGoogleSignInButton(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatGoogleSignInButtonPreview() {
+private fun GoogleSignInButtonPreview() {
     DomatTheme {
-        DomatGoogleSignInButton(
+        GoogleSignInButton(
             onClick = {},
             iconPainter = ColorPainter(Color.Gray),
             text = "Google ile Devam Et",

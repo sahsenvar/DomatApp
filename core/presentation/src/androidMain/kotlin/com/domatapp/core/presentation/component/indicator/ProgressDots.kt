@@ -23,7 +23,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatProgressDots(
+fun ProgressDots(
     totalDots: Int,
     activeIndex: Int,
     modifier: Modifier = Modifier,
@@ -63,8 +63,8 @@ fun DomatProgressDots(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatProgressDotsPreview() {
+private fun ProgressDotsPreview() {
     DomatTheme {
-        DomatProgressDots(totalDots = 5, activeIndex = 2)
+        ProgressDots(totalDots = 5, activeIndex = 2)
     }
 }

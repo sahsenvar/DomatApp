@@ -1,4 +1,4 @@
-package com.domatapp.core.presentation.component.header
+package com.domatapp.feature.auth.presentation.screen.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,7 +29,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 
 @Composable
-fun DomatScreenHeader(
+fun ScreenHeader(
     title: String,
     onBackClick: () -> Unit,
     backIconPainter: Painter,
@@ -77,9 +77,9 @@ fun DomatScreenHeader(
 
 @Preview(showBackground = true)
 @Composable
-private fun DomatScreenHeaderPreview() {
+private fun ScreenHeaderPreview() {
     DomatTheme {
-        DomatScreenHeader(
+        ScreenHeader(
             title = "Teslimat Bölgesi",
             onBackClick = {},
             backIconPainter = ColorPainter(Color.Gray),
