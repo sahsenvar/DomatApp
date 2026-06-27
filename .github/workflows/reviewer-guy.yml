@@ -1,0 +1,166 @@
+name: Reviewer Guy
+
+# Her PR'da (aç/güncelle/yeniden aç) tam inceleme; her push'ta commit incelemesi
+# (o branch'in açık PR'ı varsa push job atlanır, çünkü PR job zaten kapsar);
+# yorumda @reviewer-guy geçince cevap verir.
+#
+# Beyin: GitHub Models (RG_BACKEND=models) — ekstra API key YOK, Actions'ın
+#        GITHUB_TOKEN'ı + `permissions: models: read` yeter. (App token'da Models YOK.)
+# Yüz: RG_APP_ID + RG_APP_PRIVATE_KEY secret'ları varsa "Reviewer Guy" GitHub App
+#      kimliğiyle (isim+avatar, gerçek APPROVE) post eder; yoksa github.token'a düşer.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+  issue_comment:
+    types: [created]
+  # CI (GitHub Actions) bitince Slack kartının CI alanını yerinde tazelemek için.
+  # NOT: workflow_run YALNIZ default branch'teki workflow'u tetikler — PR #4 main'e
+  # merge edilince aktifleşir. check_suite KULLANMIYORUZ: GitHub Actions'ın kendi
+  # oluşturduğu check suite'ler recursion koruması nedeniyle check_suite tetiklemez.
+  # 'workflows' listesine repodaki gerçek CI workflow ad(lar)ını ekle.
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: write        # push job: commit comment
+  pull-requests: write   # PR review
+  issues: write          # PR/issue yorumları (mention) + Slack tracker yorumu
+  statuses: write        # commit status (merge gate)
+  checks: read           # Slack kartı: PR'ın CI check'lerini oku
+  models: read           # GitHub Models (beyin)
+
+concurrency:
+  group: reviewer-guy-${{ github.event.pull_request.number || github.event.workflow_run.head_sha || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONPATH: ${{ github.workspace }}/.github/reviewer-guy
+  RG_BACKEND: models
+  RG_MODEL: openai/gpt-4.1
+  RG_MODELS_TOKEN: ${{ github.token }}   # beyin (models:read) — App token DEĞİL
+  GITHUB_REPOSITORY: ${{ github.repository }}
+  # GH_APP_TOKEN (yüz) artık her job'da App token adımından gelir (yoksa github.token).
+  # Slack (alaycı özet #android-adamlar'a). Secret yoksa post_slack sessizce atlar.
+  SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+  RG_USERNAME: "Reviewer Guy"
+  # GitHub App ile aynı yüz: App avatarı (public). İstersen secret ile değiştir.
+  RG_ICON_URL: "https://avatars.githubusercontent.com/in/4157599?v=4"
+
+jobs:
+  review:
+    name: "Reviewer Guy (PR review)"
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      HAS_APP: ${{ secrets.RG_APP_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Reviewer Guy App token (kimlik)
+        id: app-token
+        if: env.HAS_APP == 'true'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RG_APP_ID }}
+          private-key: ${{ secrets.RG_APP_PRIVATE_KEY }}
+      - name: Run PR review
+        env:
+          RG_PR_NUMBER: ${{ github.event.pull_request.number }}
+          RG_PR_ACTION: ${{ github.event.action }}
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
+        run: python3 -m reviewer_guy.review
+
+  push-review:
+    name: "Reviewer Guy (push review)"
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      HAS_APP: ${{ secrets.RG_APP_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Açık PR varsa atla (PR job zaten kapsar)
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh pr list --head "${{ github.ref_name }}" --state open --json number -q 'length' 2>/dev/null || echo 0)
+          echo "open_prs=$n" >> "$GITHUB_OUTPUT"
+          echo "'${{ github.ref_name }}' için açık PR: $n"
+      - name: Reviewer Guy App token (kimlik)
+        id: app-token
+        if: env.HAS_APP == 'true' && steps.guard.outputs.open_prs == '0'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RG_APP_ID }}
+          private-key: ${{ secrets.RG_APP_PRIVATE_KEY }}
+      - name: Run push review
+        if: steps.guard.outputs.open_prs == '0'
+        env:
+          RG_BEFORE_SHA: ${{ github.event.before }}
+          RG_AFTER_SHA: ${{ github.event.after }}
+          RG_BRANCH: ${{ github.ref_name }}
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
+        run: python3 -m reviewer_guy.push_review
+
+  mention:
+    name: "Reviewer Guy (mention)"
+    if: >
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '@reviewer-guy')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HAS_APP: ${{ secrets.RG_APP_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reviewer Guy App token (kimlik)
+        id: app-token
+        if: env.HAS_APP == 'true'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RG_APP_ID }}
+          private-key: ${{ secrets.RG_APP_PRIVATE_KEY }}
+      - name: Reply to mention
+        env:
+          RG_MENTION: "@reviewer-guy"
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
+        run: python3 -m reviewer_guy.mention
+
+  ci-update:
+    name: "Reviewer Guy (CI → Slack güncelle)"
+    # CI workflow'u bitince, açık PR'a bağlı Slack kartının CI alanını yerinde
+    # güncelle (chat.update). Modeli yeniden çalıştırmaz; sadece CI'ı yeniden okur.
+    # Kendi workflow'umuza ('Reviewer Guy') tepki vermiyoruz; workflows:["CI"] zaten
+    # ayırıyor (recursion yok). event=='pull_request' ile PR'a bağlı koşuyu hedefliyoruz.
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      HAS_APP: ${{ secrets.RG_APP_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reviewer Guy App token (kimlik)
+        id: app-token
+        if: env.HAS_APP == 'true'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RG_APP_ID }}
+          private-key: ${{ secrets.RG_APP_PRIVATE_KEY }}
+      - name: Update Slack card CI
+        env:
+          RG_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RG_PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
+        run: python3 -m reviewer_guy.update_ci
