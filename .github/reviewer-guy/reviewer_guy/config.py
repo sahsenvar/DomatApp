@@ -46,7 +46,13 @@ RG_MENTION = os.environ.get("RG_MENTION", "@reviewer-guy")
 STATUS_CONTEXT = os.environ.get("RG_STATUS_CONTEXT", "Reviewer Guy")
 
 # Diff'i prompt'a koyarken üst sınır (token patlamasını önler).
-MAX_DIFF_CHARS = int(os.environ.get("RG_MAX_DIFF_CHARS", "60000"))
+# GitHub Models ücretsiz katmanı istek başına ~8000 token sınırlar; küçük tutuyoruz.
+MAX_DIFF_CHARS = int(os.environ.get("RG_MAX_DIFF_CHARS", "14000"))
+
+# Models backend'inde tüm prompt için kademeli karakter bütçeleri (413'te küçülerek tekrar dener).
+MODELS_PROMPT_BUDGETS = [
+    int(x) for x in os.environ.get("RG_MODELS_PROMPT_BUDGETS", "20000,12000,8000").split(",")
+]
 
 # Hiçbir şey post etme, sadece ne yapacağını yazdır.
 DRY_RUN = os.environ.get("RG_DRY_RUN", "") == "1"

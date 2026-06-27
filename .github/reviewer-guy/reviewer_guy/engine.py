@@ -43,9 +43,28 @@ def run_copilot(prompt, model, cwd, timeout=900):
     return proc.stdout.strip()
 
 
+def _truncate(prompt, max_chars):
+    if len(prompt) <= max_chars:
+        return prompt
+    return prompt[:max_chars] + "\n\n[... girdi token sınırı için kısaltıldı ...]"
+
+
 def run_models(prompt, model, json_mode=False, timeout=300):
-    """GitHub Models chat/completions çağrısı; asistan içeriğini döndürür."""
-    return _models_call(prompt, model, json_mode=json_mode, minimal=False, timeout=timeout)
+    """GitHub Models çağrısı; 413 (token limit) olursa prompt'u küçülterek tekrar dener."""
+    last_exc = None
+    for budget in config.MODELS_PROMPT_BUDGETS:
+        try:
+            return _models_call(
+                _truncate(prompt, budget), model,
+                json_mode=json_mode, minimal=False, timeout=timeout,
+            )
+        except RuntimeError as exc:
+            last_exc = exc
+            msg = str(exc)
+            if "413" in msg or "tokens_limit" in msg or "too large" in msg.lower():
+                continue  # daha küçük bütçeyle tekrar dene
+            raise
+    raise last_exc
 
 
 def _models_call(prompt, model, json_mode, minimal, timeout):
