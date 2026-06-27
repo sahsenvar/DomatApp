@@ -1,8 +1,9 @@
 """PR review orkestratörü: diff -> Copilot -> bulgular -> GitHub review + status + Slack."""
+import json
 import os
 import sys
 
-from . import config, diff, engine, github_api, slack
+from . import config, diff, engine, github_api, slack, tracker
 
 SEV_EMOJI = {"critical": "❗", "warning": "⚠️", "suggestion": "💡"}
 SEV_ORDER = ("critical", "warning", "suggestion")
@@ -31,6 +32,7 @@ def build_review_prompt(owner, repo, number, pr, files, diff_text):
         for f in files
     ) or "- (dosya listesi yok)"
     body = (pr.get("body") or "").strip() or "(açıklama yok)"
+    author = (pr.get("user") or {}).get("login", "?")
     truncated = ""
     if len(diff_text) > config.MAX_DIFF_CHARS:
         diff_text = diff_text[: config.MAX_DIFF_CHARS]
@@ -40,6 +42,7 @@ def build_review_prompt(owner, repo, number, pr, files, diff_text):
         f"## PR Bilgisi\n"
         f"- repo: {owner}/{repo}\n"
         f"- PR #{number}: {pr.get('title', '')}\n"
+        f"- PR sahibi: @{author}\n"
         f"- Açıklama:\n{body}\n\n"
         f"## Değişen dosyalar\n{file_lines}\n\n"
         f"## Diff (unified)\n```diff\n{diff_text}{truncated}\n```\n"
@@ -93,30 +96,168 @@ def render_body(summary, severities, offdiff, block):
     return "\n".join(lines)
 
 
-def post_slack(pr, repo_full, slack_blurb, severities, block):
+def ci_summary(owner, repo, sha, token):
+    """PR head'i için CI durumunu özetle — Reviewer Guy'ın KENDİ check/status'u hariç.
+    Best-effort: App'in checks/statuses izni yoksa sessizce kısmi/None döner."""
+    exclude = config.STATUS_CONTEXT.lower()
+    passed = failed = pending = 0
+    seen = False
+    try:
+        runs = github_api.list_check_runs(owner, repo, sha, token).get("check_runs", [])
+        for r in runs:
+            if exclude in (r.get("name") or "").lower():
+                continue
+            seen = True
+            if r.get("status") != "completed":
+                pending += 1
+            elif r.get("conclusion") in ("success", "neutral", "skipped"):
+                passed += 1
+            else:
+                failed += 1
+    except Exception:
+        pass
+    try:
+        st = github_api.get_combined_status(owner, repo, sha, token)
+        for s in st.get("statuses", []):
+            if exclude in (s.get("context") or "").lower():
+                continue
+            seen = True
+            state = s.get("state")
+            if state == "success":
+                passed += 1
+            elif state == "pending":
+                pending += 1
+            else:
+                failed += 1
+    except Exception:
+        pass
+    if not seen:
+        return {"state": "none", "label": "— (CI yok)"}
+    total = passed + failed + pending
+    if failed:
+        return {"state": "failure", "label": f"❌ {failed} başarısız"}
+    if pending:
+        return {"state": "pending", "label": f"⏳ {pending} sürüyor"}
+    return {"state": "success", "label": f"✅ {passed}/{total} geçti"}
+
+
+def card_state(owner, repo, pr, slack_blurb, severities, block):
+    """Slack kartını (yeniden) çizmek için gereken küçük, taşınabilir durum."""
+    counts = {s: severities.count(s) for s in SEV_ORDER}
+    author = (pr.get("user") or {}).get("login", "?")
+    return {
+        "owner": owner, "repo": repo, "pr": pr["number"],
+        "title": (pr.get("title") or "(başlıksız)").strip(),
+        "url": pr["html_url"],
+        "author": author,
+        "head_sha": (pr.get("head") or {}).get("sha", ""),
+        "blurb": (slack_blurb or "").strip(),
+        "crit": counts["critical"], "warn": counts["warning"], "sugg": counts["suggestion"],
+        "block": bool(block),
+    }
+
+
+def build_slack_blocks(state, ci):
+    """Block Kit kartını state + CI özetinden kur. update_ci de bunu kullanır
+    (modeli yeniden çalıştırmadan yalnız CI alanını tazelemek için)."""
+    block = state["block"]
+    verdict = "🛑 Değişiklik istendi" if block else "✅ Onaylandı"
+    head_emoji = "🛑" if block else "✅"
+    repo_full = f"{state['owner']}/{state['repo']}"
+    num = state["pr"]
+    title = state["title"]
+    url = state["url"]
+    author = state["author"]
+    author_md = f"<https://github.com/{author}|@{author}>"
+    blurb = state["blurb"] or "_(yorum yok)_"
+    ci_label = ci["label"] if isinstance(ci, dict) else (ci or state.get("ci_label", "—"))
+    blocks = [
+        {"type": "section",
+         "text": {"type": "mrkdwn",
+                   "text": f"{head_emoji} {repo_full}  *<{url}|PR #{num}: {title}>*"}},
+        {"type": "section",
+         "text": {"type": "mrkdwn", "text": f"🕶️ {blurb}"}},
+        {"type": "section", "fields": [
+            {"type": "mrkdwn", "text": f"*Sahibi:* {author_md}"},
+            {"type": "mrkdwn", "text": f"*CI:* {ci_label}"},
+            {"type": "mrkdwn", "text": f"*Karar:* {verdict}"},
+            {"type": "mrkdwn",
+             "text": f"*Bulgular:* ❗{state['crit']} ⚠️{state['warn']} 💡{state['sugg']}"},
+        ]},
+        {"type": "divider"},
+        {"type": "context",
+         "elements": [{"type": "mrkdwn", "text": f"Reviewer Guy · otomatik inceleme · <{url}|PR'ı aç>"}]},
+    ]
+    fallback = f"{head_emoji} {repo_full} PR #{num}: {title} — {verdict}"
+    return blocks, fallback
+
+
+def post_slack(owner, repo, pr, slack_blurb, severities, block, token, action=""):
+    """Slack kartını yönet: PR AÇILIŞINDA gönder + ts'i tracker'a yaz; sonraki
+    olaylarda (synchronize) YENİ mesaj atma, mevcut kartı chat.update ile tazele.
+    Yalnız-açılış kuralı: kart yoksa ve action open değilse hiçbir şey yapma."""
     if not (config.SLACK_BOT_TOKEN and config.SLACK_CHANNEL):
         print("[slack] token/channel yok, atlanıyor.")
         return None
-    counts = {s: severities.count(s) for s in SEV_ORDER}
-    verdict = "🛑 Değişiklik istendi" if block else "✅ Onaylandı"
-    head_emoji = "🛑" if block else "✅"
-    text = (
-        f"{head_emoji} <{pr['html_url']}|{repo_full} #{pr['number']}: {pr.get('title', '')}>\n"
-        f"{slack_blurb}\n"
-        f"_{verdict} · ❗{counts['critical']} ⚠️{counts['warning']} 💡{counts['suggestion']}_"
-    )
+    ci = {"state": "none", "label": "— (CI yok)"}
+    # CI okuması github.token ile (checks:read) — App token'da Checks izni yok.
+    ci_token = config.models_token() or token
+    sha = (pr.get("head") or {}).get("sha", "")
+    if ci_token and sha:
+        try:
+            ci = ci_summary(owner, repo, sha, ci_token)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[slack] CI durumu alınamadı: {exc}")
+    state = card_state(owner, repo, pr, slack_blurb, severities, block)
+    state["ci_label"], state["ci_state"] = ci["label"], ci["state"]
+    blocks, fallback = build_slack_blocks(state, ci)
+    print(f"[slack] action={action or '?'} CI={ci['label']} · blurb={state['blurb'][:200]}")
     if config.DRY_RUN:
-        print("[slack DRY_RUN]\n" + text)
+        print("[slack DRY_RUN] fallback=" + fallback)
+        print(json.dumps(blocks, ensure_ascii=False, indent=2))
         return None
-    return slack.post_message(
-        config.SLACK_BOT_TOKEN, config.SLACK_CHANNEL, text,
-        username=config.RG_USERNAME, icon_url=config.RG_ICON_URL or None,
-    )
+
+    num = pr["number"]
+    # Tracker yorumu issues:write ister; github.token bunu garanti eder (App token'da
+    # Issues izni belirsiz). Review/status App kimliğinde kalır; tracker housekeeping.
+    gh_token = config.models_token() or token
+    cid, prev = tracker.read(owner, repo, num, gh_token)
+    prev_ts = (prev or {}).get("ts")
+    prev_channel = (prev or {}).get("channel") or config.SLACK_CHANNEL
+
+    if prev_ts:
+        # Mevcut kartı yerinde güncelle (synchronize/reopened) — spam yok.
+        state["ts"], state["channel"] = prev_ts, prev_channel
+        try:
+            slack.update_message(config.SLACK_BOT_TOKEN, prev_channel, prev_ts, fallback, blocks)
+            print("[slack] mevcut kart güncellendi (chat.update).")
+        except Exception as exc:  # noqa: BLE001
+            print(f"[slack] chat.update hatası: {exc}")
+            return None
+    elif action in ("opened", "reopened"):
+        resp = slack.post_message(
+            config.SLACK_BOT_TOKEN, config.SLACK_CHANNEL, fallback, blocks=blocks,
+            username=config.RG_USERNAME, icon_url=config.RG_ICON_URL or None,
+        )
+        state["ts"] = resp.get("ts")
+        state["channel"] = resp.get("channel") or config.SLACK_CHANNEL
+        print("[slack] yeni kart gönderildi.")
+    else:
+        print(f"[slack] kart yok ve action='{action}' (open değil); atlanıyor.")
+        return None
+
+    # ts/channel + durumu tracker'a yaz ki sonraki olaylar kartı bulabilsin.
+    try:
+        tracker.write(owner, repo, num, gh_token, state, comment_id=cid)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[slack] tracker yazılamadı: {exc}")
+    return state
 
 
 def main():
     owner, repo = config.owner_repo()
     number = int(os.environ["RG_PR_NUMBER"])
+    action = os.environ.get("RG_PR_ACTION", "")
     token = config.GH_APP_TOKEN
     if not token and not config.DRY_RUN:
         sys.exit("GH_APP_TOKEN gerekli (DRY_RUN dışında).")
@@ -145,7 +286,7 @@ def main():
         print("\n----- REVIEW BODY -----\n" + body)
         for c in inline:
             print(f"\n[inline] {c['path']}:{c['line']}\n{c['body']}")
-        post_slack(pr, f"{owner}/{repo}", slack_blurb, severities, block)
+        post_slack(owner, repo, pr, slack_blurb, severities, block, token, action)
         return 0
 
     try:
@@ -167,7 +308,7 @@ def main():
         description=("Critical/Warning bulgu var" if block else "İnceleme geçti"),
         target_url=pr["html_url"],
     )
-    post_slack(pr, f"{owner}/{repo}", slack_blurb, severities, block)
+    post_slack(owner, repo, pr, slack_blurb, severities, block, token, action)
 
     if block and config.FAIL_JOB_ON_BLOCK:
         return 1

@@ -93,3 +93,48 @@ def create_commit_status(owner, repo, sha, token, state, context, description, t
     return _request(
         "POST", f"{API}/repos/{owner}/{repo}/statuses/{sha}", token, data=payload
     )
+
+
+def get_combined_status(owner, repo, ref, token):
+    """Bir commit'in klasik commit-status'lerinin birleşik durumu."""
+    return _request("GET", f"{API}/repos/{owner}/{repo}/commits/{ref}/status", token)
+
+
+def list_check_runs(owner, repo, ref, token):
+    """Bir commit için GitHub Checks (Actions/App) çalıştırmaları."""
+    return _request("GET", f"{API}/repos/{owner}/{repo}/commits/{ref}/check-runs", token)
+
+
+def list_issue_comments(owner, repo, number, token):
+    """Bir PR/issue'nun tüm yorumları (sayfalı). Slack tracker'ı bulmak için."""
+    comments, page = [], 1
+    while True:
+        batch = _request(
+            "GET",
+            f"{API}/repos/{owner}/{repo}/issues/{number}/comments?per_page=100&page={page}",
+            token,
+        )
+        if not batch:
+            break
+        comments.extend(batch)
+        if len(batch) < 100:
+            break
+        page += 1
+    return comments
+
+
+def update_issue_comment(owner, repo, comment_id, token, body):
+    """Var olan bir issue/PR yorumunu düzenle (tracker marker güncellemesi)."""
+    return _request(
+        "PATCH",
+        f"{API}/repos/{owner}/{repo}/issues/comments/{comment_id}",
+        token,
+        data={"body": body},
+    )
+
+
+def list_pulls_for_commit(owner, repo, sha, token):
+    """Bir commit SHA'sına bağlı PR'lar (check_suite olayında PR'ı bulmak için)."""
+    return _request(
+        "GET", f"{API}/repos/{owner}/{repo}/commits/{sha}/pulls", token
+    )

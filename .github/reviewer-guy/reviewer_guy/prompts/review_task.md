@@ -21,7 +21,7 @@ SON mesajın YALNIZCA tek bir JSON nesnesi olmalı. Markdown başlığı, açık
 
 {
   "summary": "KISA durum özeti: 1-2 cümle. Paragraf dolusu şaka YOK — ana riski + genel kararı söyle. En fazla başında veya sonunda ufak (opsiyonel) bir espri; gerekmiyorsa düz yaz.",
-  "slack_blurb": "Slack için 1-2 cümle, alaycı ama yapıcı. Sonunda kararı ima et.",
+  "slack_blurb": "Slack kartı için Reviewer Guy'ın TAKIMA hitabı: 1-2 cümle. PR sahibine (@kullanıcı, prompt'taki 'PR sahibi') lakapla/atıfla seslen, kararı ima et, alaycı ama yapıcı. Örnek ton: 'Alın size @ahmet'ten fena olmayan bir PR gençler — kendi kodum kadar değil ama iş görür 😜' (kötü PR'da ise 'Gençler @ahmet yine sahneyi yaktı, merge tuşuna basmadan önce 2 kez düşünün'). Karaktere uygun ve HER seferinde farklı; aynı kalıbı kurma.",
   "findings": [
     {
       "path": "repo köküne göreli dosya yolu",
