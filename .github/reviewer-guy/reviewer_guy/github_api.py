@@ -93,3 +93,13 @@ def create_commit_status(owner, repo, sha, token, state, context, description, t
     return _request(
         "POST", f"{API}/repos/{owner}/{repo}/statuses/{sha}", token, data=payload
     )
+
+
+def get_combined_status(owner, repo, ref, token):
+    """Bir commit'in klasik commit-status'lerinin birleşik durumu."""
+    return _request("GET", f"{API}/repos/{owner}/{repo}/commits/{ref}/status", token)
+
+
+def list_check_runs(owner, repo, ref, token):
+    """Bir commit için GitHub Checks (Actions/App) çalıştırmaları."""
+    return _request("GET", f"{API}/repos/{owner}/{repo}/commits/{ref}/check-runs", token)

@@ -1,4 +1,5 @@
 """PR review orkestratörü: diff -> Copilot -> bulgular -> GitHub review + status + Slack."""
+import json
 import os
 import sys
 
@@ -31,6 +32,7 @@ def build_review_prompt(owner, repo, number, pr, files, diff_text):
         for f in files
     ) or "- (dosya listesi yok)"
     body = (pr.get("body") or "").strip() or "(açıklama yok)"
+    author = (pr.get("user") or {}).get("login", "?")
     truncated = ""
     if len(diff_text) > config.MAX_DIFF_CHARS:
         diff_text = diff_text[: config.MAX_DIFF_CHARS]
@@ -40,6 +42,7 @@ def build_review_prompt(owner, repo, number, pr, files, diff_text):
         f"## PR Bilgisi\n"
         f"- repo: {owner}/{repo}\n"
         f"- PR #{number}: {pr.get('title', '')}\n"
+        f"- PR sahibi: @{author}\n"
         f"- Açıklama:\n{body}\n\n"
         f"## Değişen dosyalar\n{file_lines}\n\n"
         f"## Diff (unified)\n```diff\n{diff_text}{truncated}\n```\n"
@@ -93,23 +96,101 @@ def render_body(summary, severities, offdiff, block):
     return "\n".join(lines)
 
 
-def post_slack(pr, repo_full, slack_blurb, severities, block):
-    if not (config.SLACK_BOT_TOKEN and config.SLACK_CHANNEL):
-        print("[slack] token/channel yok, atlanıyor.")
-        return None
+def ci_summary(owner, repo, sha, token):
+    """PR head'i için CI durumunu özetle — Reviewer Guy'ın KENDİ check/status'u hariç.
+    Best-effort: App'in checks/statuses izni yoksa sessizce kısmi/None döner."""
+    exclude = config.STATUS_CONTEXT.lower()
+    passed = failed = pending = 0
+    seen = False
+    try:
+        runs = github_api.list_check_runs(owner, repo, sha, token).get("check_runs", [])
+        for r in runs:
+            if exclude in (r.get("name") or "").lower():
+                continue
+            seen = True
+            if r.get("status") != "completed":
+                pending += 1
+            elif r.get("conclusion") in ("success", "neutral", "skipped"):
+                passed += 1
+            else:
+                failed += 1
+    except Exception:
+        pass
+    try:
+        st = github_api.get_combined_status(owner, repo, sha, token)
+        for s in st.get("statuses", []):
+            if exclude in (s.get("context") or "").lower():
+                continue
+            seen = True
+            state = s.get("state")
+            if state == "success":
+                passed += 1
+            elif state == "pending":
+                pending += 1
+            else:
+                failed += 1
+    except Exception:
+        pass
+    if not seen:
+        return {"state": "none", "label": "— (CI yok)"}
+    total = passed + failed + pending
+    if failed:
+        return {"state": "failure", "label": f"❌ {failed} başarısız"}
+    if pending:
+        return {"state": "pending", "label": f"⏳ {pending} sürüyor"}
+    return {"state": "success", "label": f"✅ {passed}/{total} geçti"}
+
+
+def build_slack_blocks(owner, repo, pr, slack_blurb, severities, block, ci):
     counts = {s: severities.count(s) for s in SEV_ORDER}
     verdict = "🛑 Değişiklik istendi" if block else "✅ Onaylandı"
     head_emoji = "🛑" if block else "✅"
-    text = (
-        f"{head_emoji} <{pr['html_url']}|{repo_full} #{pr['number']}: {pr.get('title', '')}>\n"
-        f"{slack_blurb}\n"
-        f"_{verdict} · ❗{counts['critical']} ⚠️{counts['warning']} 💡{counts['suggestion']}_"
-    )
+    repo_full = f"{owner}/{repo}"
+    num = pr["number"]
+    title = (pr.get("title") or "(başlıksız)").strip()
+    url = pr["html_url"]
+    author = (pr.get("user") or {}).get("login", "?")
+    author_md = f"<https://github.com/{author}|@{author}>"
+    blurb = (slack_blurb or "").strip() or "_(yorum yok)_"
+    blocks = [
+        {"type": "header",
+         "text": {"type": "plain_text", "text": f"{head_emoji} {repo_full} #{num}", "emoji": True}},
+        {"type": "section",
+         "text": {"type": "mrkdwn", "text": f"*<{url}|{title}>*"}},
+        {"type": "section", "fields": [
+            {"type": "mrkdwn", "text": f"*Sahibi:*\n{author_md}"},
+            {"type": "mrkdwn", "text": f"*CI:*\n{ci['label']}"},
+            {"type": "mrkdwn", "text": f"*Karar:*\n{verdict}"},
+            {"type": "mrkdwn",
+             "text": f"*Bulgular:*\n❗{counts['critical']} ⚠️{counts['warning']} 💡{counts['suggestion']}"},
+        ]},
+        {"type": "divider"},
+        {"type": "section",
+         "text": {"type": "mrkdwn", "text": f"🕶️ {blurb}"}},
+        {"type": "context",
+         "elements": [{"type": "mrkdwn", "text": f"Reviewer Guy · otomatik inceleme · <{url}|PR'ı aç>"}]},
+    ]
+    fallback = f"{head_emoji} {repo_full} #{num}: {title} — {verdict}"
+    return blocks, fallback
+
+
+def post_slack(owner, repo, pr, slack_blurb, severities, block, token):
+    if not (config.SLACK_BOT_TOKEN and config.SLACK_CHANNEL):
+        print("[slack] token/channel yok, atlanıyor.")
+        return None
+    ci = {"state": "none", "label": "— (CI yok)"}
+    if token:
+        try:
+            ci = ci_summary(owner, repo, pr["head"]["sha"], token)
+        except Exception as exc:
+            print(f"[slack] CI durumu alınamadı: {exc}")
+    blocks, fallback = build_slack_blocks(owner, repo, pr, slack_blurb, severities, block, ci)
     if config.DRY_RUN:
-        print("[slack DRY_RUN]\n" + text)
+        print("[slack DRY_RUN] fallback=" + fallback)
+        print(json.dumps(blocks, ensure_ascii=False, indent=2))
         return None
     return slack.post_message(
-        config.SLACK_BOT_TOKEN, config.SLACK_CHANNEL, text,
+        config.SLACK_BOT_TOKEN, config.SLACK_CHANNEL, fallback, blocks=blocks,
         username=config.RG_USERNAME, icon_url=config.RG_ICON_URL or None,
     )
 
@@ -145,7 +226,7 @@ def main():
         print("\n----- REVIEW BODY -----\n" + body)
         for c in inline:
             print(f"\n[inline] {c['path']}:{c['line']}\n{c['body']}")
-        post_slack(pr, f"{owner}/{repo}", slack_blurb, severities, block)
+        post_slack(owner, repo, pr, slack_blurb, severities, block, token)
         return 0
 
     try:
@@ -167,7 +248,7 @@ def main():
         description=("Critical/Warning bulgu var" if block else "İnceleme geçti"),
         target_url=pr["html_url"],
     )
-    post_slack(pr, f"{owner}/{repo}", slack_blurb, severities, block)
+    post_slack(owner, repo, pr, slack_blurb, severities, block, token)
 
     if block and config.FAIL_JOB_ON_BLOCK:
         return 1

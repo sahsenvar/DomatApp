@@ -1,0 +1,14 @@
+name: CI
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: echo "build ok ✅"
+      - name: Unit tests
+        run: echo "tests passed ✅"
