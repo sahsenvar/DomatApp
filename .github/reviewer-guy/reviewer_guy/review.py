@@ -134,7 +134,18 @@ def main():
         post_slack(pr, f"{owner}/{repo}", slack_blurb, severities, block)
         return 0
 
-    github_api.create_review(owner, repo, number, token, body, event, inline)
+    try:
+        github_api.create_review(owner, repo, number, token, body, event, inline)
+    except RuntimeError as exc:
+        # Built-in GITHUB_TOKEN ile GitHub Actions bir PR'ı APPROVE edemez (HTTP 422).
+        # Özel "Reviewer Guy" App kimliği gelene kadar COMMENT'e düşürüp review'i
+        # yine de yayınla (özet + inline yorumlar kaybolmasın). Yeşil sinyali commit
+        # status sağlıyor; REQUEST_CHANGES zaten Actions token ile çalışır.
+        if event == "APPROVE" and "not permitted to approve" in str(exc).lower():
+            print("[uyarı] Actions token APPROVE edemiyor -> COMMENT olarak gönderiliyor.")
+            github_api.create_review(owner, repo, number, token, body, "COMMENT", inline)
+        else:
+            raise
     github_api.create_commit_status(
         owner, repo, head_sha, token,
         state="failure" if block else "success",
