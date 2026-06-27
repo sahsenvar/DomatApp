@@ -153,10 +153,11 @@ def build_slack_blocks(owner, repo, pr, slack_blurb, severities, block, ci):
     author_md = f"<https://github.com/{author}|@{author}>"
     blurb = (slack_blurb or "").strip() or "_(yorum yok)_"
     blocks = [
-        {"type": "header",
-         "text": {"type": "plain_text", "text": f"{head_emoji} {repo_full} #{num}", "emoji": True}},
         {"type": "section",
-         "text": {"type": "mrkdwn", "text": f"*<{url}|{title}>*"}},
+         "text": {"type": "mrkdwn",
+                   "text": f"{head_emoji} {repo_full}  *<{url}|PR #{num}: {title}>*"}},
+        {"type": "section",
+         "text": {"type": "mrkdwn", "text": f"🕶️ {blurb}"}},
         {"type": "section", "fields": [
             {"type": "mrkdwn", "text": f"*Sahibi:*\n{author_md}"},
             {"type": "mrkdwn", "text": f"*CI:*\n{ci['label']}"},
@@ -165,12 +166,10 @@ def build_slack_blocks(owner, repo, pr, slack_blurb, severities, block, ci):
              "text": f"*Bulgular:*\n❗{counts['critical']} ⚠️{counts['warning']} 💡{counts['suggestion']}"},
         ]},
         {"type": "divider"},
-        {"type": "section",
-         "text": {"type": "mrkdwn", "text": f"🕶️ {blurb}"}},
         {"type": "context",
          "elements": [{"type": "mrkdwn", "text": f"Reviewer Guy · otomatik inceleme · <{url}|PR'ı aç>"}]},
     ]
-    fallback = f"{head_emoji} {repo_full} #{num}: {title} — {verdict}"
+    fallback = f"{head_emoji} {repo_full} PR #{num}: {title} — {verdict}"
     return blocks, fallback
 
 
