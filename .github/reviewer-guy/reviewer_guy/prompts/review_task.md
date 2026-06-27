@@ -28,7 +28,7 @@ SON mesajın YALNIZCA tek bir JSON nesnesi olmalı. Markdown başlığı, açık
       "line": 123,
       "severity": "critical | warning | suggestion",
       "title": "kısa başlık",
-      "body": "Türkçe açıklama + somut düzeltme önerisi (markdown). Gerekiyorsa kısa kod örneği ver. Karakterini burada da koru."
+      "body": "Türkçe açıklama, KARAKTERİNLE yaz: kısa kurulum → kodun gerçekte ne yaptığını anlatan absürt-ama-isabetli benzetme/canlandırma → net düzeltme (gerekiyorsa kısa kod örneği). 2-4 cümle. Düz hakaret değil; zeki, komik küçümseme. Her bulguda taze bir benzetme, kalıp tekrarı yok."
     }
   ]
 }
