@@ -5,9 +5,9 @@ name: Reviewer Guy
 # yorumda @reviewer-guy geçince cevap verir.
 #
 # Beyin: GitHub Models (RG_BACKEND=models) — ekstra API key YOK, Actions'ın
-#        GITHUB_TOKEN'ı + `permissions: models: read` yeter.
-# Yüz (test): GITHUB_TOKEN -> yorumlar github-actions[bot] olarak görünür.
-#        İleride "Reviewer Guy" GitHub App token'ıyla değiştirilir.
+#        GITHUB_TOKEN'ı + `permissions: models: read` yeter. (App token'da Models YOK.)
+# Yüz: RG_APP_ID + RG_APP_PRIVATE_KEY secret'ları varsa "Reviewer Guy" GitHub App
+#      kimliğiyle (isim+avatar, gerçek APPROVE) post eder; yoksa github.token'a düşer.
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -30,9 +30,9 @@ env:
   PYTHONPATH: ${{ github.workspace }}/.github/reviewer-guy
   RG_BACKEND: models
   RG_MODEL: openai/gpt-4.1
-  RG_MODELS_TOKEN: ${{ github.token }}   # beyin (models:read)
-  GH_APP_TOKEN: ${{ github.token }}      # yüz (github-actions[bot])
+  RG_MODELS_TOKEN: ${{ github.token }}   # beyin (models:read) — App token DEĞİL
   GITHUB_REPOSITORY: ${{ github.repository }}
+  # GH_APP_TOKEN (yüz) artık her job'da App token adımından gelir (yoksa github.token).
 
 jobs:
   review:
@@ -40,14 +40,24 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    env:
+      HAS_APP: ${{ secrets.RG_APP_ID != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+      - name: Reviewer Guy App token (kimlik)
+        id: app-token
+        if: env.HAS_APP == 'true'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RG_APP_ID }}
+          private-key: ${{ secrets.RG_APP_PRIVATE_KEY }}
       - name: Run PR review
         env:
           RG_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
         run: python3 -m reviewer_guy.review
 
   push-review:
@@ -55,6 +65,8 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    env:
+      HAS_APP: ${{ secrets.RG_APP_ID != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -67,12 +79,20 @@ jobs:
           n=$(gh pr list --head "${{ github.ref_name }}" --state open --json number -q 'length' 2>/dev/null || echo 0)
           echo "open_prs=$n" >> "$GITHUB_OUTPUT"
           echo "'${{ github.ref_name }}' için açık PR: $n"
+      - name: Reviewer Guy App token (kimlik)
+        id: app-token
+        if: env.HAS_APP == 'true' && steps.guard.outputs.open_prs == '0'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RG_APP_ID }}
+          private-key: ${{ secrets.RG_APP_PRIVATE_KEY }}
       - name: Run push review
         if: steps.guard.outputs.open_prs == '0'
         env:
           RG_BEFORE_SHA: ${{ github.event.before }}
           RG_AFTER_SHA: ${{ github.event.after }}
           RG_BRANCH: ${{ github.ref_name }}
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
         run: python3 -m reviewer_guy.push_review
 
   mention:
@@ -83,9 +103,19 @@ jobs:
       contains(github.event.comment.body, '@reviewer-guy')
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      HAS_APP: ${{ secrets.RG_APP_ID != '' }}
     steps:
       - uses: actions/checkout@v4
+      - name: Reviewer Guy App token (kimlik)
+        id: app-token
+        if: env.HAS_APP == 'true'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RG_APP_ID }}
+          private-key: ${{ secrets.RG_APP_PRIVATE_KEY }}
       - name: Reply to mention
         env:
           RG_MENTION: "@reviewer-guy"
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
         run: python3 -m reviewer_guy.mention
