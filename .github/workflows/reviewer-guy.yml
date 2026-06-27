@@ -34,7 +34,10 @@ permissions:
   models: read           # GitHub Models (beyin)
 
 concurrency:
-  group: reviewer-guy-${{ github.event.issue.number || github.event.pull_request.number || github.event.workflow_run.head_sha || github.ref }}
+  # comment.id EN BAŞTA: her @mention yorumu benzersiz grup alır -> hızlı ard arda
+  # gelen yorum event'leri birbirinin mention job'unu cancel ETMEZ. PR review'ları ise
+  # hâlâ PR numarasına göre gruplanır (yeni push eskisini iptal eder).
+  group: reviewer-guy-${{ github.event.comment.id || github.event.issue.number || github.event.pull_request.number || github.event.workflow_run.head_sha || github.ref }}
   cancel-in-progress: true
 
 env:
