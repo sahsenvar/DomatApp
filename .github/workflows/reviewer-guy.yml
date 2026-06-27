@@ -1,0 +1,91 @@
+name: Reviewer Guy
+
+# Her PR'da (aç/güncelle/yeniden aç) tam inceleme; her push'ta commit incelemesi
+# (o branch'in açık PR'ı varsa push job atlanır, çünkü PR job zaten kapsar);
+# yorumda @reviewer-guy geçince cevap verir.
+#
+# Beyin: GitHub Models (RG_BACKEND=models) — ekstra API key YOK, Actions'ın
+#        GITHUB_TOKEN'ı + `permissions: models: read` yeter.
+# Yüz (test): GITHUB_TOKEN -> yorumlar github-actions[bot] olarak görünür.
+#        İleride "Reviewer Guy" GitHub App token'ıyla değiştirilir.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write        # push job: commit comment
+  pull-requests: write   # PR review
+  issues: write          # PR/issue yorumları (mention)
+  statuses: write        # commit status (merge gate)
+  models: read           # GitHub Models (beyin)
+
+concurrency:
+  group: reviewer-guy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONPATH: ${{ github.workspace }}/.github/reviewer-guy
+  RG_BACKEND: models
+  RG_MODEL: openai/gpt-4.1
+  RG_MODELS_TOKEN: ${{ github.token }}   # beyin (models:read)
+  GH_APP_TOKEN: ${{ github.token }}      # yüz (github-actions[bot])
+  GITHUB_REPOSITORY: ${{ github.repository }}
+
+jobs:
+  review:
+    name: "Reviewer Guy (PR review)"
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Run PR review
+        env:
+          RG_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: python3 -m reviewer_guy.review
+
+  push-review:
+    name: "Reviewer Guy (push review)"
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Açık PR varsa atla (PR job zaten kapsar)
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh pr list --head "${{ github.ref_name }}" --state open --json number -q 'length' 2>/dev/null || echo 0)
+          echo "open_prs=$n" >> "$GITHUB_OUTPUT"
+          echo "'${{ github.ref_name }}' için açık PR: $n"
+      - name: Run push review
+        if: steps.guard.outputs.open_prs == '0'
+        env:
+          RG_BEFORE_SHA: ${{ github.event.before }}
+          RG_AFTER_SHA: ${{ github.event.after }}
+          RG_BRANCH: ${{ github.ref_name }}
+        run: python3 -m reviewer_guy.push_review
+
+  mention:
+    name: "Reviewer Guy (mention)"
+    if: >
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '@reviewer-guy')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reply to mention
+        env:
+          RG_MENTION: "@reviewer-guy"
+        run: python3 -m reviewer_guy.mention
