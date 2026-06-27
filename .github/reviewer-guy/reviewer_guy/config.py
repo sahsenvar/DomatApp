@@ -57,11 +57,12 @@ MODELS_PROMPT_BUDGETS = [
 # Hiçbir şey post etme, sadece ne yapacağını yazdır.
 DRY_RUN = os.environ.get("RG_DRY_RUN", "") == "1"
 
-# Bloklarken (critical/high) iş job'ını da fail et (status'a ek olarak).
+# Bloklarken (critical/warning) iş job'ını da fail et (status'a ek olarak).
 FAIL_JOB_ON_BLOCK = os.environ.get("RG_FAIL_JOB_ON_BLOCK", "") == "1"
 
-BLOCKING_SEVERITIES = {"critical", "high"}
-VALID_SEVERITIES = {"critical", "high", "warning"}
+# 3 kademe: critical (❗) + warning (⚠️) bloklar; suggestion (💡) bloklamaz.
+BLOCKING_SEVERITIES = {"critical", "warning"}
+VALID_SEVERITIES = {"critical", "warning", "suggestion"}
 
 
 def owner_repo():

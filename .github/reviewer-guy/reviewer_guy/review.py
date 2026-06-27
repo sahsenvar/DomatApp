@@ -4,7 +4,23 @@ import sys
 
 from . import config, diff, engine, github_api, slack
 
-SEV_EMOJI = {"critical": "🛑", "high": "⚠️", "warning": "🟡"}
+SEV_EMOJI = {"critical": "❗", "warning": "⚠️", "suggestion": "💡"}
+SEV_ORDER = ("critical", "warning", "suggestion")
+
+# Model bazen 3 kademe dışı (eski/yakın) değer üretebilir; güvenli eşleme.
+_SEV_SYNONYMS = {
+    "high": "warning", "medium": "warning", "major": "warning", "warn": "warning",
+    "blocker": "critical", "severe": "critical", "error": "critical", "crit": "critical",
+    "low": "suggestion", "minor": "suggestion", "info": "suggestion",
+    "nit": "suggestion", "style": "suggestion", "suggest": "suggestion",
+}
+
+
+def normalize_severity(raw):
+    """Severity'yi 3 kademeye indir. Bilinmeyen/uydurma değer -> 'suggestion' (bloklamaz)."""
+    sev = str(raw or "").lower().strip()
+    sev = _SEV_SYNONYMS.get(sev, sev)
+    return sev if sev in config.VALID_SEVERITIES else "suggestion"
 
 
 def build_review_prompt(owner, repo, number, pr, files, diff_text):
@@ -35,9 +51,7 @@ def classify(findings, diff_text):
     valid = diff.commentable_lines(diff_text)
     inline, offdiff, severities = [], [], []
     for f in findings:
-        sev = str(f.get("severity", "")).lower().strip()
-        if sev not in config.VALID_SEVERITIES:
-            sev = "warning"
+        sev = normalize_severity(f.get("severity"))
         severities.append(sev)
         path = (f.get("path") or "").strip()
         title = (f.get("title") or "").strip()
@@ -56,11 +70,11 @@ def classify(findings, diff_text):
 
 
 def render_body(summary, severities, offdiff, block):
-    counts = {s: severities.count(s) for s in ("critical", "high", "warning")}
+    counts = {s: severities.count(s) for s in SEV_ORDER}
     if block:
         head = "## 🛑 Değişiklik isteniyor"
-    elif counts["warning"]:
-        head = "## ✅ Onaylandı (ufak notlarla)"
+    elif counts["suggestion"]:
+        head = "## ✅ Onaylandı (öneri notlarıyla)"
     else:
         head = "## ✅ Onaylandı"
     lines = [
@@ -68,7 +82,7 @@ def render_body(summary, severities, offdiff, block):
         "",
         summary or "_Özet yok._",
         "",
-        f"**Bulgular:** 🛑 {counts['critical']} critical · ⚠️ {counts['high']} high · 🟡 {counts['warning']} warning",
+        f"**Bulgular:** ❗ {counts['critical']} critical · ⚠️ {counts['warning']} warning · 💡 {counts['suggestion']} suggestion",
     ]
     if offdiff:
         lines += ["", "### Diff dışı / genel notlar"]
@@ -83,13 +97,13 @@ def post_slack(pr, repo_full, slack_blurb, severities, block):
     if not (config.SLACK_BOT_TOKEN and config.SLACK_CHANNEL):
         print("[slack] token/channel yok, atlanıyor.")
         return None
-    counts = {s: severities.count(s) for s in ("critical", "high", "warning")}
+    counts = {s: severities.count(s) for s in SEV_ORDER}
     verdict = "🛑 Değişiklik istendi" if block else "✅ Onaylandı"
     head_emoji = "🛑" if block else "✅"
     text = (
         f"{head_emoji} <{pr['html_url']}|{repo_full} #{pr['number']}: {pr.get('title', '')}>\n"
         f"{slack_blurb}\n"
-        f"_{verdict} · 🛑{counts['critical']} ⚠️{counts['high']} 🟡{counts['warning']}_"
+        f"_{verdict} · ❗{counts['critical']} ⚠️{counts['warning']} 💡{counts['suggestion']}_"
     )
     if config.DRY_RUN:
         print("[slack DRY_RUN]\n" + text)
@@ -150,7 +164,7 @@ def main():
         owner, repo, head_sha, token,
         state="failure" if block else "success",
         context=config.STATUS_CONTEXT,
-        description=("Critical/high bulgular var" if block else "İnceleme geçti"),
+        description=("Critical/Warning bulgu var" if block else "İnceleme geçti"),
         target_url=pr["html_url"],
     )
     post_slack(pr, f"{owner}/{repo}", slack_blurb, severities, block)

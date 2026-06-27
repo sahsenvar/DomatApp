@@ -73,17 +73,15 @@ def main():
     # Push'ta hepsini gövdeye topla (inline yok).
     all_as_off = []
     for f in findings:
-        sev = str(f.get("severity", "")).lower().strip()
-        if sev not in config.VALID_SEVERITIES:
-            sev = "warning"
+        sev = review.normalize_severity(f.get("severity"))
         all_as_off.append((sev, (f.get("path") or "").strip(), f.get("line"),
                             (f.get("title") or "").strip(), (f.get("body") or "").strip()))
     body = review.render_body(summary, severities, all_as_off, block)
     body = f"### 🍅 Push incelemesi (`{after[:7]}`)\n\n" + body
 
-    counts = {s: severities.count(s) for s in ("critical", "high", "warning")}
+    counts = {s: severities.count(s) for s in review.SEV_ORDER}
     print(f"== Reviewer Guy (push) == block={block} findings={len(findings)} "
-          f"crit={counts['critical']} high={counts['high']} warn={counts['warning']}")
+          f"crit={counts['critical']} warn={counts['warning']} sugg={counts['suggestion']}")
 
     if config.DRY_RUN:
         print("\n----- COMMIT COMMENT -----\n" + body)
@@ -94,7 +92,7 @@ def main():
         owner, repo, after, token,
         state="failure" if block else "success",
         context=config.STATUS_CONTEXT,
-        description=("Critical/high bulgular var" if block else "İnceleme geçti"),
+        description=("Critical/Warning bulgu var" if block else "İnceleme geçti"),
         target_url=compare_url,
     )
     review.post_slack(pseudo_pr, f"{owner}/{repo}", slack_blurb, severities, block)
