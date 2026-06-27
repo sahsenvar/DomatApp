@@ -33,6 +33,12 @@ env:
   RG_MODELS_TOKEN: ${{ github.token }}   # beyin (models:read) — App token DEĞİL
   GITHUB_REPOSITORY: ${{ github.repository }}
   # GH_APP_TOKEN (yüz) artık her job'da App token adımından gelir (yoksa github.token).
+  # Slack (alaycı özet #android-adamlar'a). Secret yoksa post_slack sessizce atlar.
+  SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+  RG_USERNAME: "Reviewer Guy"
+  # GitHub App ile aynı yüz: App avatarı (public). İstersen secret ile değiştir.
+  RG_ICON_URL: "https://avatars.githubusercontent.com/in/4157599?v=4"
 
 jobs:
   review:
