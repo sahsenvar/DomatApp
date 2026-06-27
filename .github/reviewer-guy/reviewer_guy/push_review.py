@@ -64,7 +64,6 @@ def main():
     result = engine.review(prompt, config.MODEL, os.getcwd())
 
     summary = (result.get("summary") or "").strip()
-    slack_blurb = (result.get("slack_blurb") or "").strip()
     findings = result.get("findings") or []
 
     _, _, severities = review.classify(findings, diff_text)
@@ -95,7 +94,8 @@ def main():
         description=("Critical/Warning bulgu var" if block else "İnceleme geçti"),
         target_url=compare_url,
     )
-    review.post_slack(pseudo_pr, f"{owner}/{repo}", slack_blurb, severities, block)
+    # Not: Slack'e SADECE PR açılışında kart gönderilir (review.py). Doğrudan
+    # push'ta (açık PR'sız) Slack'e yazmıyoruz — gürültü olmasın.
 
     if block and config.FAIL_JOB_ON_BLOCK:
         return 1

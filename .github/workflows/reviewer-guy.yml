@@ -14,17 +14,25 @@ on:
   push:
   issue_comment:
     types: [created]
+  # CI (GitHub Actions) bitince Slack kartının CI alanını yerinde tazelemek için.
+  # NOT: workflow_run YALNIZ default branch'teki workflow'u tetikler — PR #4 main'e
+  # merge edilince aktifleşir. check_suite KULLANMIYORUZ: GitHub Actions'ın kendi
+  # oluşturduğu check suite'ler recursion koruması nedeniyle check_suite tetiklemez.
+  # 'workflows' listesine repodaki gerçek CI workflow ad(lar)ını ekle.
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
 
 permissions:
   contents: write        # push job: commit comment
   pull-requests: write   # PR review
-  issues: write          # PR/issue yorumları (mention)
+  issues: write          # PR/issue yorumları (mention) + Slack tracker yorumu
   statuses: write        # commit status (merge gate)
   checks: read           # Slack kartı: PR'ın CI check'lerini oku
   models: read           # GitHub Models (beyin)
 
 concurrency:
-  group: reviewer-guy-${{ github.event.pull_request.number || github.ref }}
+  group: reviewer-guy-${{ github.event.pull_request.number || github.event.workflow_run.head_sha || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -64,6 +72,7 @@ jobs:
       - name: Run PR review
         env:
           RG_PR_NUMBER: ${{ github.event.pull_request.number }}
+          RG_PR_ACTION: ${{ github.event.action }}
           GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
         run: python3 -m reviewer_guy.review
 
@@ -126,3 +135,32 @@ jobs:
           RG_MENTION: "@reviewer-guy"
           GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
         run: python3 -m reviewer_guy.mention
+
+  ci-update:
+    name: "Reviewer Guy (CI → Slack güncelle)"
+    # CI workflow'u bitince, açık PR'a bağlı Slack kartının CI alanını yerinde
+    # güncelle (chat.update). Modeli yeniden çalıştırmaz; sadece CI'ı yeniden okur.
+    # Kendi workflow'umuza ('Reviewer Guy') tepki vermiyoruz; workflows:["CI"] zaten
+    # ayırıyor (recursion yok). event=='pull_request' ile PR'a bağlı koşuyu hedefliyoruz.
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      HAS_APP: ${{ secrets.RG_APP_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reviewer Guy App token (kimlik)
+        id: app-token
+        if: env.HAS_APP == 'true'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RG_APP_ID }}
+          private-key: ${{ secrets.RG_APP_PRIVATE_KEY }}
+      - name: Update Slack card CI
+        env:
+          RG_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RG_PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
+        run: python3 -m reviewer_guy.update_ci
