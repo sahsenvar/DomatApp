@@ -129,11 +129,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: PR head'i checkout et (repo bağlamı PR koduyla olsun)
+      - name: RG paketini sabitle + PR head'i checkout et
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: gh pr checkout "$PR_NUMBER" || echo "pr checkout atlandı; default branch ile devam"
+        run: |
+          # Mention KODU her zaman main'deki (bu workflow'la gelen) sürüm olmalı; repo
+          # BAĞLAMI ise PR'ın gerçek kodundan okunmalı. Paketi temp'e sabitleyip
+          # (PYTHONPATH), sonra PR head'ini çalışma ağacına checkout ediyoruz; böylece
+          # eski PR branch'lerinde bile mention mantığı güncel kalır.
+          cp -r .github/reviewer-guy "$RUNNER_TEMP/rg-pkg"
+          gh pr checkout "$PR_NUMBER" || echo "pr checkout atlandı; default branch ile devam"
       - name: Reviewer Guy App token (kimlik)
         id: app-token
         if: env.HAS_APP == 'true'
@@ -143,6 +149,7 @@ jobs:
           private-key: ${{ secrets.RG_APP_PRIVATE_KEY }}
       - name: Reply to mention
         env:
+          PYTHONPATH: ${{ runner.temp }}/rg-pkg
           RG_MENTION: "@reviewer-guy"
           GH_APP_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
         run: python3 -m reviewer_guy.mention
