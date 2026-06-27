@@ -179,9 +179,11 @@ def post_slack(owner, repo, pr, slack_blurb, severities, block, token):
         print("[slack] token/channel yok, atlanıyor.")
         return None
     ci = {"state": "none", "label": "— (CI yok)"}
-    if token:
+    # CI okuması github.token ile (checks:read) — App token'da Checks izni yok.
+    ci_token = config.models_token() or token
+    if ci_token:
         try:
-            ci = ci_summary(owner, repo, pr["head"]["sha"], token)
+            ci = ci_summary(owner, repo, pr["head"]["sha"], ci_token)
         except Exception as exc:
             print(f"[slack] CI durumu alınamadı: {exc}")
     blocks, fallback = build_slack_blocks(owner, repo, pr, slack_blurb, severities, block, ci)
