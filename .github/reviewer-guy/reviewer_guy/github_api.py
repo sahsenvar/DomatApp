@@ -77,6 +77,16 @@ def post_issue_comment(owner, repo, number, token, body):
     )
 
 
+def reply_pull_review_comment(owner, repo, number, comment_id, token, body):
+    """Inline review yorumu thread'ine cevap verir (aynı thread'de kalır)."""
+    return _request(
+        "POST",
+        f"{API}/repos/{owner}/{repo}/pulls/{number}/comments/{comment_id}/replies",
+        token,
+        data={"body": body},
+    )
+
+
 def post_commit_comment(owner, repo, sha, token, body):
     return _request(
         "POST",

@@ -14,6 +14,8 @@ on:
   push:
   issue_comment:
     types: [created]
+  pull_request_review_comment:
+    types: [created]
   # CI (GitHub Actions) bitince Slack kartının CI alanını yerinde tazelemek için.
   # NOT: workflow_run YALNIZ default branch'teki workflow'u tetikler — PR #4 main'e
   # merge edilince aktifleşir. check_suite KULLANMIYORUZ: GitHub Actions'ın kendi
@@ -32,7 +34,7 @@ permissions:
   models: read           # GitHub Models (beyin)
 
 concurrency:
-  group: reviewer-guy-${{ github.event.pull_request.number || github.event.workflow_run.head_sha || github.ref }}
+  group: reviewer-guy-${{ github.event.issue.number || github.event.pull_request.number || github.event.workflow_run.head_sha || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -114,15 +116,24 @@ jobs:
   mention:
     name: "Reviewer Guy (mention)"
     if: >
-      github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request != null &&
-      contains(github.event.comment.body, '@reviewer-guy')
+      ( github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request != null &&
+        contains(github.event.comment.body, '@reviewer-guy') ) ||
+      ( github.event_name == 'pull_request_review_comment' &&
+        contains(github.event.comment.body, '@reviewer-guy') )
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       HAS_APP: ${{ secrets.RG_APP_ID != '' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: PR head'i checkout et (repo bağlamı PR koduyla olsun)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: gh pr checkout "$PR_NUMBER" || echo "pr checkout atlandı; default branch ile devam"
       - name: Reviewer Guy App token (kimlik)
         id: app-token
         if: env.HAS_APP == 'true'
