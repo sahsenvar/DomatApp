@@ -40,4 +40,6 @@ SON mesajın YALNIZCA tek bir JSON nesnesi olmalı. Markdown başlığı, açık
   (en az bir `critical` veya `warning` varsa değişiklik istenir; yalnız `suggestion`
   varsa ya da hiç bulgu yoksa onaylanır). Sen sadece bulguları ve özetleri üret.
 - `summary` ve `slack_blurb` dahil tüm metin Türkçe ve senin karakterinle.
+- ÇEŞİTLİLİK: Bu incelemedeki bulgular arasında aynı benzetmeyi/anahtar kelimeyi
+  (örn. "speedrun", "mezar taşı") tekrarlama. Her bulgu kendi taze görselini taşısın.
 - Diff dışındaki dosyalara sızıntı yapma; sadece bu PR'ı değerlendir.
