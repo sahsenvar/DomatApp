@@ -185,6 +185,7 @@ def post_slack(owner, repo, pr, slack_blurb, severities, block, token):
         except Exception as exc:
             print(f"[slack] CI durumu alınamadı: {exc}")
     blocks, fallback = build_slack_blocks(owner, repo, pr, slack_blurb, severities, block, ci)
+    print(f"[slack] CI={ci['label']} · blurb={(slack_blurb or '').strip()[:240]}")
     if config.DRY_RUN:
         print("[slack DRY_RUN] fallback=" + fallback)
         print(json.dumps(blocks, ensure_ascii=False, indent=2))
