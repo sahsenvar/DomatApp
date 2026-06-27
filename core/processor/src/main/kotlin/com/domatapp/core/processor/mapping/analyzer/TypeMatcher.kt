@@ -72,8 +72,8 @@ class TypeMatcher(private val logger: KSPLogger) {
             "kotlin.Long→kotlin.String" -> "com.domatapp.core.mapping.converter.builtin.LongToStringConverter"
             "kotlin.Double→kotlin.String" -> "com.domatapp.core.mapping.converter.builtin.DoubleToStringConverter"
             "kotlin.Int→kotlin.Long" -> "com.domatapp.core.mapping.converter.builtin.IntToLongConverter"
-            "kotlin.String→kotlinx.datetime.Instant" -> "com.domatapp.core.mapping.converter.builtin.StringToInstantConverter"
-            "kotlin.Long→kotlinx.datetime.Instant" -> "com.domatapp.core.mapping.converter.builtin.LongToInstantConverter"
+            "kotlin.String→kotlin.time.Instant" -> "com.domatapp.core.mapping.converter.builtin.StringToInstantConverter"
+            "kotlin.Long→kotlin.time.Instant" -> "com.domatapp.core.mapping.converter.builtin.LongToInstantConverter"
             else -> null
         }
     }
@@ -192,8 +192,8 @@ class TypeMatcher(private val logger: KSPLogger) {
             "kotlin.Int→kotlin.Long" -> "com.domatapp.core.mapping.converter.builtin.IntToLongConverter"
 
             // Date conversions
-            "kotlin.String→kotlinx.datetime.Instant" -> "com.domatapp.core.mapping.converter.builtin.StringToInstantConverter"
-            "kotlin.Long→kotlinx.datetime.Instant" -> "com.domatapp.core.mapping.converter.builtin.LongToInstantConverter"
+            "kotlin.String→kotlin.time.Instant" -> "com.domatapp.core.mapping.converter.builtin.StringToInstantConverter"
+            "kotlin.Long→kotlin.time.Instant" -> "com.domatapp.core.mapping.converter.builtin.LongToInstantConverter"
 
             else -> null
         }

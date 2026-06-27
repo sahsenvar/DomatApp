@@ -11,29 +11,26 @@ class MainViewModel : BaseViewModel<MainUiState, MainIntent, MainEffect>(
     override fun onIntent(intent: MainIntent) {
         when (intent) {
             is MainIntent.Navigate -> updateState {
-                it.copy(backStack = it.backStack + intent.route)
+                copy(backStack = backStack + intent.route)
             }
 
-            is MainIntent.PopBack -> updateState { state ->
-                if (state.backStack.size > 1) {
-                    state.copy(backStack = state.backStack.dropLast(1))
-                } else {
-                    state
-                }
+            is MainIntent.PopBack -> updateState {
+                if (backStack.size > 1) copy(backStack = backStack.dropLast(1))
+                else this
             }
 
-            is MainIntent.PopBackTo -> updateState { state ->
-                val index = state.backStack.indexOfLast { it == intent.route }
+            is MainIntent.PopBackTo -> updateState {
+                val index = backStack.indexOfLast { it == intent.route }
                 if (index >= 0) {
                     val removeFrom = if (intent.inclusive) index else index + 1
-                    state.copy(backStack = state.backStack.take(removeFrom))
+                    copy(backStack = backStack.take(removeFrom))
                 } else {
-                    state
+                    this
                 }
             }
 
             is MainIntent.ReplaceAll -> updateState {
-                it.copy(backStack = listOf(intent.route))
+                copy(backStack = listOf(intent.route))
             }
         }
     }

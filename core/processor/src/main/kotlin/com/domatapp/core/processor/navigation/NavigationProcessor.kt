@@ -71,7 +71,8 @@ class NavigationProcessor(
         val functionName: String,
         val packageName: String,
         val routeClassFqn: String,
-        val containingFile: com.google.devtools.ksp.symbol.KSFile?
+        val containingFile: com.google.devtools.ksp.symbol.KSFile?,
+        val hasOnIntent: Boolean
     )
 
     private data class BarInfo(
@@ -276,11 +277,14 @@ class NavigationProcessor(
                 val routeFqn = extractRouteClassFqn(function.annotations, "NavigationEffectHandler")
                     ?: return@mapNotNull null
 
+                val hasOnIntent = function.parameters.any { it.name?.asString() == "onIntent" }
+
                 EffectHandlerInfo(
                     functionName = function.simpleName.asString(),
                     packageName = function.packageName.asString(),
                     routeClassFqn = routeFqn,
-                    containingFile = function.containingFile
+                    containingFile = function.containingFile,
+                    hasOnIntent = hasOnIntent
                 )
             }
             .toList()
@@ -472,7 +476,11 @@ class NavigationProcessor(
 
                 // EffectHandler (only if present)
                 if (group.effectHandler != null) {
-                    writer.write("            ${group.effectHandler.functionName}(effectFlow = viewModel.effect)\n")
+                    if (group.effectHandler.hasOnIntent) {
+                        writer.write("            ${group.effectHandler.functionName}(effectFlow = viewModel.effect, onIntent = viewModel::onIntent)\n")
+                    } else {
+                        writer.write("            ${group.effectHandler.functionName}(effectFlow = viewModel.effect)\n")
+                    }
                 }
 
                 // Outer Column

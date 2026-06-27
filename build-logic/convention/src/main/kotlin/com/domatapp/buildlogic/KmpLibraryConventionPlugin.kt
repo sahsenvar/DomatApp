@@ -24,7 +24,19 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             iosSimulatorArm64()
 
             compilerOptions {
-                freeCompilerArgs.add("-Xexpect-actual-classes")
+                freeCompilerArgs.addAll(
+                    "-Xexpect-actual-classes",
+                )
+
+                optIn.addAll(
+                    "kotlin.time.ExperimentalTime",
+                    "kotlin.ExperimentalStdlibApi",
+                    "kotlinx.coroutines.ExperimentalCoroutinesApi",
+                    "kotlinx.serialization.ExperimentalSerializationApi"
+                )
+
+                extraWarnings.set(true)
+
             }
             (this as ExtensionAware).extensions.configure(KotlinMultiplatformAndroidLibraryExtension::class.java) {
                 namespace = "com.domatapp" + path.replace(":", ".").replace("-", "_")
