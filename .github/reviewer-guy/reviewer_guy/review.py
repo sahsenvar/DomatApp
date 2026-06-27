@@ -92,7 +92,12 @@ def render_body(summary, severities, offdiff, block):
         for sev, path, line, title, body in offdiff:
             loc = f"`{path}`" + (f":{line}" if line else "") if path else "_genel_"
             lines.append(f"- {SEV_EMOJI[sev]} **[{sev.upper()}]** {loc} — {title}: {body}")
-    lines += ["", "---", "🤖 _Reviewer Guy — otomatik inceleme. Yanlışsam etiketleyip itiraz et._"]
+    lines += [
+        "",
+        "---",
+        "🤖 _Reviewer Guy — otomatik inceleme._",
+        f"💬 _Soru veya itirazın mı var? Bu PR'a yorum olarak `{config.RG_MENTION} mesajın` yaz — repoya bakıp cevap veririm._",
+    ]
     return "\n".join(lines)
 
 
