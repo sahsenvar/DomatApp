@@ -12,36 +12,36 @@ dependencies {
     commonMainApi(projects.core.serialization)
 
     // Ktor Client
-    commonMainApi(libs.ktor.client.core)
-    commonMainApi(libs.ktor.utils)
-    commonMainImplementation(libs.ktor.client.content.negotiation)
-    commonMainImplementation(libs.ktor.serialization.kotlinx.json)
-    commonMainImplementation(libs.ktor.client.logging)
-    commonMainImplementation(libs.ktor.client.websockets)
+    commonMainApi(libs.network.ktorClient.core)
+    commonMainApi(libs.network.ktor.utils)
+    commonMainImplementation(libs.network.ktorClient.contentNegotiation)
+    commonMainImplementation(libs.network.ktorClient.kxSerializationJson)
+    commonMainImplementation(libs.network.ktorClient.logging)
+    commonMainImplementation(libs.network.ktorClient.websockets)
 
     // Ktorfit (REST DataSource code generation)
-    commonMainApi(libs.ktorfit.lib.light)
+    commonMainApi(libs.network.ktorfit.libLight)
 
     // Supabase
-    commonMainApi(libs.supabase.postgrest)
-    commonMainApi(libs.supabase.storage)
-    commonMainApi(libs.supabase.auth)
+    commonMainApi(libs.network.supabase.postgrest)
+    commonMainApi(libs.network.supabase.storage)
+    commonMainApi(libs.network.supabase.auth)
 
     // Coroutines
-    commonMainImplementation(libs.kotlinx.coroutines.core)
+    commonMainImplementation(libs.concurrency.coroutine.core)
 
     // Firebase
-    commonMainImplementation(libs.firebase.firestore)
+    commonMainImplementation(libs.backend.firebase.firestore)
 
     // Koin
-    commonMainImplementation(libs.koin.core)
-    commonMainImplementation(libs.koin.annotations)
+    commonMainImplementation(libs.di.koin.core)
+    commonMainImplementation(libs.di.koin.annotations)
 
     // Android
-    androidMainImplementation(project.dependencies.platform(libs.firebase.bom))
-    androidMainApi(libs.ktor.client.android)
-    androidMainImplementation(libs.ktor.client.okhttp)
+    androidMainImplementation(project.dependencies.platform(libs.backend.firebase.bom))
+    androidMainApi(libs.network.ktorClient.android)
+    androidMainImplementation(libs.network.ktorClient.okhttp)
 
     // iOS
-    iosMainImplementation(libs.ktor.client.darwin)
+    iosMainImplementation(libs.network.ktorClient.darwin)
 }

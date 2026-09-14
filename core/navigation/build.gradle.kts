@@ -4,5 +4,5 @@ plugins {
 }
 
 dependencies {
-    commonMainImplementation(libs.kotlinx.serialization.json)
+    commonMainImplementation(libs.serialization.kxSerialization.json)
 }

@@ -8,10 +8,10 @@ plugins {
 dependencies {
     commonMainApi(projects.core.resulting)
     commonMainImplementation(projects.core.serialization)
-    commonMainImplementation(libs.kotlinx.coroutines.core)
-    commonMainApi(libs.kvStore.datastore)
-    commonMainApi(libs.kvStore.datastore.preferences)
-    commonMainImplementation(libs.firebase.config)
-    commonMainImplementation(libs.kotlinx.serialization.json)
-    androidMainImplementation(project.dependencies.platform(libs.firebase.bom))
+    commonMainImplementation(libs.concurrency.coroutine.core)
+    commonMainApi(libs.storage.dataStore.core)
+    commonMainApi(libs.storage.dataStore.preferences)
+    commonMainImplementation(libs.backend.firebase.config)
+    commonMainImplementation(libs.serialization.kxSerialization.json)
+    androidMainImplementation(project.dependencies.platform(libs.backend.firebase.bom))
 }

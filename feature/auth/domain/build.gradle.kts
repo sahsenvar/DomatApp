@@ -8,5 +8,5 @@ dependencies {
     commonMainImplementation(projects.core.domain)
     commonMainApi(projects.core.resulting)
     commonMainApi(projects.core.common)
-    commonMainImplementation(libs.kotlinx.serialization.json)
+    commonMainImplementation(libs.serialization.kxSerialization.json)
 }

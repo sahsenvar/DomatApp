@@ -6,8 +6,8 @@ plugins {
 }
 
 dependencies {
-    commonMainApi(libs.moko.resources)
-    commonMainApi(libs.moko.resources.compose)
+    commonMainApi(libs.resource.moko.core)
+    commonMainApi(libs.resource.moko.compose)
 }
 
 multiplatformResources {

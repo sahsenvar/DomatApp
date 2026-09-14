@@ -7,6 +7,6 @@ plugins {
 
 dependencies {
     commonMainApi(projects.core.resulting)
-    commonMainApi(libs.kotlinx.serialization.json)
-    commonMainImplementation(libs.kotlinx.coroutines.core)
+    commonMainApi(libs.serialization.kxSerialization.json)
+    commonMainImplementation(libs.concurrency.coroutine.core)
 }

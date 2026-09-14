@@ -26,16 +26,16 @@ dependencies {
     commonMainImplementation(projects.core.config)
     commonMainImplementation(projects.core.data)
     commonMainImplementation(projects.core.mapping)
-    commonMainImplementation(libs.kotlinx.coroutines.core)
-    commonMainImplementation(libs.kotlinx.serialization.json)
+    commonMainImplementation(libs.concurrency.coroutine.core)
+    commonMainImplementation(libs.serialization.kxSerialization.json)
 
-    commonMainImplementation(libs.ktorfit.lib.light)
-    commonMainImplementation(libs.ktorfit.annotations)
+    commonMainImplementation(libs.network.ktorfit.libLight)
+    commonMainImplementation(libs.network.ktorfit.annotations)
 
     add("kspCommonMainMetadata", projects.core.processor)
 
     // The Ktorfit Gradle plugin 2.7.5 hardcodes KTORFIT_KSP_PLUGIN_VERSION = "2.7.3", so on its
     // own it would pair the 2.7.5 runtime with the 2.7.3 processor. Declaring the catalog
     // version here lets Gradle's newest-wins conflict resolution keep both at 2.7.5.
-    add("kspCommonMainMetadata", libs.ktorfit.ksp)
+    add("kspCommonMainMetadata", libs.network.ktorfit.ksp)
 }
