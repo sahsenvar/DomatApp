@@ -8,7 +8,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build
-        run: echo "build ok ✅"
-      - name: Unit tests
-        run: echo "tests passed ✅"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Android-only for now: builds :composeApp and, through its dependency graph, the Android
+      # compilation of every module it pulls in transitively (:shared and almost everything under
+      # :core and :feature). iOS compilation is a separate, later phase - it needs a macOS runner.
+      - name: Build (Android)
+        run: ./gradlew :composeApp:assembleDebug --stacktrace
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Report-only for now: this is detekt's first run against the whole codebase, and the
+      # baseline violation count isn't known yet. Once someone has looked at the report and either
+      # fixed what's real or recorded a baseline (`./gradlew detektBaseline`), drop
+      # continue-on-error so new violations actually fail the build.
+      - name: Detekt
+        continue-on-error: true
+        run: ./gradlew detekt --stacktrace
