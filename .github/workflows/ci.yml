@@ -9,11 +9,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      # JDK 21, not 17: the KtorfitX Gradle plugin (cn.ktorfitx:multiplatform-gradle-plugin,
+      # applied in feature/auth/data) declares a minimum JVM runtime of 21 for the *Gradle
+      # process itself*. Independent of this: the project's own Kotlin/Java compilation still
+      # targets JVM 17 bytecode (KmpLibraryConventionPlugin's JvmTarget.JVM_17) - a newer JDK
+      # running Gradle can still produce older-target bytecode, so this doesn't change what the
+      # app itself targets.
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -29,11 +35,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      # See the build job's comment - KtorfitX's Gradle plugin needs JVM 21 to run under, distinct
+      # from the JVM 17 bytecode the project's own modules compile to.
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
