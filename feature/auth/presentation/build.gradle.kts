@@ -8,17 +8,13 @@ plugins {
 
 dependencies {
     commonMainImplementation(projects.feature.auth.domain)
-    commonMainImplementation(projects.core.domain)
+    // :core:presentation re-exposes :core:domain, :core:common, :core:navigation, :core:resource,
+    // :core:design, lifecycle-viewmodel and the Koin ViewModel/Compose artifacts as api.
     commonMainImplementation(projects.core.presentation)
-    commonMainImplementation(projects.core.common)
     commonMainImplementation(projects.core.resulting)
-    commonMainImplementation(projects.core.navigation)
-    commonMainImplementation(projects.core.resource)
+    // Used directly by this module's sources (StateFlow in the ViewModels).
     commonMainImplementation(libs.concurrency.coroutine.core)
-    commonMainImplementation(libs.di.koin.coreViewmodel)
-    androidMainImplementation(projects.core.design)
-    androidMainImplementation(libs.di.koin.compose)
-    androidMainImplementation(libs.navigation.nav3.runtime)
+    // Auth-specific: Google Sign-In via Credential Manager.
     androidMainImplementation(libs.auth.credentials.core)
     androidMainImplementation(libs.auth.credentials.playServices)
     androidMainImplementation(libs.auth.googleId.core)

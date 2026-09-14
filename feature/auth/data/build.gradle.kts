@@ -26,10 +26,12 @@ ktorfit {
 
 dependencies {
     commonMainImplementation(projects.feature.auth.domain)
-    commonMainImplementation(projects.core.remote)
-    commonMainImplementation(projects.core.config)
+    // :core:data re-exposes :core:domain, :core:resulting, :core:remote, :core:config and
+    // :core:local as api - the set every feature data module needs.
     commonMainImplementation(projects.core.data)
     commonMainImplementation(projects.core.mapping)
+    // Declared explicitly because this module's own sources use them directly (@Serializable on
+    // the DTOs, Flow in the repositories) rather than relying on a transitive api chain.
     commonMainImplementation(libs.concurrency.coroutine.core)
     commonMainImplementation(libs.serialization.kxSerialization.json)
 

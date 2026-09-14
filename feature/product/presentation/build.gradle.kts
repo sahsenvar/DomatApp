@@ -6,8 +6,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.feature.product.domain)
-            implementation(projects.core.common)
-            implementation(projects.core.navigation)
+            implementation(projects.core.presentation)
         }
     }
 }

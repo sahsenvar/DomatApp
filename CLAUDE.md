@@ -92,15 +92,29 @@ abstract class AppDatabase : RoomDatabase() {
 
 **CRITICAL:** Features use Clean Architecture with strict boundaries:
 - **Domain layer**: Depends on `:core:domain` and `:core:resulting`. No other dependencies.
-- **Data layer**: Depends on its own `domain`, plus `:core:remote`, `:core:config`, `:core:data`,
-  `:core:resulting`.
-- **Presentation layer**: Depends ONLY on its own `domain`, plus `:core:common` and `:core:navigation`. Never depends on `data`.
+- **Data layer**: Depends on its own `domain` plus **`:core:data`, and that is all it needs** —
+  `:core:data` re-exposes `:core:domain`, `:core:resulting`, `:core:remote`, `:core:config` and
+  `:core:local` as `api`, so no feature re-declares them. Add a dependency here only when it is
+  specific to that feature (Ktorfit, a mapping compiler, a particular SDK).
+- **Presentation layer**: Depends on its own `domain` plus **`:core:presentation`** — which
+  re-exposes `:core:domain`, `:core:common`, `:core:navigation`, `:core:resource`, `:core:design`
+  (Android), `lifecycle-viewmodel` and the Koin ViewModel/Compose artifacts as `api`, so no feature
+  re-declares them. `:core:navigation` brings the Navigation 3 runtime on Android. Add a dependency
+  here only when it is specific to that feature (e.g. Credential Manager / Google Identity, which
+  only `feature:auth:presentation` needs). **Never depends on `data`.**
 
 **Core Module Dependencies:**
 - **core:serialization** → `:core:resulting` (for SerializationError)
 - **core:remote** → `:core:resulting` (for RemoteError), `:core:serialization`
 - **core:config** → `:core:resulting`, `:core:serialization`
-- **core:data** → `:core:domain`, `:core:resulting`
+- **core:data** → `api` on `:core:domain`, `:core:resulting`, `:core:remote`, `:core:config`,
+  `:core:local`. Deliberately `api`, not `implementation`: this is the single place the
+  "what every feature data module needs" rule is written down. Its only consumers are
+  `feature:{name}:data` modules, so nothing leaks outside the data layer.
+- **core:presentation** → `api` on `:core:domain`, `:core:common`, `:core:navigation`,
+  `:core:resource`, `:core:design` (androidMain). Same rationale as `core:data`: the
+  "what every feature presentation module needs" rule lives here, once.
+- **core:navigation** → `api` on the Navigation 3 runtime (androidMain only).
 - **core:resulting** → No dependencies (base module for error handling)
 
 ### Convention Plugins
