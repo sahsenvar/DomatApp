@@ -37,7 +37,7 @@ The project follows a strict layered architecture:
   :core:data/             → Data utilities and base repository patterns
   :core:domain/           → Shared domain models across features
   :core:resulting/        → Error handling (DomainError, RemoteError, LocalError, ValidationError)
-  :core:remote/           → Network layer (Ktor REST via Ktorfit) + the shared Json
+  :core:remote/           → Network layer (Ktor REST via KtorfitX) + the shared Json
   :core:config/           → Configuration layer (DataStore key-value, Firebase RemoteConfig)
   :core:navigation/       → Navigation definitions
   :core:resource/         → Shared resources
@@ -55,7 +55,7 @@ Each feature's data layer has up to **3 Source types**. The suffix is `*Source`,
 ```
 feature:{name}:data/
 ├── datasource/
-│   ├── {Name}RemoteSource    → Ktorfit REST interface (KSP generated impl)
+│   ├── {Name}RemoteSource    → KtorfitX @Api interface (KSP generated impl)
 │   ├── {Name}LocalSource     → @Dao (Room DAO) - structured database operations
 │   └── {Name}ConfigSource    → @ConfigSource (KSP generated) - DataStore + RemoteConfig
 ├── local/
@@ -94,7 +94,7 @@ abstract class AppDatabase : RoomDatabase() {
 - **Data layer**: Depends on its own `domain` plus **`:core:data`, and that is all it needs** —
   `:core:data` re-exposes `:core:domain`, `:core:resulting`, `:core:remote`, `:core:config` and
   `:core:local` as `api`, so no feature re-declares them. Add a dependency here only when it is
-  specific to that feature (Ktorfit, a mapping compiler, a particular SDK).
+  specific to that feature (KtorfitX, a mapping compiler, a particular SDK).
 - **Presentation layer**: Depends on its own `domain` plus **`:core:presentation`** — which
   re-exposes `:core:domain`, `:core:common`, `:core:navigation`, `:core:resource`, `:core:design`
   (Android), `lifecycle-viewmodel` and the Koin ViewModel/Compose artifacts as `api`, so no feature
@@ -168,7 +168,7 @@ Central error handling module containing:
 There is **no `core:serialization` module**. It was removed: the `SerializationApi` /
 `KotlinxSerializationApi` abstraction it was supposed to hold never existed in code, and the one
 thing it really provided — a configured `kotlinx.serialization.json.Json` — is now a `@Single` in
-`CoreRemoteModule`, next to the ContentNegotiation and Ktorfit code that consumes it.
+`CoreRemoteModule`, next to the ContentNegotiation and KtorfitX code that consumes it.
 
 Use `kotlinx.serialization` directly. Do not reintroduce a wrapper interface around it.
 
@@ -214,44 +214,15 @@ override fun login(idToken: String): Flow<AuthSession> = flow {
 }
 ```
 
-## Remote Source Code Generation (Ktorfit)
+## Remote Source Code Generation (KtorfitX)
 
-REST Sources are defined as plain Kotlin interfaces annotated with
-[Ktorfit](https://github.com/Foso/Ktorfit) HTTP annotations. Ktorfit's KSP processor generates the
-implementation and a `Ktorfit.create{InterfaceName}()` extension function.
-
-The project previously used a hand-rolled `@RemoteDataSource` KSP processor in `core:processor`.
-That system has been removed in favour of Ktorfit, which is actively maintained, supports every KMP
-target, and gives real compile-time checking of paths and parameters.
-
-### Concrete Clients (core:remote)
-
-- **`HttpClient`** (`rest/provideHttpClient.kt`): the single Ktor client — Supabase default headers,
-  `ContentNegotiation(json)`, logging, and `RemoteError` mapping via `HttpResponseValidator`
-- **`Ktorfit`** (`rest/provideKtorfit.kt`): wraps that same `HttpClient`, so every generated REST
-  call inherits the identical header/serialization/error pipeline
-- **`FirebaseFirestoreClient`** (`core:remote/firestore/`): Firebase Firestore for document CRUD and
-  realtime observation
-
-### Annotations (de.jensklingenberg.ktorfit.http)
-
-**HTTP methods:** `@GET`, `@POST`, `@PUT`, `@PATCH`, `@DELETE`, `@HEAD`, `@OPTIONS`, `@HTTP`
-
-**Parameters:** `@Body`, `@Query`, `@QueryMap`, `@QueryName`, `@Path`, `@Header`, `@HeaderMap`,
-`@Headers`, `@Url`, `@Field`, `@FieldMap`, `@Part`, `@PartMap`, `@Tag`, `@ReqBuilder`
-
-**Modifiers:** `@FormUrlEncoded`, `@Multipart`, `@Streaming`
-
-### Base URL Rule
-
-`provideKtorfit` sets `baseUrl("https://$supabaseHost/")`. Ktorfit requires the base URL to end with
-`/`, so **interface paths must NOT start with a leading slash** (`"auth/v1/token"`, not
-`"/auth/v1/token"`).
-
-### Usage Example
+REST Sources are plain Kotlin interfaces annotated with
+[KtorfitX](https://github.com/annotation-engine/ktorfitx) (`cn.ktorfitx.multiplatform.annotation.*`).
+Its KSP processor generates `impls.{Name}Impl` plus a `Ktorfitx.{name}` **extension property** to
+obtain it.
 
 ```kotlin
-// feature/auth/data/datasource/AuthRemoteSource.kt
+@Api
 interface AuthRemoteSource {
 
     @POST("auth/v1/token")
@@ -259,76 +230,68 @@ interface AuthRemoteSource {
         @Query("grant_type") grantType: String,
         @Body body: GoogleSignInRemoteModel
     ): AuthSessionRemoteModel
-
-    @GET("rest/v1/profiles/{id}")
-    suspend fun getProfile(@Path("id") id: String): UserProfileRemoteModel
-
-    @POST("auth/v1/logout")
-    suspend fun logout()
 }
 ```
-
-### Koin Wiring
-
-Ktorfit generates `Ktorfit.createAuthRemoteSource()` into
-`build/generated/ksp/metadata/commonMain/kotlin/`. Bind it in the feature's `@Module`:
 
 ```kotlin
-@Module(includes = [AuthDomainModule::class])
-class AuthDataModule {
-
-    @Factory
-    fun provideAuthRemoteSource(
-        ktorfit: Ktorfit
-    ): AuthRemoteSource = ktorfit.createAuthRemoteSource()
-}
+// AuthDataModule
+@Factory
+fun provideAuthRemoteSource(ktorfitx: Ktorfitx): AuthRemoteSource = ktorfitx.authRemoteSource
+//                                                                           ^ generated extension
+//   import com.domatapp.feature.auth.data.datasource.impls.authRemoteSource
 ```
 
-### Gradle Setup
+### Why KtorfitX and not Ktorfit
 
-The official Ktorfit Gradle plugin **is** applied, with its compiler plugin switched off:
+Ktorfit has no WebSocket annotations, so WebSocket Sources had to be hand-written. KtorfitX covers
+REST **and** WebSocket in one annotation family (`@Api` / `@GET` / `@POST` / `@WebSocket`), which was
+the original architectural goal. The trade-off is accepted deliberately: KtorfitX is a much smaller,
+younger project than Ktorfit, its documentation is primarily Chinese and marked "under construction".
+
+### Gradle setup
 
 ```kotlin
 plugins {
-    alias(libs.plugins.ktorfit)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.ktorfitx)   // cn.ktorfitx.multiplatform
 }
 
-ktorfit {
-    compilerPluginVersion.set("-")   // "-" disables the Ktorfit compiler plugin entirely
-}
-
-dependencies {
-    commonMainImplementation(libs.network.ktorfit.libLight)
-    commonMainImplementation(libs.network.ktorfit.annotations)
-
-    // The plugin hardcodes ktorfit-ksp 2.7.3; declare the catalog version so Gradle's
-    // newest-wins resolution keeps the processor on the same version as the runtime.
-    add("kspCommonMainMetadata", libs.network.ktorfit.ksp)
+ktorfitx {
+    websockets { enabled = true }
 }
 ```
 
-The Gradle plugin registers `ktorfit-ksp` on `kspCommonMainMetadata` and on the per-target `ksp*`
-configurations, passes the `Ktorfit_*` KSP options, and orders compile tasks after
-`kspCommonMainKotlinMetadata`. Running the processor on the per-target configurations is harmless:
-it deliberately skips generating for interfaces declared in `commonMain`.
+The plugin adds `multiplatform-annotation` + `multiplatform-core` (and `multiplatform-websockets`
+when enabled) to `commonMain`, registers `multiplatform-ksp` on every `ksp*` configuration, and
+orders the per-target KSP tasks after `kspCommonMainKotlinMetadata`. It does all of this inside
+`afterEvaluate`, so — unlike Ktorfit's plugin — **the order of the `plugins {}` block does not
+matter**. Do not declare the KtorfitX runtime artifacts yourself in a module that applies the
+plugin; only `:core:remote`, which builds the `Ktorfitx` instance without applying the plugin,
+declares `multiplatform-core` directly.
 
-Two things to know about this setup:
+### Two hard constraints
 
-- **The compiler plugin is off on purpose.** Its only job is rewriting the reified
-  `ktorfit.create<T>()` call, and that function is `@Deprecated` in Ktorfit 2.7.5 ("the plan is to
-  get rid of the plugin"). With `kotlin.compiler.allWarningsAsErrors=true` it could not be called
-  here regardless. Keeping it off also means no Kotlin-version-coupled compiler artifact is loaded
-  into the build. **Always use the generated `ktorfit.createMySource()` extension**; the
-  reified `ktorfit.create<MySource>()` form is not available.
-- **The plugin's srcDir must not be double-registered.** It adds
-  `<buildDir>/generated/ksp/metadata/commonMain/kotlin` to `commonMain`, and `DiConventionPlugin`
-  adds the same directory. Gradle collapses srcDirs only when they resolve to the identical `File`,
-  so `DiConventionPlugin` must name that exact path and not an ancestor such as
-  `build/generated/ksp/metadata`.
+- **Ktor version is pinned exactly.** The plugin calls
+  `checkDependency("io.ktor", "ktor-client-core")` and **fails the build** unless the declared
+  version equals the Ktor version KtorfitX was built against — 3.4.2 for KtorfitX 3.4.2-3.3.3. The
+  version string is literally `<ktor>-<ktorfitx>`. Bumping Ktor requires a matching KtorfitX release.
+- **The checked dependencies must be declared in the module itself**, not inherited transitively.
+  `feature:auth:data` therefore declares `ktor-client-core` and (because websockets are enabled)
+  `ktor-client-websockets` even though `:core:data` already exposes Ktor transitively.
 
-`ktorfit-lib-light` is used instead of `ktorfit-lib` because the project supplies its own Ktor
-engines (OkHttp on Android, Darwin on iOS); the light artifact brings only `ktor-client-core`.
-Ktorfit must stay on a release built against the project's Ktor major.minor (2.7.4+ -> Ktor 3.5.x).
+### The HttpClient is built by KtorfitX, not handed to it
+
+Ktorfit wrapped an existing `HttpClient`. **KtorfitX builds its own** — `KtorfitxConfig` has no way
+to accept a pre-built client, and its only configurable overload,
+`httpClient(engineFactory) { }`, requires naming the engine explicitly rather than letting Ktor's
+service loader pick one. So:
+
+- `core:remote` declares `internal expect fun KtorfitxConfig.platformHttpClient(...)`, with
+  `actual`s selecting OkHttp on Android and Darwin on iOS.
+- The whole pipeline (Supabase headers, ContentNegotiation, logging, the `RemoteError` mapping)
+  lives inside that block in `provideKtorfitx`.
+- The app-wide `HttpClient` single is `ktorfitx.config.httpClient`, so direct Ktor callers share the
+  exact same client as the generated `@Api` implementations.
 
 ### WebSocket and Firestore Sources
 
@@ -595,7 +558,7 @@ The project provides concrete client classes across two modules:
 
 - **`HttpClient`** (Ktor): the single, fully configured Ktor client (headers, ContentNegotiation,
   logging, `RemoteError` mapping) — see `provideHttpClient`
-- **`Ktorfit`**: built on top of that `HttpClient` by `provideKtorfit` — used to create REST
+- **`Ktorfitx`**: built by `provideKtorfitx`, which also owns the `HttpClient` — used to create REST
   Source implementations
 - **`FirebaseFirestoreClient`** (`core:remote/firestore/`): Firebase Firestore CRUD and realtime
 
@@ -608,7 +571,7 @@ The project provides concrete client classes across two modules:
 
 Each feature defines its own Source interfaces:
 
-- **`AuthRemoteSource`** → Ktorfit interface (KSP-generated `createAuthRemoteSource()`)
+- **`AuthRemoteSource`** → KtorfitX `@Api` interface (KSP-generated `ktorfitx.authRemoteSource`)
 - **`AuthLocalSource`** → Room `@Dao` (Room-generated impl)
 - **`AuthConfigSource`** → `@ConfigSource` (KSP-generated impl)
 
@@ -724,7 +687,7 @@ KSP. Only modules that actually register one of those processors apply `alias(li
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
 - **Architecture**: Coroutines + Flow (Arrow-kt is in the catalog but unused)
 - **DI**: Koin 4.2.2 with Annotations 4.2.2 (Kotlin compiler plugin, `io.insert-koin.compiler.plugin` 1.2.1)
-- **Networking**: Ktor Client 3.5.2 (REST + WebSocket), Ktorfit 2.7.5 (REST codegen via KSP)
+- **Networking**: Ktor Client 3.4.2 (pinned by KtorfitX), KtorfitX 3.4.2-3.3.3 (REST + WebSocket codegen via KSP)
 - **Database**: Room 2.8.5 (KMP)
 - **Storage**: DataStore 1.2.1 (Preferences)
 - **Backend**: Firebase Auth (GitLive 2.7.0), Firebase Firestore, Firebase RemoteConfig

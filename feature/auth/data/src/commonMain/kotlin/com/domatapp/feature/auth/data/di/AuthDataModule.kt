@@ -6,14 +6,14 @@ import com.domatapp.feature.auth.data.datasource.AuthConfigSource
 import com.domatapp.feature.auth.data.datasource.AuthConfigSourceImpl
 import com.domatapp.feature.auth.data.datasource.AuthRemoteSource
 import com.domatapp.feature.auth.data.datasource.UserProfileRemoteSource
-import com.domatapp.feature.auth.data.datasource.createAuthRemoteSource
-import com.domatapp.feature.auth.data.datasource.createUserProfileRemoteSource
+import com.domatapp.feature.auth.data.datasource.impls.authRemoteSource
+import com.domatapp.feature.auth.data.datasource.impls.userProfileRemoteSource
 import com.domatapp.feature.auth.data.repository.AuthRepositoryImpl
 import com.domatapp.feature.auth.data.repository.UserProfileRepositoryImpl
 import com.domatapp.feature.auth.domain.di.AuthDomainModule
 import com.domatapp.feature.auth.domain.repository.AuthRepository
 import com.domatapp.feature.auth.domain.repository.UserProfileRepository
-import de.jensklingenberg.ktorfit.Ktorfit
+import cn.ktorfitx.multiplatform.core.Ktorfitx
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.module.Module as KoinModule
@@ -25,13 +25,13 @@ class AuthDataModule {
 
     @Factory
     fun provideAuthRemoteSource(
-        ktorfit: Ktorfit
-    ): AuthRemoteSource = ktorfit.createAuthRemoteSource()
+        ktorfitx: Ktorfitx
+    ): AuthRemoteSource = ktorfitx.authRemoteSource
 
     @Factory
     fun provideUserProfileRemoteSource(
-        ktorfit: Ktorfit
-    ): UserProfileRemoteSource = ktorfit.createUserProfileRemoteSource()
+        ktorfitx: Ktorfitx
+    ): UserProfileRemoteSource = ktorfitx.userProfileRemoteSource
 
     @Single
     fun provideAuthConfigSource(

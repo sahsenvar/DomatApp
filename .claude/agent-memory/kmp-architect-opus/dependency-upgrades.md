@@ -55,7 +55,10 @@ The compose-compiler Gradle plugin follows the `kotlin` version ref, never its o
 
 ## Other pairings
 
-- **Ktorfit ↔ Ktor**: Ktorfit 2.7.3 → Ktor 3.4.1, 2.7.4+ → Ktor 3.5.x. Check before moving either.
+- **KtorfitX ↔ Ktor**: hard-enforced, not advisory. Its Gradle plugin errors the build unless the
+  declared `ktor-client-core` version equals the Ktor version KtorfitX was built against. Version
+  strings are `<ktor>-<ktorfitx>`, so `3.4.2-3.3.3` pins Ktor to exactly 3.4.2. Ktor cannot be
+  bumped without a matching KtorfitX release. (Ktorfit, which it replaced, only advised matching.)
 - **GitLive Firebase ↔ firebase-bom**: read the BoM version straight out of
   `dev.gitlive:firebase-<x>-android:<v>`'s POM rather than picking the newest BoM independently.
 - **AGP ↔ Gradle ↔ compileSdk**: AGP 9.4.0 needs Gradle ≥ 9.6.0 and supports up to API 37.
