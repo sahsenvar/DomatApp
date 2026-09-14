@@ -21,6 +21,6 @@ class LoginWithGoogleUseCase(
     operator fun invoke(idToken: String): Flow<LoginResultDomainModel> = flow {
         val session = authRepository.loginWithGoogle(idToken).first()
         val hasProfile = userProfileRepository.hasOnboardingRecord(session.user.id).first()
-        emit(LoginResultDomainModel(session = session, hasUserExist = !hasProfile))
+        emit(LoginResultDomainModel(session = session, hasUserExist = hasProfile))
     }
 }
