@@ -32,6 +32,7 @@ arrow = "1.2.4"
 supabase = "3.0.2"
 credentialsManager = "1.3.0"
 googleId = "1.1.1"
+kmapper = "2.2.2"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
@@ -84,6 +85,11 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
+
+# KMapper - compile-time object mapping (https://kmapper.gitbook.io/docs)
+kmapper-core = { module = "io.github.sahsenvar:kmapper-core", version.ref = "kmapper" }
+kmapper-annotations = { module = "io.github.sahsenvar:kmapper-annotations", version.ref = "kmapper" }
+kmapper-compiler = { module = "io.github.sahsenvar:kmapper-compiler", version.ref = "kmapper" }
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
 supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt", version.ref = "supabase" }

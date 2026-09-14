@@ -5,7 +5,7 @@ import com.domatapp.feature.auth.data.datasource.AuthConfigDataSource
 import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSource
 import com.domatapp.feature.auth.data.mapper.toAuthError
 import com.domatapp.feature.auth.data.remote.GoogleSignInRemoteModel
-import com.domatapp.feature.auth.data.remote.toAuthSessionDomainModel
+import com.domatapp.feature.auth.data.remote.toAuthSessionDomainModelResult
 import com.domatapp.feature.auth.domain.model.AuthSessionDomainModel
 import com.domatapp.feature.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +28,7 @@ class AuthRepositoryImpl(
         // Persist token to DataStore
         configDataSource.saveToken(response.accessToken)
 
-        emit(response.toAuthSessionDomainModel())
+        emit(response.toAuthSessionDomainModelResult().getOrThrow())
     }.catch { throw it.toAuthError() }
 
     override fun logout(): Flow<Unit> = flow {

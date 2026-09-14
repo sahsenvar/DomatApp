@@ -1,9 +1,9 @@
 package com.domatapp.feature.auth.data.remote
 
 import com.domatapp.core.data.model.RemoteModel
-import com.domatapp.core.mapping.annotations.MapTo
 import com.domatapp.feature.auth.domain.model.AuthSessionDomainModel
 import com.domatapp.feature.auth.domain.model.AuthUserDomainModel
+import com.sahsenvar.kmapper.annotations.MapTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
