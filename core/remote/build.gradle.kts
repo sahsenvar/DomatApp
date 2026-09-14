@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
     alias(libs.plugins.domatapp.kmp.di)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinSerialization)
 }
 
