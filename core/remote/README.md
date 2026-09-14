@@ -1,7 +1,7 @@
 # Module: :core:remote
 
 ## 🎯 Purpose (Amaç)
-Ağ katmanı işlemlerini (Ktor/Ktorfit üzerinden REST API çağrıları) yönetir. Verilerin uzak sunuculardan getirilmesinden sorumludur.
+Ağ katmanı işlemlerini (Ktor/KtorfitX üzerinden REST API çağrıları) yönetir. Verilerin uzak sunuculardan getirilmesinden sorumludur.
 
 ## 🏗️ Architecture (Mimari)
 - **Layer:** Infrastructure Layer
@@ -13,11 +13,11 @@ Ağ katmanı işlemlerini (Ktor/Ktorfit üzerinden REST API çağrıları) yöne
      |
      +--> [:core:resulting]
      +--> [Ktor Client]
-     +--> [Ktorfit]
+     +--> [KtorfitX]
      v
 [Koin Core/Annotations]
 ```
 
 ## 🤖 AI Context (Yapay Zeka İçin Notlar)
 - API endpoint tanımları ve Ktor konfigürasyonları buradadır.
-- REST `*RemoteSource` arayüzlerinin implementasyonları Ktorfit KSP tarafından üretilir.
+- REST `*RemoteSource` arayüzlerinin implementasyonları KtorfitX KSP tarafından üretilir.
