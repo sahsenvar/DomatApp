@@ -10,7 +10,6 @@ dependencies {
     compileOnly(libs.buildlogic.ksp.gradlePlugin)
     compileOnly(libs.buildlogic.compose.gradlePlugin)
     compileOnly(libs.buildlogic.composeCompiler.gradlePlugin)
-    implementation(libs.buildlogic.android.gradlePlugin)
     implementation(libs.buildlogic.ksp.gradlePlugin)
     implementation(libs.buildlogic.koinCompiler.gradlePlugin)
 }
