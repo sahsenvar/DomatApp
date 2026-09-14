@@ -14,19 +14,19 @@ import com.domatapp.feature.auth.presentation.model.AuthEffect
 import com.domatapp.feature.auth.presentation.model.AuthIntent
 import com.domatapp.feature.auth.presentation.model.AuthUiState
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 /**
  * ViewModel for Authentication screen.
  * Implements MVI pattern with exception-based error handling.
- * Uses Lifecycle ViewModel's viewModelScope and lifecycle management.
  */
 @NavigationViewModel(Route.AuthRoute.AuthScreen::class)
 @KoinViewModel
 class AuthViewModel(
-    private val loginWithGoogleUseCase: LoginWithGoogleUseCase,
+    private val loginWithGoogle: LoginWithGoogleUseCase,
     private val stringResource: StringResourceApi
 ) : BaseViewModel<AuthUiState, AuthIntent, AuthEffect>(
     initialState = AuthUiState()
@@ -34,74 +34,31 @@ class AuthViewModel(
 
     override fun onIntent(intent: AuthIntent) {
         when (intent) {
-            is AuthIntent.OnGoogleSignInClicked -> handleGoogleSignInClicked()
-            is AuthIntent.OnGoogleTokenReceived -> handleGoogleTokenReceived(intent.idToken)
-            is AuthIntent.OnGoogleSignInCancelled -> handleGoogleSignInCancelled()
-            is AuthIntent.OnErrorDismissed -> handleErrorDismissed()
-        }
-    }
+            is AuthIntent.OnGoogleSignInClicked -> {
+                updateState { copy(isLoading = true) }
+                emitEffect(AuthEffect.LaunchGoogleSignIn)
+            }
 
-    private fun handleGoogleSignInClicked() {
-        updateState { it.copy(isGoogleSignInInProgress = true) }
-            emitEffect(AuthEffect.LaunchGoogleSignIn)
-    }
-
-    private fun handleGoogleTokenReceived(idToken: String) {
-        viewModelScope.launch {
-            loginWithGoogleUseCase(idToken)
+            // todo: Bu işlemler handleResult'tan yönetilecek ileri de...
+            is AuthIntent.OnGoogleTokenReceived -> loginWithGoogle(intent.idToken)
                 .onStart {
-                    updateState {
-                        it.copy(
-                            isLoading = true,
-                            error = null,
-                            isGoogleSignInInProgress = false
-                        )
-                    }
+                    updateState { copy(isLoading = true) }
                 }
                 .catch { exception ->
-                    // Map exception to domain error and handle
-                    val domainError = exception as? DomainError
-                        ?: RemoteError.Unknown(exception.message, exception)
+                    updateState { copy(isLoading = false) }
+                    val domainError = exception as DomainError
                     val errorMessage = domainError.toUiMessage()
-
-                    updateState {
-                        it.copy(
-                            isLoading = false,
-                            error = errorMessage,
-                            isGoogleSignInInProgress = false
-                        )
-                    }
-
                     emitEffect(AuthEffect.ShowError(errorMessage))
                 }
-                .collect { session ->
-                    updateState {
-                        it.copy(
-                            isLoading = false,
-                            session = session,
-                            error = null,
-                            isGoogleSignInInProgress = false
-                        )
-                    }
+                .onEach { result ->
+                    updateState { copy(isLoading = false) }
+                    emitEffect(if (result.hasUserExist) AuthEffect.NavigateToHome else AuthEffect.NavigateToAddressInput)
+                }.launchIn(viewModelScope) // todo: Burada DomatScope olacak
 
-                    // Navigate to home after successful login
-                    emitEffect(AuthEffect.NavigateToHome)
-                }
+            is AuthIntent.OnGoogleSignInCancelled -> updateState {
+                copy(isLoading = false)
+            }
         }
-    }
-
-    private fun handleGoogleSignInCancelled() {
-        updateState {
-            it.copy(
-                isLoading = false,
-                isGoogleSignInInProgress = false,
-                error = null
-            )
-        }
-    }
-
-    private fun handleErrorDismissed() {
-        updateState { it.copy(error = null) }
     }
 
     /**

@@ -5,39 +5,8 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-kotlin {
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
-    sourceSets {
-        commonMain {
-            dependencies {
-                // Projects
-                api(projects.core.resulting)
-
-                // Libraries
-                // Core
-                implementation(libs.kotlin.stdlib)
-
-                // kotlinx.serialization
-                api(libs.kotlinx.serialization.json)
-
-                // Coroutines
-                implementation(libs.kotlinx.coroutines.core)
-            }
-        }
-
-        androidMain {
-            dependencies {}
-        }
-
-        iosMain {
-            dependencies {}
-        }
-    }
-}
-
 dependencies {
-
+    commonMainApi(projects.core.resulting)
+    commonMainApi(libs.kotlinx.serialization.json)
+    commonMainImplementation(libs.kotlinx.coroutines.core)
 }

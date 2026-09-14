@@ -5,53 +5,40 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-kotlin {
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+dependencies {
+    // Core modules
+    commonMainApi(projects.core.common)
+    commonMainApi(projects.core.resulting)
+    commonMainApi(projects.core.serialization)
 
-    sourceSets {
-        commonMain {
-            dependencies {
-                implementation(libs.kotlin.stdlib)
+    // Ktor Client
+    commonMainApi(libs.ktor.client.core)
+    commonMainApi(libs.ktor.utils)
+    commonMainImplementation(libs.ktor.client.content.negotiation)
+    commonMainImplementation(libs.ktor.serialization.kotlinx.json)
+    commonMainImplementation(libs.ktor.client.logging)
+    commonMainImplementation(libs.ktor.client.websockets)
 
-                // Core modules
-                api(projects.core.resulting)
-                api(projects.core.serialization)
+    // Supabase
+    commonMainApi(libs.supabase.postgrest)
+    commonMainApi(libs.supabase.storage)
+    commonMainApi(libs.supabase.auth)
 
-                // Ktor Client
-                api(libs.ktor.client.core)
-                implementation(libs.ktor.client.content.negotiation)
-                implementation(libs.ktor.serialization.kotlinx.json)
-                implementation(libs.ktor.client.logging)
-                implementation(libs.ktor.client.websockets)
+    // Coroutines
+    commonMainImplementation(libs.kotlinx.coroutines.core)
 
-                // Coroutines
-                implementation(libs.kotlinx.coroutines.core)
+    // Firebase
+    commonMainImplementation(libs.firebase.firestore)
 
-                // Firebase
-                implementation(libs.firebase.firestore)
+    // Koin
+    commonMainImplementation(libs.koin.core)
+    commonMainImplementation(libs.koin.annotations)
 
-                // Koin for KMP
-                implementation(libs.koin.core)
-                implementation(libs.koin.annotations)
-            }
-        }
+    // Android
+    androidMainImplementation(project.dependencies.platform(libs.firebase.bom))
+    androidMainApi(libs.ktor.client.android)
+    androidMainImplementation(libs.ktor.client.okhttp)
 
-        androidMain {
-            dependencies {
-                implementation(project.dependencies.platform(libs.firebase.bom))
-                // Ktor Engine for Android
-                implementation(libs.ktor.client.okhttp)
-            }
-        }
-
-        iosMain {
-            dependencies {
-                // Ktor Engine for iOS
-                implementation(libs.ktor.client.darwin)
-            }
-        }
-    }
-
+    // iOS
+    iosMainImplementation(libs.ktor.client.darwin)
 }

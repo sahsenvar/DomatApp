@@ -1,76 +1,27 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.domatapp.cmp.library)
     alias(libs.plugins.domatapp.kmp.di)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinSerialization)
 }
 
-composeCompiler {
-    if (project.findProperty("compose.compiler.metrics") == "true") {
-        metricsDestination = layout.buildDirectory.dir("compose-metrics")
-        reportsDestination = layout.buildDirectory.dir("compose-reports")
-    }
-}
-
-kotlin {
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
-    sourceSets {
-        commonMain {
-            dependencies {
-                implementation(libs.kotlin.stdlib)
-
-                // Presentation layer only depends on domain
-                implementation(projects.feature.auth.domain)
-
-                // Core domain (for DomainModel marker interface)
-                implementation(projects.core.domain)
-
-                // Core presentation (for BaseViewModel)
-                implementation(projects.core.presentation)
-
-                // Core common
-                implementation(projects.core.common)
-                implementation(projects.core.resulting)
-
-                // Navigation
-                implementation(projects.core.navigation)
-
-                // Resources (Moko Resources for i18n)
-                implementation(projects.core.resource)
-
-                // Coroutines
-                implementation(libs.kotlinx.coroutines.core)
-
-                // Koin ViewModel (for @KoinViewModel generated code)
-                implementation(libs.koin.core.viewmodel)
-            }
-        }
-        androidMain {
-            dependencies {
-                // Compose
-                implementation(libs.compose.runtime)
-                implementation(libs.compose.foundation)
-                implementation(libs.compose.material3)
-                implementation(libs.compose.ui)
-                implementation(libs.koin.compose)
-
-                // Navigation3 (for generated entries extension)
-                implementation(libs.navigation3.runtime)
-            }
-        }
-        iosMain {
-            dependencies {}
-        }
-    }
-}
-
 dependencies {
-    add("kspAndroid", projects.core.processor)
+    commonMainImplementation(projects.feature.auth.domain)
+    commonMainImplementation(projects.core.domain)
+    commonMainImplementation(projects.core.presentation)
+    commonMainImplementation(projects.core.common)
+    commonMainImplementation(projects.core.resulting)
+    commonMainImplementation(projects.core.navigation)
+    commonMainImplementation(projects.core.resource)
+    commonMainImplementation(libs.kotlinx.coroutines.core)
+    commonMainImplementation(libs.koin.core.viewmodel)
+    androidMainImplementation(libs.koin.compose)
+    androidMainImplementation(libs.navigation3.runtime)
+    androidMainImplementation(libs.credentials)
+    androidMainImplementation(libs.credentials.play.services)
+    androidMainImplementation(libs.google.identity)
+    kspAndroid(projects.core.processor)
 }
 
 // Ensure kspAndroidMain runs after kspCommonMainKotlinMetadata (Koin KSP)

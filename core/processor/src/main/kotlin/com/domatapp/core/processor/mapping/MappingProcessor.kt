@@ -19,7 +19,6 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterSpec
@@ -320,28 +319,32 @@ class MappingProcessor(
                     add("return·%T(\n", targetClassName)
                     indent()
 
-                    targetFields.forEach { targetField ->
-                        // Skip computed properties (they are not constructor parameters)
-                        if (targetField.isComputed) return@forEach
+                    // Pre-collect fields that will actually be emitted (skip computed + defaulted)
+                    data class FieldEntry(val targetField: FieldInfo, val sourceField: FieldInfo?)
 
-                        // Find matching source field using targetClass-aware matching
-                        val sourceField = sourceFields.firstOrNull { sourceField ->
-                            hasFieldMapping(sourceField, targetField, targetClass)
+                    val fieldsToEmit = targetFields
+                        .filter { !it.isComputed }
+                        .mapNotNull { targetField ->
+                            val sourceField = sourceFields.firstOrNull { sf ->
+                                hasFieldMapping(sf, targetField, targetClass)
+                            }
+                            if (sourceField != null || !targetField.hasDefault) {
+                                FieldEntry(targetField, sourceField)
+                            } else null
                         }
 
+                    fieldsToEmit.forEachIndexed { index, (targetField, sourceField) ->
+                        val separator = if (index == fieldsToEmit.lastIndex) "\n" else ",\n"
                         if (sourceField != null) {
-                            // Has source mapping
                             val strategy =
                                 typeMatcher.determineMappingStrategy(sourceField, targetField)
                             val mappingCode =
                                 codeGen.generateFieldMapping(sourceField, targetField, strategy)
-                            add("%N·=·%L,\n", targetField.name, mappingCode)
-                        } else if (!targetField.hasDefault) {
+                            add("%N·=·%L$separator", targetField.name, mappingCode)
+                        } else {
                             // External field without constructor default
-                            val mappingCode = CodeBlock.of("%N", targetField.name)
-                            add("%N·=·%L,\n", targetField.name, mappingCode)
+                            add("%N·=·%N$separator", targetField.name, targetField.name)
                         }
-                        // Else: field has constructor default, skip it (constructor will use default value)
                     }
 
                     unindent()
@@ -440,14 +443,25 @@ class MappingProcessor(
                     add("return·%T(\n", targetClassName)
                     indent()
 
-                    targetFields.forEach { targetField ->
-                        // Skip computed properties (they are not constructor parameters)
-                        if (targetField.isComputed) return@forEach
+                    data class ReverseFieldEntry(
+                        val targetField: FieldInfo,
+                        val sourceField: FieldInfo?
+                    )
 
-                        // Find matching source field using sourceClass-aware matching
-                        val sourceField = sourceFields.firstOrNull { sourceField ->
-                            hasFieldMappingReverse(sourceField, targetField, sourceClass)
+                    val reverseFieldsToEmit = targetFields
+                        .filter { !it.isComputed }
+                        .mapNotNull { targetField ->
+                            val sourceField = sourceFields.firstOrNull { sf ->
+                                hasFieldMappingReverse(sf, targetField, sourceClass)
+                            }
+                            if (sourceField != null || !targetField.hasDefault) {
+                                ReverseFieldEntry(targetField, sourceField)
+                            } else null
+                            // Else: field has constructor default, skip it
                         }
+
+                    reverseFieldsToEmit.forEachIndexed { index, (targetField, sourceField) ->
+                        val separator = if (index == reverseFieldsToEmit.lastIndex) "\n" else ",\n"
 
                         if (sourceField != null) {
                             // Has source mapping
@@ -462,13 +476,11 @@ class MappingProcessor(
                                 strategy,
                                 isReverse = true
                             )
-                            add("%N·=·%L,\n", targetField.name, mappingCode)
-                        } else if (!targetField.hasDefault) {
+                            add("%N·=·%L$separator", targetField.name, mappingCode)
+                        } else {
                             // External field without constructor default
-                            val mappingCode = CodeBlock.of("%N", targetField.name)
-                            add("%N·=·%L,\n", targetField.name, mappingCode)
+                            add("%N·=·%N$separator", targetField.name, targetField.name)
                         }
-                        // Else: field has constructor default, skip it (constructor will use default value)
                     }
 
                     unindent()
