@@ -1,7 +1,7 @@
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.koinCompiler)
     alias(libs.plugins.skie)
     alias(libs.plugins.mokoResources)
 }
@@ -30,9 +30,9 @@ kotlin {
             export(projects.feature.auth.domain)
             export(projects.feature.auth.presentation)
 
-            export(libs.kotlinx.coroutines.core)
-            export(libs.moko.resources)
-            export(libs.moko.graphics)
+            export(libs.concurrency.coroutine.core)
+            export(libs.resource.moko.core)
+            export(libs.resource.moko.graphics)
         }
     }
 
@@ -54,12 +54,12 @@ kotlin {
             api(projects.feature.auth.presentation)
             api(projects.feature.onboarding.presentation)
 
-            api(libs.koin.core)
-            api(libs.koin.annotations)
-            api(libs.kotlinx.coroutines.core)
+            api(libs.di.koin.core)
+            api(libs.di.koin.annotations)
+            api(libs.concurrency.coroutine.core)
 
-            api(libs.moko.resources)
-            api(libs.moko.graphics)
+            api(libs.resource.moko.core)
+            api(libs.resource.moko.graphics)
 
         }
     }
@@ -69,19 +69,13 @@ multiplatformResources {
     resourcesPackage.set("com.domatapp.shared")
 }
 
-dependencies {
-    kspCommonMainMetadata(libs.koin.ksp.compiler)
-}
-
-ksp {
-    arg("KOIN_DEFAULT_MODULE", "false")
-    arg("KOIN_CONFIG_CHECK", "true")
-    arg("KOIN_LOG_TIMES", "true")
-}
-
-// Workaround for KSP implicit dependency error
-tasks.configureEach {
-    if (name.startsWith("ksp") && name != "kspCommonMainKotlinMetadata") {
-        dependsOn("kspCommonMainKotlinMetadata")
-    }
+koinCompiler {
+    // :shared owns startKoin and aggregates every feature module, so it is the one compilation
+    // that sees the whole dependency graph - full compile-time validation belongs here. This
+    // replaces the KOIN_CONFIG_CHECK=true KSP argument.
+    compileSafety.set(true)
+    // Required because this build runs with kotlin.compiler.allWarningsAsErrors=true; the plugin's
+    // informational and Kotlin-version-check output defaults to WARNING severity.
+    logSeverity.set("info")
+    versionCheckSeverity.set("info")
 }

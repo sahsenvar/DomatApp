@@ -7,19 +7,17 @@ plugins {
 }
 
 dependencies {
+    // :core:presentation re-exposes :core:domain, :core:common, :core:navigation, :core:resource,
+    // :core:design, lifecycle-viewmodel and the Koin ViewModel/Compose artifacts as api.
     commonMainImplementation(projects.core.presentation)
-    commonMainImplementation(projects.core.common)
-    commonMainImplementation(projects.core.navigation)
-    commonMainImplementation(projects.core.resource)
-    commonMainImplementation(libs.kotlinx.coroutines.core)
-    commonMainImplementation(libs.koin.core.viewmodel)
-    androidMainImplementation(projects.core.design)
-    androidMainImplementation(libs.koin.compose)
-    androidMainImplementation(libs.navigation3.runtime)
+    // Used directly by this module's sources (StateFlow in the ViewModels).
+    commonMainImplementation(libs.concurrency.coroutine.core)
     kspAndroid(projects.core.processor)
 }
 
-// Ensure kspAndroidMain runs after kspCommonMainKotlinMetadata (Koin KSP)
+// DiConventionPlugin registers build/generated/ksp/metadata/commonMain/kotlin as a commonMain
+// srcDir, which makes kspAndroidMain an implicit consumer of kspCommonMainKotlinMetadata's
+// output. Gradle needs that edge declared even though nothing generates into it today.
 tasks.matching { it.name == "kspAndroidMain" }.configureEach {
     dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
 }

@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.ksp.api)
-    implementation(libs.kotlinpoet)
-    implementation(libs.kotlinpoet.ksp)
+    implementation(libs.codegen.ksp.core)
+    implementation(libs.codegen.kotlinpoet.core)
+    implementation(libs.codegen.kotlinpoet.ksp)
 }

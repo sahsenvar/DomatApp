@@ -86,21 +86,35 @@ abstract class AppDatabase : RoomDatabase() {
 2. Create Room `@Dao` interface as `{Name}LocalDataSource` in `feature/{name}/data/datasource/`
 3. Add `abstract fun` to `shared/.../database/AppDatabase.kt`
 4. Add `single { get<AppDatabase>().{name}LocalDataSource() }` to `shared/.../di/KoinInitializer.kt`
-5. Add `implementation(libs.androidx.room.runtime)` to feature's `build.gradle.kts`
+5. Add `implementation(libs.localdb.room.runtime)` to feature's `build.gradle.kts`
 
 ### Dependency Rules
 
 **CRITICAL:** Features use Clean Architecture with strict boundaries:
 - **Domain layer**: Depends on `:core:domain` and `:core:resulting`. No other dependencies.
-- **Data layer**: Depends on its own `domain`, plus `:core:remote`, `:core:config`, `:core:data`,
-  `:core:resulting`.
-- **Presentation layer**: Depends ONLY on its own `domain`, plus `:core:common` and `:core:navigation`. Never depends on `data`.
+- **Data layer**: Depends on its own `domain` plus **`:core:data`, and that is all it needs** —
+  `:core:data` re-exposes `:core:domain`, `:core:resulting`, `:core:remote`, `:core:config` and
+  `:core:local` as `api`, so no feature re-declares them. Add a dependency here only when it is
+  specific to that feature (Ktorfit, a mapping compiler, a particular SDK).
+- **Presentation layer**: Depends on its own `domain` plus **`:core:presentation`** — which
+  re-exposes `:core:domain`, `:core:common`, `:core:navigation`, `:core:resource`, `:core:design`
+  (Android), `lifecycle-viewmodel` and the Koin ViewModel/Compose artifacts as `api`, so no feature
+  re-declares them. `:core:navigation` brings the Navigation 3 runtime on Android. Add a dependency
+  here only when it is specific to that feature (e.g. Credential Manager / Google Identity, which
+  only `feature:auth:presentation` needs). **Never depends on `data`.**
 
 **Core Module Dependencies:**
 - **core:serialization** → `:core:resulting` (for SerializationError)
 - **core:remote** → `:core:resulting` (for RemoteError), `:core:serialization`
 - **core:config** → `:core:resulting`, `:core:serialization`
-- **core:data** → `:core:domain`, `:core:resulting`
+- **core:data** → `api` on `:core:domain`, `:core:resulting`, `:core:remote`, `:core:config`,
+  `:core:local`. Deliberately `api`, not `implementation`: this is the single place the
+  "what every feature data module needs" rule is written down. Its only consumers are
+  `feature:{name}:data` modules, so nothing leaks outside the data layer.
+- **core:presentation** → `api` on `:core:domain`, `:core:common`, `:core:navigation`,
+  `:core:resource`, `:core:design` (androidMain). Same rationale as `core:data`: the
+  "what every feature presentation module needs" rule lives here, once.
+- **core:navigation** → `api` on the Navigation 3 runtime (androidMain only).
 - **core:resulting** → No dependencies (base module for error handling)
 
 ### Convention Plugins
@@ -479,11 +493,18 @@ fun UserRemote.toUserDomain(): UserDomain = UserDomain(
 Feature modules using mapping annotations must add:
 
 ```kotlin
+plugins {
+    alias(libs.plugins.ksp)
+}
+
 dependencies {
-    implementation(project(":core:mapping"))
-    add("kspCommonMainMetadata", project(":core:processor"))
+    implementation(projects.core.mapping)
+    add("kspCommonMainMetadata", projects.core.processor)
 }
 ```
+
+The `ksp` plugin is **not** applied by any convention plugin — apply it in the module that
+registers a processor, and only there.
 
 Generated mappers appear in `build/generated/ksp/metadata/commonMain/kotlin/`.
 
@@ -542,6 +563,10 @@ For each Route with matching `@NavigationScreen` + `@NavigationViewModel`:
 Feature presentation modules using these annotations must add:
 
 ```kotlin
+plugins {
+    alias(libs.plugins.ksp)
+}
+
 dependencies {
     add("kspAndroid", projects.core.processor)
 }
@@ -737,6 +762,10 @@ fun UserRemote.toUserDomain(id: String): UserDomain = UserDomain(
 Modules using mapping annotations must add:
 
 ```kotlin
+plugins {
+    alias(libs.plugins.ksp)
+}
+
 dependencies {
     implementation(projects.core.mapping)
     add("kspCommonMainMetadata", projects.core.processor)
@@ -821,8 +850,8 @@ Test source sets are currently disabled across core and feature modules. Do not 
 
 ## Dependency Injection (Koin Annotations)
 
-The project uses **Koin with KSP Annotations** for dependency injection, NOT Koin DSL (except for
-`databaseModule` in KoinInitializer).
+The project uses **Koin Annotations processed by the Koin Kotlin compiler plugin** (Koin 4.2+),
+NOT KSP and NOT the Koin DSL.
 
 ### Module Setup
 
@@ -838,37 +867,89 @@ class CoreRemoteModule
 
 - **@Single**: Singleton scoped (repositories, data sources, API clients)
 - **@Factory**: New instance on each injection (use cases)
+- **@KoinViewModel**: ViewModels. Import it from `org.koin.core.annotation`, **not**
+  `org.koin.android.annotation` — it moved packages in Koin Annotations 4.2.
 
-### KSP Configuration
+### Build Setup
 
-All modules using Koin must include:
+**Do not wire DI by hand.** `domatapp.kmp.di` (`DiConventionPlugin`) applies the Koin compiler
+plugin (`io.insert-koin.compiler.plugin`) and adds `koin-core` / `koin-annotations` to `commonMain`
+and `koin-android` to `androidMain` for every module that uses it:
 
 ```kotlin
 plugins {
-    alias(libs.plugins.ksp)
-}
-
-dependencies {
-    implementation(libs.koin.core)
-    implementation(libs.koin.annotations)
-    kspCommonMainMetadata(libs.koin.ksp.compiler)
+    alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.domatapp.kmp.di)
 }
 ```
 
-KSP generates module code at build time. **Never use `module { }` DSL syntax** (except
-`databaseModule` in `KoinInitializer` for Room).
+Because the compiler plugin is a `KotlinCompilerPluginSupportPlugin`, one `pluginManager.apply` in
+the convention plugin covers every compilation — commonMain metadata plus each Android/iOS target.
+There are no generated source files to register and nothing to order build tasks around.
+
+Modules outside the convention plugin that consume Koin (`:shared`) apply
+`alias(libs.plugins.koinCompiler)` directly.
+
+### Loading modules — one accessor per Gradle module
+
+The compiler plugin generates the `module()` accessor **only inside the compilation that declares
+the `@Module` class**. `CoreRemoteModule().module()` therefore does not resolve from `:shared`.
+Every module that declares a `@Module` exposes its own accessor next to it:
+
+```kotlin
+@Module
+@ComponentScan("com.domatapp.core.remote")
+class CoreRemoteModule
+
+fun coreRemoteModule(): KoinModule = CoreRemoteModule().module()
+```
+
+`shared/.../di/KoinInitializer.kt` then calls those functions. Import
+`org.koin.core.module.Module as KoinModule` — the unaliased name collides with the `@Module`
+annotation.
+
+Two things that differ from Koin's published migration guide, both verified by compiling and running
+against Koin 4.2.2 + compiler plugin 1.2.1:
+
+- `module` is a generated **function**, not a property: write `MyModule().module()`.
+- There is no `import org.koin.ksp.generated.module` any more — that package is gone, and the import
+  is an unresolved reference.
+- `startKoin<MyApp>()` with `@KoinApplication` does not exist in koin-core 4.2.2, and
+  `@Configuration` did not auto-register modules. Load modules explicitly via the accessors.
+
+`@Module(includes = [OtherModule::class])` **does** work across Gradle modules — only the `module()`
+accessor is compilation-local.
+
+### koinCompiler settings used here
+
+| Setting | Value | Why |
+|---|---|---|
+| `logSeverity` | `"info"` | `gradle.properties` sets `kotlin.compiler.allWarningsAsErrors=true`; the plugin's informational output defaults to WARNING severity and would fail the build. |
+| `versionCheckSeverity` | `"info"` | Same reason, for the "unverified Kotlin version" notice. |
+| `compileSafety` | `false` in `DiConventionPlugin`, `true` in `:shared` | Per-module graph validation reports dependencies a single Gradle module cannot see, because modules compose via `@Module(includes = [...])`. `:shared` owns `startKoin` and sees the whole graph, so full validation runs there. This replaces the old `KOIN_CONFIG_CHECK` KSP argument. |
+
+Because `:shared` contains `startKoin`, the plugin auto-enables `strictSafety` on it, which makes
+`:shared`'s Kotlin compile task always re-run. That is deliberate on Koin's side — DSL lambda bodies
+are not part of any declaration's ABI, so incremental compilation would otherwise skip
+re-validation. Other modules stay fully incremental.
+
+### KSP is still used — just not for DI
+
+`core:processor` (mapping, config and navigation code generation) and `ktorfit-ksp` still run under
+KSP. Only modules that actually register one of those processors apply `alias(libs.plugins.ksp)`.
 
 ## Key Technologies
 
-- **KMP**: Kotlin 2.3.10, Compose Multiplatform 1.10.1
-- **Android**: minSdk 30, targetSdk 36, AGP 9.0.1
+- **KMP**: Kotlin 2.4.10 (capped by SKIE 0.10.14), Compose Multiplatform 1.12.0
+- **Android**: minSdk 30, targetSdk 37, compileSdk 37, AGP 9.4.0, Gradle 9.7.1
+- **Codegen**: KSP 2.3.11 (`core:processor` only — DI no longer uses it)
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
-- **Architecture**: Arrow-kt for functional programming, Coroutines + Flow
-- **DI**: Koin 4.1.1 with Annotations 2.3.1 (KSP code generation)
-- **Networking**: Ktor Client 3.4.1 (REST + WebSocket)
-- **Database**: Room 2.7.0 (KMP)
-- **Storage**: DataStore 1.2.0 (Preferences)
-- **Backend**: Firebase Auth (GitLive 2.4.0), Firebase Firestore, Firebase RemoteConfig
+- **Architecture**: Coroutines + Flow (Arrow-kt is in the catalog but unused)
+- **DI**: Koin 4.2.2 with Annotations 4.2.2 (Kotlin compiler plugin, `io.insert-koin.compiler.plugin` 1.2.1)
+- **Networking**: Ktor Client 3.5.2 (REST + WebSocket)
+- **Database**: Room 2.8.5 (KMP)
+- **Storage**: DataStore 1.2.1 (Preferences)
+- **Backend**: Firebase Auth (GitLive 2.7.0), Firebase Firestore, Firebase RemoteConfig
 - **Serialization**: kotlinx.serialization
 - **Error Handling**: Exception-based with core:resulting module
 - **Object Mapping**: KSP-based compile-time mapping with type/null safety (core:mapping)

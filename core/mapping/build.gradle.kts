@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    commonMainImplementation(libs.kotlinx.coroutines.core)
-    commonMainImplementation(libs.kotlinx.datetime)
-    commonMainImplementation(libs.kotlinx.collections.immutable)
+    commonMainImplementation(libs.concurrency.coroutine.core)
+    commonMainImplementation(libs.datetime.kxDateTime.core)
+    commonMainImplementation(libs.collections.kxCollections.immutable)
     commonMainApi(projects.core.resulting)
 }

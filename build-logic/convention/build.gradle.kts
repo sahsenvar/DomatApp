@@ -5,13 +5,14 @@ plugins {
 group = "com.domatapp.buildlogic"
 
 dependencies {
-    compileOnly(libs.android.gradlePlugin)
-    compileOnly(libs.kotlin.gradlePlugin)
-    compileOnly(libs.ksp.gradlePlugin)
-    compileOnly(libs.compose.gradlePlugin)
-    compileOnly(libs.composeCompiler.gradlePlugin)
-    implementation(libs.android.gradlePlugin)
-    implementation(libs.ksp.gradlePlugin)
+    compileOnly(libs.buildlogic.android.gradlePlugin)
+    compileOnly(libs.buildlogic.kotlin.gradlePlugin)
+    compileOnly(libs.buildlogic.ksp.gradlePlugin)
+    compileOnly(libs.buildlogic.compose.gradlePlugin)
+    compileOnly(libs.buildlogic.composeCompiler.gradlePlugin)
+    implementation(libs.buildlogic.android.gradlePlugin)
+    implementation(libs.buildlogic.ksp.gradlePlugin)
+    implementation(libs.buildlogic.koinCompiler.gradlePlugin)
 }
 
 gradlePlugin {

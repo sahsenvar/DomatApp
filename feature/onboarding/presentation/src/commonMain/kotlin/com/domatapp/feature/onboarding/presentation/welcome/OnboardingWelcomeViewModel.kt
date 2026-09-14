@@ -3,7 +3,7 @@ package com.domatapp.feature.onboarding.presentation.welcome
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationViewModel
 import com.domatapp.core.presentation.base.BaseViewModel
-import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.KoinViewModel
 
 @NavigationViewModel(Route.OnboardingRoute.Welcome::class)
 @KoinViewModel
