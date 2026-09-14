@@ -12,6 +12,7 @@ dependencies {
     compileOnly(libs.composeCompiler.gradlePlugin)
     implementation(libs.android.gradlePlugin)
     implementation(libs.ksp.gradlePlugin)
+    implementation(libs.koin.compiler.gradlePlugin)
 }
 
 gradlePlugin {
