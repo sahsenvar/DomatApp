@@ -70,33 +70,42 @@
 - `koinCompiler { logSeverity / versionCheckSeverity }` must be `"info"` here because of
   `allWarningsAsErrors=true`; `compileSafety` off per module, on in `:shared`.
 
-## REST DataSources: Ktorfit (replaced custom @RemoteDataSource KSP)
+## REST Sources: KtorfitX (replaced Ktorfit, which replaced custom KSP)
 
-- The custom `@RemoteDataSource`/`@GET`/`@POST` codegen in `core:remote/annotations` +
-  `core/processor/.../remote/` was removed. REST DataSources now use Ktorfit
-  (`de.jensklingenberg.ktorfit.http.*`) — plain interfaces, no marker annotation.
-- `core:remote` exposes `provideKtorfit(httpClient)` (`@Single`) wrapping the existing `HttpClient`,
-  so headers / ContentNegotiation / RemoteError mapping are unchanged.
-- DI binding is now uniform: `@Factory fun provide...(ktorfit: Ktorfit) = ktorfit.createXxx()`.
-  No more hand-matching a generated constructor signature.
-- Ktorfit must track the project's Ktor major.minor: 2.7.3 -> Ktor 3.4.1, 2.7.4+ -> Ktor 3.5.x.
-  Check this before bumping either one.
-- The Ktorfit **Gradle plugin IS applied** (`alias(libs.plugins.ktorfit)`), but with
-  `ktorfit { compilerPluginVersion.set("-") }`, which disables its Kotlin compiler plugin.
-  Rationale: the compiler plugin exists only to rewrite reified `ktorfit.create<T>()`, and that
-  function is `@Deprecated` in 2.7.5 — unusable here under `allWarningsAsErrors=true`. Disabling it
-  removes the Kotlin-version coupling entirely.
-- Consequence: only the generated `ktorfit.createXxx()` extension works;
-  reified `ktorfit.create<Xxx>()` is unavailable.
-- The plugin registers `<buildDir>/generated/ksp/metadata/commonMain/kotlin` as a commonMain
-  srcDir. `DiConventionPlugin` must register that **exact** path, not the ancestor
-  `build/generated/ksp/metadata` — Gradle only collapses srcDirs resolving to the same `File`, so an
-  ancestor path makes every generated file reachable through two roots.
-- The 2.7.5 Gradle plugin hardcodes `KTORFIT_KSP_PLUGIN_VERSION = "2.7.3"`, so the module also
-  declares `add("kspCommonMainMetadata", libs.network.ktorfit.ksp)` to pull the processor back up to the
-  runtime's version via newest-wins resolution.
-- Ktorfit baseUrl must end with `/`; interface paths must NOT start with `/`.
-- Use `ktorfit-lib-light` (core only) — the project supplies its own engines (OkHttp / Darwin).
+`cn.ktorfitx` — https://github.com/annotation-engine/ktorfitx. Chosen over Ktorfit because it covers
+REST **and** WebSocket in one annotation family; the smaller/younger-project risk was accepted
+deliberately by the owner.
+
+- Interfaces: `@Api` on the interface, `@GET`/`@POST`/`@Body`/`@Query`/`@Path`/`@Header` on members
+  (`cn.ktorfitx.multiplatform.annotation.*`). `@WebSocket` lives in `multiplatform-websockets`.
+- The processor generates `<pkg>.impls.<Name>Impl` **and an extension property** `Ktorfitx.<name>`
+  (interface name, first char lowercased) in that same `impls` package. So it is
+  `ktorfitx.authRemoteSource`, not a `create...()` call — and the import is
+  `...datasource.impls.authRemoteSource`.
+- Gradle plugin id `cn.ktorfitx.multiplatform`; it injects multiplatform-annotation/core/websockets
+  and multiplatform-ksp itself, so do NOT declare those in a module that applies it. It works in
+  `afterEvaluate`, so plugins-block order does not matter (unlike Ktorfit's plugin).
+
+### Two traps, both read out of the plugin source
+
+- **Ktor version is hard-checked.** `checkDependency("io.ktor", "ktor-client-core")` errors the
+  build unless the declared version equals `KtorfitxVersions.KTOR`. KtorfitX version strings are
+  `<ktor>-<ktorfitx>`, so `3.4.2-3.3.3` means **Ktor must be exactly 3.4.2**. Bumping Ktor requires
+  a matching KtorfitX release; there is no override.
+- The checked deps must be **declared in the module applying the plugin**, not inherited — the check
+  scans that project's own configurations. Enabling `websockets` adds the same check for
+  `ktor-client-websockets`.
+
+### KtorfitX builds its own HttpClient
+
+`KtorfitxConfig` cannot accept a pre-built `HttpClient` (Ktorfit could). Its only configurable
+overload `httpClient(engineFactory) { }` also forces naming the engine, so `core:remote` needs an
+`expect/actual` `KtorfitxConfig.platformHttpClient` (OkHttp / Darwin). The app-wide `HttpClient`
+single is therefore derived: `ktorfitx.config.httpClient`.
+
+It also registers `build/generated/ksp/metadata/commonMain/kotlin` as a commonMain srcDir — the
+exact same path `DiConventionPlugin` uses, so they dedupe. Keep DiConventionPlugin on that precise
+path. Its task wiring uses `KspAATask`, i.e. it assumes KSP2.
 
 ## No codegen for WebSocket / Firestore DataSources
 

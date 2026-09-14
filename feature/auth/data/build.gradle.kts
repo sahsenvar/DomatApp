@@ -1,27 +1,21 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
     alias(libs.plugins.domatapp.kmp.di)
-    // Order matters: the Ktorfit plugin does all of its KSP wiring inside an
-    // `if (extensions.findByName("ksp") != null)` branch, evaluated when it is applied. Applying
-    // it before the KSP plugin silently skips that branch - the processor never registers and the
-    // generated createXxxSource() extensions just do not exist. Keep ksp above ktorfit.
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.ktorfit)
+    alias(libs.plugins.ktorfitx)
 }
 
-// The Ktorfit Gradle plugin owns the KSP wiring for the REST Sources: it registers
-// ktorfit-ksp on kspCommonMainMetadata (and on the per-target ksp configurations, where the
-// processor deliberately generates nothing for commonMain-declared interfaces), passes its
-// Ktorfit_* KSP options, and orders the compile tasks after kspCommonMainKotlinMetadata.
-ktorfit {
-    // Disable the Ktorfit *compiler* plugin. It exists only to rewrite the reified
-    // Ktorfit.create<T>() call, and that function is @Deprecated in 2.7.5 ("the plan is to get
-    // rid of the plugin") - with kotlin.compiler.allWarningsAsErrors=true it could not be used
-    // here anyway. AuthDataModule calls the KSP-generated ktorfit.createXxxSource()
-    // extensions instead, so nothing needs the compiler plugin, and skipping it means no
-    // Kotlin-version-coupled compiler artifact is loaded into the build at all.
-    compilerPluginVersion.set("-")
+// KtorfitX owns the KSP wiring for the REST Sources: its plugin adds multiplatform-annotation and
+// multiplatform-core to commonMain, registers multiplatform-ksp on every ksp* configuration, and
+// orders the per-target KSP tasks after kspCommonMainKotlinMetadata. Unlike Ktorfit's plugin it
+// does all of this inside afterEvaluate, so the order of the plugins {} block does not matter.
+ktorfitx {
+    // WebSocket support is the reason for choosing KtorfitX over Ktorfit. No feature uses @WebSocket
+    // yet; this only puts the capability in place.
+    websockets {
+        enabled = true
+    }
 }
 
 dependencies {
@@ -33,19 +27,14 @@ dependencies {
     // the DTOs, Flow in the repositories) rather than relying on a transitive api chain.
     commonMainImplementation(libs.concurrency.coroutine.core)
     commonMainImplementation(libs.serialization.kxSerialization.json)
+    // Required, not optional: the KtorfitX plugin calls checkDependency("io.ktor", ...) against
+    // this module's own declared dependencies and fails the build if they are missing, or if their
+    // version is not exactly the Ktor version KtorfitX was built against.
+    commonMainImplementation(libs.network.ktorClient.core)
+    commonMainImplementation(libs.network.ktorClient.websockets)
 
-    commonMainImplementation(libs.network.ktorfit.core)
-    commonMainImplementation(libs.network.ktorfit.annotations)
-
-    // core:processor -> @ConfigSource codegen (RemoteDataSource codegen was removed by the
-    // Ktorfit migration; this registration now serves ConfigSource only).
+    // core:processor -> @ConfigSource codegen. KtorfitX registers its own processor itself.
     add("kspCommonMainMetadata", projects.core.processor)
-
-    // The Ktorfit Gradle plugin 2.7.5 hardcodes KTORFIT_KSP_PLUGIN_VERSION = "2.7.3", so on its
-    // own it would pair the 2.7.5 runtime with the 2.7.3 processor. Declaring the catalog
-    // version here lets Gradle's newest-wins conflict resolution keep both at 2.7.5.
-    add("kspCommonMainMetadata", libs.network.ktorfit.ksp)
-
     // KMapper -> @MapTo codegen. The compiler registration is necessarily per-module;
     // the runtime and annotations come through :core:data.
     add("kspCommonMainMetadata", libs.mapping.kmapper.compiler)

@@ -24,12 +24,11 @@ kotlinx-serialization = "1.11.0"
 koin = "4.2.2"
 koin-annotations = "4.2.2"
 koin-compiler = "1.2.1"
-ktor = "3.5.2"
-# Ktorfit 2.7.4+ targets Ktor 3.5.x, which is what this project is on now.
-# Note: the Ktorfit Gradle plugin 2.7.5 still hardcodes ktorfit-ksp 2.7.3 internally,
-# so feature/auth/data also declares libs.network.ktorfit.ksp explicitly to keep the processor
-# on the same version as the runtime.
-ktorfit = "2.7.5"
+ktor = "3.4.2"
+# KtorfitX pins Ktor exactly: its Gradle plugin calls checkDependency("io.ktor", "ktor-client-core")
+# and errors the build unless the declared version equals KtorfitxVersions.KTOR. For 3.4.2-3.3.3
+# that is Ktor 3.4.2, hence the `ktor` value above. The version string itself is <ktor>-<ktorfitx>.
+ktorfitx = "3.4.2-3.3.3"
 # KSP held at 2.3.11, one behind 2.3.12: 2.3.12 introduces backing-field symbols, which changes
 # what Resolver.getSymbolsWithAnnotation returns and requires processors to opt in via
 # registerProcessorForNewFeatures + KSVisitorNext. :core:processor would need migrating first.
@@ -76,6 +75,8 @@ buildlogic-koinCompiler-gradlePlugin = { group = "io.insert-koin", name = "koin-
 network-ktorClient-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 network-ktorClient-contentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 network-ktorClient-kxSerializationJson = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+network-ktorfitx-core = { group = "cn.ktorfitx", name = "multiplatform-core", version.ref = "ktorfitx" }
+network-ktorClient-websockets = { group = "io.ktor", name = "ktor-client-websockets", version.ref = "ktor" }
 network-ktorClient-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 network-ktorClient-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 network-ktorClient-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
@@ -98,9 +99,6 @@ network-supabase-storage = { group = "io.github.jan-tennert.supabase", name = "s
 network-supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt", version.ref = "supabase" }
 network-ktorClient-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 network-ktor-utils = { group = "io.ktor", name = "ktor-utils", version.ref = "ktor" }
-network-ktorfit-core = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
-network-ktorfit-annotations = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-annotations", version.ref = "ktorfit" }
-network-ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }
 
 # KMapper - compile-time object mapping (https://kmapper.gitbook.io/docs)
 mapping-kmapper-core = { group = "io.github.sahsenvar", name = "kmapper-core", version.ref = "kmapper" }
@@ -133,7 +131,7 @@ domatapp-cmp-library = { id = "domatapp.cmp.library" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 koinCompiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-compiler" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
+ktorfitx = { id = "cn.ktorfitx.multiplatform", version.ref = "ktorfitx" }
 mokoResources = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko-resources" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
 androidxRoom = { id = "androidx.room", version.ref = "room" }
