@@ -296,12 +296,14 @@ service loader pick one. So:
 
 ### WebSocket and Firestore Sources
 
-There is currently **no annotation/codegen system for WebSocket or Firestore Sources**. The
+There is currently **no annotation/codegen system for WebSocket or Firestore Sources, and no
+concrete Firestore client class either** — `core:remote` has no `firestore/` directory. The
 previous annotations (`@Subscribe`, `@Send`, `@GetDocument`, `@ObserveCollection`, …) were removed
 because nothing in the codebase used them. Until a pattern is settled, write realtime and Firestore
-Sources by hand as thin facades over `HttpClient` (WebSockets plugin) or
-`FirebaseFirestoreClient`, keeping the same interface + `@Single`/`@Factory` Koin binding shape as
-the generated REST ones.
+Sources by hand as thin facades over `HttpClient` (WebSockets plugin) or the GitLive
+`dev.gitlive.firebase.firestore.FirebaseFirestore` client directly (kept via the
+`backend-firebase-firestore` catalog alias even at zero current usage), keeping the same interface +
+`@Single`/`@Factory` Koin binding shape as the generated REST ones.
 
 ## Config Source Code Generation (KspPreferences library)
 
@@ -339,14 +341,12 @@ Class-level (both required):
 - `@Preferences(name)` — the DataStore file name
 - `@ConstructedBy(XConstructor::class)` — points at the `expect object` KSP fills in
 
-Accessor + value-type annotations pair up; every accessor function needs exactly one of each:
-
-- `@Get` — suspending point-in-time read, returns `T`
-- `@GetFlow` — non-suspending reactive read, returns `Flow<T>`
-- `@Set` — suspending write, returns `Unit`, exactly one parameter
-- `@Clear` — no parameters, returns `Unit`; **clears the entire store**, not one key
-- `@StringPreference(key, defaultValue)` and the `Boolean` / `Int` / `Long` / `Float` / `Double` /
-  `Object` equivalents
+Accessor annotations, one per function: `@Get` (suspending point-in-time read, returns `T`),
+`@GetFlow` (non-suspending reactive read, returns `Flow<T>`), `@Set` (suspending write, returns
+`Unit`, exactly one parameter), `@Clear` (no parameters, returns `Unit` — clears the **entire**
+store, not one key, and takes no value-type annotation). `@Get`/`@GetFlow`/`@Set` additionally need
+a value-type annotation on the same function: `@StringPreference(key, defaultValue)` and the
+`Boolean` / `Int` / `Long` / `Float` / `Double` / `Object` equivalents.
 
 ### Usage Example
 
@@ -592,7 +592,8 @@ The project provides concrete client classes across two modules:
   logging, `RemoteError` mapping) — see `provideHttpClient`
 - **`Ktorfitx`**: built by `provideKtorfitx`, which also owns the `HttpClient` — used to create REST
   Source implementations
-- **`FirebaseFirestoreClient`** (`core:remote/firestore/`): Firebase Firestore CRUD and realtime
+
+There is no concrete Firestore client class today — see *WebSocket and Firestore Sources* above.
 
 **core:config** (Configuration):
 

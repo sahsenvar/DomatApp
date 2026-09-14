@@ -319,98 +319,122 @@ class AuthRemoteDataSourceImpl(
 }
 ```
 
-## Config DataSource Code Generation (KSP Annotations)
+## Config Source Code Generation (KspPreferences library)
 
-The `core:config` module provides configuration storage for both **local preferences** (DataStore)
-and **remote feature flags** (Firebase RemoteConfig). KSP generates implementations automatically.
+Local preference storage is **not** an in-repo annotation system. The project consumes
+**KspPreferences 2.0.0** (`io.github.semenciuccosmin`), an external KSP library that generates a
+DataStore-backed implementation for every `@Preferences`-annotated interface.
 
-### Concrete Clients (core:config)
+Full reference: **https://github.com/SemenciucCosmin/KspPreferences** — do not duplicate it here.
 
-- **`DataStore<Preferences>`**: Jetpack DataStore for local key-value storage
-- **`FirebaseRemoteConfig`** (GitLive `dev.gitlive.firebase.remoteconfig.FirebaseRemoteConfig`):
-  Firebase Remote Config, injected directly via Koin (like `HttpClient`)
+There is **no RemoteConfig support**. The `@RetrieveRemoteConfig` / `@ObserveRemoteConfig`
+annotations, the `FirebaseRemoteConfigClient` and the `dev.gitlive:firebase-config` dependency were
+removed: nothing in the codebase ever used them. Feature flags are an open design question, not an
+existing capability — do not reintroduce a wrapper for them speculatively.
 
-### Annotations (core:config)
+### What `core:config` still owns
 
-**LocalConfig Methods (-> `DataStore<Preferences>`):**
+Only the platform handle KspPreferences needs, plus the dependency declarations feature modules
+inherit:
 
-- `@SaveLocalConfig(key)` - Save a value to key-value store
-- `@RetrieveLocalConfig(key)` - Retrieve a single value (`suspend fun`, returns `T`). Compile-time
-  error if return type is `Flow`.
-- `@ObserveLocalConfig(key)` - Observe a value as `Flow<T?>`. Compile-time error if return type is
-  not `Flow`.
-- `@ClearLocalConfig(key)` - Remove a specific key
-- `@ClearAllLocalConfig` - Clear all values
+- `expect fun preferencesContext(): Any?` (`com.domatapp.core.config.preferences`) — returns the
+  Android application `Context`, and `null` on iOS, where KspPreferences ignores the argument and
+  derives the path from `NSDocumentDirectory`.
+- `PreferencesContextHolder.context` (androidMain) — assigned in `DomatApplication.onCreate()`
+  **before** `initKoin()`.
+- `api` on `persistence-kspPreferences-annotations` and the two DataStore artifacts, so feature
+  data modules (and the code generated into them) get them through `:core:data`.
 
-**RemoteConfig Methods (-> `FirebaseRemoteConfig`):**
+`core:config` declares **no Koin module**. Each `@Preferences` Source is provided by its own
+feature module.
 
-- `@RetrieveRemoteConfig(key)` - Retrieve a config value (`suspend fun`, auto `fetchAndActivate()`).
-  Compile-time error if return type is `Flow`.
-- `@ObserveRemoteConfig(key)` - Observe config changes as `Flow<T>` (polling with auto
-  `fetchAndActivate()`). Compile-time error if return type is not `Flow`.
+### Annotations
+
+Class-level (both required):
+
+- `@Preferences(name)` — the DataStore file name
+- `@ConstructedBy(XConstructor::class)` — points at the `expect object` KSP fills in
+
+Accessor annotations, one per function: `@Get` (suspending point-in-time read, returns `T`),
+`@GetFlow` (non-suspending reactive read, returns `Flow<T>`), `@Set` (suspending write, returns
+`Unit`, exactly one parameter), `@Clear` (no parameters, returns `Unit` — clears the **entire**
+store, not one key, and takes no value-type annotation). `@Get`/`@GetFlow`/`@Set` additionally need
+a value-type annotation on the same function: `@StringPreference(key, defaultValue)` and the
+`Boolean` / `Int` / `Long` / `Float` / `Double` / `Object` equivalents.
 
 ### Usage Example
 
 ```kotlin
-@ConfigDataSource(name = "auth")
-interface AuthConfigDataSource {
+private const val PREFERENCES_NAME = "auth"
+private const val KEY_ACCESS_TOKEN = "access_token"
 
-    @SaveLocalConfig(key = "access_token")
-    suspend fun saveToken(token: String)
+@Preferences(name = PREFERENCES_NAME)
+@ConstructedBy(AuthConfigSourceConstructor::class)
+interface AuthConfigSource {
 
-    @RetrieveLocalConfig(key = "access_token")
-    suspend fun retrieveToken(): String?
+    @Set
+    @StringPreference(key = KEY_ACCESS_TOKEN, defaultValue = DEFAULT_ACCESS_TOKEN)
+    suspend fun saveToken(value: String)
 
-    @ObserveLocalConfig(key = "access_token")
-    fun observeToken(): Flow<String?>
+    @Get
+    @StringPreference(key = KEY_ACCESS_TOKEN, defaultValue = DEFAULT_ACCESS_TOKEN)
+    suspend fun retrieveToken(): String
 
-    @ClearLocalConfig(key = "access_token")
-    suspend fun clearToken()
+    @GetFlow
+    @StringPreference(key = KEY_ACCESS_TOKEN, defaultValue = DEFAULT_ACCESS_TOKEN)
+    fun observeToken(): Flow<String>
 
-    @ClearAllLocalConfig
+    @Clear
     suspend fun clearAll()
+
+    companion object {
+        const val DEFAULT_ACCESS_TOKEN = ""
+    }
 }
 
-// KSP automatically generates:
+// Declared by hand in commonMain; KSP emits the `actual object` per target.
+expect object AuthConfigSourceConstructor : PreferencesConstructor<AuthConfigSource>
+
+// AuthDataModule — @Single, never @Factory: a second instance would open a second DataStore
+// over the same file.
 @Single
-class AuthConfigDataSourceImpl(
-    @Named("auth") private val dataStore: DataStore<Preferences>
-) : AuthConfigDataSource {
-    override suspend fun saveToken(token: String) {
-        dataStore.edit { prefs -> prefs[stringPreferencesKey("access_token")] = token }
-    }
-    override suspend fun retrieveToken(): String? {
-        return dataStore.data.map { prefs -> prefs[stringPreferencesKey("access_token")] }.first()
-    }
-    override fun observeToken(): Flow<String?> {
-        return dataStore.data.map { prefs -> prefs[stringPreferencesKey("access_token")] }
-    }
-    // ...
-}
+fun provideAuthConfigSource(): AuthConfigSource =
+    PreferencesFactory.create(AuthConfigSourceConstructor, preferencesContext())
 ```
 
-**Mixed Config DataSource (DataStore + RemoteConfig):**
+### Gradle setup
 
 ```kotlin
-@ConfigDataSource(name = "product")
-interface ProductConfigDataSource {
-    @SaveLocalConfig(key = "last_category")
-    suspend fun saveLastCategory(category: String)
-
-    @RetrieveRemoteConfig("new_feature_enabled")
-    suspend fun isNewFeatureEnabled(): Boolean
-
-    @ObserveRemoteConfig("promo_banner_text")
-    fun observePromoBanner(): Flow<String>
+plugins {
+    alias(libs.plugins.ksp)
 }
 
-// Generated with both clients (FirebaseRemoteConfig injected directly):
-@Single
-class ProductConfigDataSourceImpl(
-    @Named("product") private val dataStore: DataStore<Preferences>,
-    private val remoteConfig: FirebaseRemoteConfig
-) : ProductConfigDataSource { ... }
+dependencies {
+    // Runtime + annotations arrive through :core:data -> :core:config. Only the compiler
+    // registration is per-module, and it is per *target*, not kspCommonMainMetadata.
+    add("kspAndroid", libs.persistence.kspPreferences.compiler)
+    add("kspIosX64", libs.persistence.kspPreferences.compiler)
+    add("kspIosArm64", libs.persistence.kspPreferences.compiler)
+    add("kspIosSimulatorArm64", libs.persistence.kspPreferences.compiler)
+}
 ```
+
+### Four things that will bite you
+
+- **Register the compiler per target, never on `kspCommonMainMetadata`.** The processor emits an
+  `actual object`, and an `actual` cannot be generated into the common metadata compilation.
+- **Name every `@Set` parameter `value`.** The generated override hard-codes that name, and a
+  renamed override parameter is a Kotlin warning — which this build turns into an error via
+  `kotlin.compiler.allWarningsAsErrors=true`.
+- **Primitive preferences are non-nullable.** `@Get` generates `?: defaultValue`, so "absent" is the
+  declared default, not `null`. Declaring `String?` compiles (the override narrows) but the value
+  will never actually be null — model absence with an explicit default constant instead.
+- **`@Clear` is all-or-nothing.** There is no single-key clear. If a store holds several keys and
+  you need to drop one, write `set(defaultValue)` and treat the default as absence.
+
+Also note: `PreferencesFactory.create<T>()` — the reflection-based overload — is Android/JVM only;
+its iOS `actual` throws at runtime. Always use `@ConstructedBy` plus the
+`create(constructor, context)` overload.
 
 ## Local DataSource (Room DAO)
 
