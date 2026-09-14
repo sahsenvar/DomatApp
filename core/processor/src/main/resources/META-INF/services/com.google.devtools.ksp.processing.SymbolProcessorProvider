@@ -1,2 +1,2 @@
-com.domatapp.core.processor.config.ConfigDataSourceProcessorProvider
+com.domatapp.core.processor.config.ConfigSourceProcessorProvider
 com.domatapp.core.processor.navigation.NavigationProcessorProvider

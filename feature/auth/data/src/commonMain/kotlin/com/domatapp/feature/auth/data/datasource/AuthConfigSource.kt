@@ -2,14 +2,14 @@ package com.domatapp.feature.auth.data.datasource
 
 import com.domatapp.core.config.annotations.ClearAllLocalConfig
 import com.domatapp.core.config.annotations.ClearLocalConfig
-import com.domatapp.core.config.annotations.ConfigDataSource
+import com.domatapp.core.config.annotations.ConfigSource
 import com.domatapp.core.config.annotations.ObserveLocalConfig
 import com.domatapp.core.config.annotations.RetrieveLocalConfig
 import com.domatapp.core.config.annotations.SaveLocalConfig
 import kotlinx.coroutines.flow.Flow
 
-@ConfigDataSource(name = "auth")
-interface AuthConfigDataSource {
+@ConfigSource(name = "auth")
+interface AuthConfigSource {
 
     @SaveLocalConfig(key = "access_token")
     suspend fun saveToken(token: String)

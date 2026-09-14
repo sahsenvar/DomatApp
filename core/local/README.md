@@ -11,7 +11,6 @@ Cihaz üzerindeki yerel depolama işlemlerini (SQLite/SQLDelight, DataStore, Mul
 ```text
 [:core:local]
      |
-     +--> [:core:serialization]
      +--> [:core:resulting]
      +--> [SQLDelight]
      +--> [DataStore]

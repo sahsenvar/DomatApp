@@ -45,7 +45,6 @@ kotlin {
             api(projects.core.common)
             api(projects.core.resource)
             api(projects.core.resulting)
-            api(projects.core.serialization)
             api(projects.core.presentation)
 
             api(projects.feature.auth.domain)

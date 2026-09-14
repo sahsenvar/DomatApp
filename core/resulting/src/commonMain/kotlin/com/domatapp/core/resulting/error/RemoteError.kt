@@ -3,7 +3,7 @@ package com.domatapp.core.resulting.error
 /**
  * Remote API related domain errors.
  * These are infrastructure-level errors that can occur during remote API operations
- * (REST, WebSocket, GraphQL, etc.) via core:remote module.
+ * (REST today; other transports would map into the same hierarchy) via core:remote module.
  */
 sealed class RemoteError(message: String? = null, cause: Throwable? = null) : DomainError(message, cause) {
 

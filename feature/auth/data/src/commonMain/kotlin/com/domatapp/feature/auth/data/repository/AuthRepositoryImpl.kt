@@ -1,8 +1,8 @@
 package com.domatapp.feature.auth.data.repository
 
 import com.domatapp.core.common.presentation.Environment
-import com.domatapp.feature.auth.data.datasource.AuthConfigDataSource
-import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSource
+import com.domatapp.feature.auth.data.datasource.AuthConfigSource
+import com.domatapp.feature.auth.data.datasource.AuthRemoteSource
 import com.domatapp.feature.auth.data.mapper.toAuthError
 import com.domatapp.feature.auth.data.remote.GoogleSignInRemoteModel
 import com.domatapp.feature.auth.data.remote.toAuthSessionDomainModelResult
@@ -12,12 +12,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 class AuthRepositoryImpl(
-    private val remoteDataSource: AuthRemoteDataSource,
-    private val configDataSource: AuthConfigDataSource
+    private val remoteSource: AuthRemoteSource,
+    private val configSource: AuthConfigSource
 ) : AuthRepository {
 
     override fun loginWithGoogle(idToken: String): Flow<AuthSessionDomainModel> = flow {
-        val response = remoteDataSource.signInWithIdToken(
+        val response = remoteSource.signInWithIdToken(
             grantType = "id_token",
             body = GoogleSignInRemoteModel(idToken = idToken)
         )
@@ -26,15 +26,15 @@ class AuthRepositoryImpl(
         Environment.accessToken = response.accessToken
 
         // Persist token to DataStore
-        configDataSource.saveToken(response.accessToken)
+        configSource.saveToken(response.accessToken)
 
         emit(response.toAuthSessionDomainModelResult().getOrThrow())
     }.catch { throw it.toAuthError() }
 
     override fun logout(): Flow<Unit> = flow {
-        remoteDataSource.logout()
+        remoteSource.logout()
         Environment.accessToken = null
-        configDataSource.clearAll()
+        configSource.clearAll()
         emit(Unit)
     }.catch { throw it.toAuthError() }
 }

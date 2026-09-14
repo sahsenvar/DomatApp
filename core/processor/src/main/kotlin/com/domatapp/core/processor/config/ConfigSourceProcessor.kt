@@ -28,15 +28,15 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 
 /**
- * KSP Processor that generates implementations for @ConfigDataSource interfaces.
+ * KSP Processor that generates implementations for @ConfigSource interfaces.
  *
- * Analyzes which backend types (DataStore, RemoteConfig) each DataSource uses
+ * Analyzes which backend types (DataStore, RemoteConfig) each Source uses
  * and injects only the required dependencies.
  *
  * - LocalConfig annotations (@SaveLocalConfig, @RetrieveLocalConfig, @ObserveLocalConfig, @ClearLocalConfig, @ClearAllLocalConfig) → inject @Named DataStore<Preferences>
  * - RemoteConfig annotations (@RetrieveRemoteConfig, @ObserveRemoteConfig) → inject FirebaseRemoteConfig
  */
-class ConfigDataSourceProcessor(
+class ConfigSourceProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger
 ) : SymbolProcessor {
@@ -50,15 +50,15 @@ class ConfigDataSourceProcessor(
     )
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val configDataSourceAnnotation = "com.domatapp.core.config.annotations.ConfigDataSource"
+        val configSourceAnnotation = "com.domatapp.core.config.annotations.ConfigSource"
 
-        val symbols = resolver.getSymbolsWithAnnotation(configDataSourceAnnotation)
+        val symbols = resolver.getSymbolsWithAnnotation(configSourceAnnotation)
         val validSymbols = symbols.filter { it is KSClassDeclaration && it.validate() }
 
         validSymbols.filterIsInstance<KSClassDeclaration>().forEach { classDeclaration ->
             if (classDeclaration.classKind != ClassKind.INTERFACE) {
                 logger.error(
-                    "@ConfigDataSource can only be applied to interfaces",
+                    "@ConfigSource can only be applied to interfaces",
                     classDeclaration
                 )
                 return@forEach
@@ -96,7 +96,7 @@ class ConfigDataSourceProcessor(
 
         val storeName = if (needsDataStore) {
             val annotation = interfaceDeclaration.annotations.first {
-                it.shortName.asString() == "ConfigDataSource"
+                it.shortName.asString() == "ConfigSource"
             }
             val name = annotation.arguments
                 .firstOrNull { it.name?.asString() == "name" }?.value as? String
@@ -104,7 +104,7 @@ class ConfigDataSourceProcessor(
                 ?: ""
             if (name.isEmpty()) {
                 throw IllegalArgumentException(
-                    "@ConfigDataSource must have a 'name' parameter when DataStore annotations are used on ${interfaceDeclaration.simpleName.asString()}"
+                    "@ConfigSource must have a 'name' parameter when DataStore annotations are used on ${interfaceDeclaration.simpleName.asString()}"
                 )
             }
             name
@@ -233,7 +233,7 @@ class ConfigDataSourceProcessor(
             val name = ann.shortName.asString()
             name in localConfigAnnotations || name in remoteConfigAnnotations
         } ?: throw IllegalArgumentException(
-            "Function $functionName must have a ConfigDataSource annotation (SaveLocalConfig, RetrieveLocalConfig, ObserveLocalConfig, ClearLocalConfig, ClearAllLocalConfig, RetrieveRemoteConfig, ObserveRemoteConfig)"
+            "Function $functionName must have a ConfigSource annotation (SaveLocalConfig, RetrieveLocalConfig, ObserveLocalConfig, ClearLocalConfig, ClearAllLocalConfig, RetrieveRemoteConfig, ObserveRemoteConfig)"
         )
 
         val annotationName = annotation.shortName.asString()
@@ -499,9 +499,9 @@ class ConfigDataSourceProcessor(
     }
 }
 
-class ConfigDataSourceProcessorProvider : SymbolProcessorProvider {
+class ConfigSourceProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return ConfigDataSourceProcessor(
+        return ConfigSourceProcessor(
             codeGenerator = environment.codeGenerator,
             logger = environment.logger
         )
