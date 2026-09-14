@@ -42,11 +42,31 @@
 - Workaround: Use `@MapTo` only for flat models. Manual mappers for nested non-null complex objects.
 - See: `feature/auth/data/mapper/AuthSessionMapper.kt`
 
-## KSP Generated DataSource Impl Constructors
+## REST DataSources: Ktorfit (replaced custom @RemoteDataSource KSP)
 
-- RemoteDataSource KSP generates impl with ONLY clients actually used (HttpClient, etc.)
-- DI Module factory methods must match generated constructor exactly
-- Always check generated impl before writing DI bindings
+- The custom `@RemoteDataSource`/`@GET`/`@POST` codegen in `core:remote/annotations` +
+  `core/processor/.../remote/` was removed. REST DataSources now use Ktorfit
+  (`de.jensklingenberg.ktorfit.http.*`) — plain interfaces, no marker annotation.
+- `core:remote` exposes `provideKtorfit(httpClient)` (`@Single`) wrapping the existing `HttpClient`,
+  so headers / ContentNegotiation / RemoteError mapping are unchanged.
+- DI binding is now uniform: `@Factory fun provide...(ktorfit: Ktorfit) = ktorfit.createXxx()`.
+  No more hand-matching a generated constructor signature.
+- Ktorfit version is pinned to the release built against the project's Ktor version
+  (2.7.3 -> Ktor 3.4.1; 2.7.4+ jumped to Ktor 3.5.0). Check this before bumping.
+- The Ktorfit **Gradle plugin is intentionally not applied**: it registers
+  `build/generated/ksp/metadata/commonMain/kotlin` as a srcDir, which duplicates the broader
+  `build/generated/ksp/metadata` srcDir that `DiConventionPlugin` already adds (duplicate-source
+  compile errors), and it applies a Kotlin compiler plugin versioned independently of the project's
+  Kotlin. `add("kspCommonMainMetadata", libs.ktorfit.ksp)` is used directly instead.
+- Consequence: only the generated `ktorfit.createXxx()` extension works;
+  reified `ktorfit.create<Xxx>()` needs the compiler plugin and is unavailable.
+- Ktorfit baseUrl must end with `/`; interface paths must NOT start with `/`.
+- Use `ktorfit-lib-light` (core only) — the project supplies its own engines (OkHttp / Darwin).
+
+## No codegen for WebSocket / Firestore DataSources
+
+- The old system had `@Subscribe`/`@Send`/`@GetDocument`/`@Observe*` annotations with zero usage.
+  They were deleted, not replaced. Write such DataSources by hand until a pattern is agreed.
 
 ## Room Database Requires At Least One Entity
 

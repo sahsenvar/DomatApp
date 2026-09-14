@@ -19,6 +19,9 @@ dependencies {
     commonMainImplementation(libs.ktor.client.logging)
     commonMainImplementation(libs.ktor.client.websockets)
 
+    // Ktorfit (REST DataSource code generation)
+    commonMainApi(libs.ktorfit.lib.light)
+
     // Supabase
     commonMainApi(libs.supabase.postgrest)
     commonMainApi(libs.supabase.storage)

@@ -1,4 +1,3 @@
-com.domatapp.core.processor.remote.RemoteDataSourceProcessorProvider
 com.domatapp.core.processor.config.ConfigDataSourceProcessorProvider
 com.domatapp.core.processor.navigation.NavigationProcessorProvider
 com.domatapp.core.processor.mapping.MappingProcessorProvider

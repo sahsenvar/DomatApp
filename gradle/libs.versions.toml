@@ -15,6 +15,8 @@ kotlinx-serialization = "1.10.0"
 koin = "4.1.1"
 koin-annotations = "2.3.1"
 ktor = "3.4.1"
+# Ktorfit 2.7.3 is the last release built against Ktor 3.4.1 (2.7.4+ moved to Ktor 3.5.0).
+ktorfit = "2.7.3"
 ksp = "2.3.6"
 kotlinpoet = "2.2.0"
 moko-resources = "0.26.0"
@@ -90,6 +92,9 @@ supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt", versi
 supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt", version.ref = "supabase" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor" }
+ktorfit-lib-light = { module = "de.jensklingenberg.ktorfit:ktorfit-lib-light", version.ref = "ktorfit" }
+ktorfit-annotations = { module = "de.jensklingenberg.ktorfit:ktorfit-annotations", version.ref = "ktorfit" }
+ktorfit-ksp = { module = "de.jensklingenberg.ktorfit:ktorfit-ksp", version.ref = "ktorfit" }
 
 # Plugin dependencies for build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
