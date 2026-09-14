@@ -46,8 +46,10 @@
 
 - Koin Annotations 4.2.x is processed by `io.insert-koin.compiler.plugin`; `koin-ksp-compiler` is
   gone. `DiConventionPlugin` applies it — modules add nothing but `alias(libs.plugins.domatapp.kmp.di)`.
-- Two traps: delete `import org.koin.ksp.generated.module` (package no longer exists, `.module`
-  still works), and import `@KoinViewModel` from `org.koin.core.annotation`.
+- Two traps: `module` is a generated **function** and is **compilation-local** — write
+  `MyModule().module()`, delete `import org.koin.ksp.generated.module`, and give every Gradle
+  module its own `fun xxxModule(): KoinModule` accessor because the aggregator cannot call it.
+  Also import `@KoinViewModel` from `org.koin.core.annotation`, not `org.koin.android.annotation`.
 - `koinCompiler { logSeverity / versionCheckSeverity }` must be `"info"` here because of
   `allWarningsAsErrors=true`; `compileSafety` off per module, on in `:shared`.
 
