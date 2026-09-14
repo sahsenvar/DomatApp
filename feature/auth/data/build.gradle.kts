@@ -33,9 +33,23 @@ dependencies {
     commonMainImplementation(libs.network.ktorClient.core)
     commonMainImplementation(libs.network.ktorClient.websockets)
 
-    // core:processor -> @ConfigSource codegen. KtorfitX registers its own processor itself.
-    add("kspCommonMainMetadata", projects.core.processor)
     // KMapper -> @MapTo codegen. The compiler registration is necessarily per-module;
     // the runtime and annotations come through :core:data.
+    // KtorfitX registers its own processor itself, via its Gradle plugin.
     add("kspCommonMainMetadata", libs.mapping.kmapper.compiler)
+
+    // KspPreferences -> @Preferences codegen, registered per target rather than on
+    // kspCommonMainMetadata. It has to be: for `expect object AuthConfigSourceConstructor` it emits
+    // the matching `actual object` (plus a target-specific AuthConfigSourceImpl), and an `actual`
+    // declaration cannot be generated into the common metadata compilation.
+    //
+    // These per-target tasks also consume the commonMain srcDir that DiConventionPlugin points at
+    // build/generated/ksp/metadata/commonMain/kotlin, so they need to run after
+    // kspCommonMainKotlinMetadata. Unlike :feature:auth:presentation, this module does not declare
+    // that edge by hand: the KtorfitX plugin already applies dependsOn("kspCommonMainKotlinMetadata")
+    // to every KspAATask in the module.
+    add("kspAndroid", libs.persistence.kspPreferences.compiler)
+    add("kspIosX64", libs.persistence.kspPreferences.compiler)
+    add("kspIosArm64", libs.persistence.kspPreferences.compiler)
+    add("kspIosSimulatorArm64", libs.persistence.kspPreferences.compiler)
 }
