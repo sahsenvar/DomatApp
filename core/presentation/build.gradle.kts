@@ -9,4 +9,6 @@ dependencies {
     commonMainImplementation(projects.core.navigation)
     commonMainImplementation(libs.kotlinx.coroutines.core)
     commonMainApi(libs.androidx.lifecycle.viewmodel)
+    // Design system (theme tokens + core:resource R) used by the androidMain components
+    androidMainImplementation(projects.core.design)
 }

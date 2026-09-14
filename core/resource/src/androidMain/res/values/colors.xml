@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Green brand colors -->
+    <color name="malachite">#ff13ec49</color>
+    <color name="midnight_green">#ff102215</color>
+    <color name="malachite_5">#0d13ec49</color>
+    <color name="malachite_10">#1a13ec49</color>
+    <color name="malachite_20">#3313ec49</color>
+    <color name="malachite_30">#4d13ec49</color>
+
+    <!-- Slate scale -->
+    <color name="slate_50">#fff8fafc</color>
+    <color name="slate_100">#fff1f5f9</color>
+    <color name="slate_200">#ffe2e8f0</color>
+    <color name="slate_300">#ffcbd5e1</color>
+    <color name="slate_400">#ff94a3b8</color>
+    <color name="slate_500">#ff64748b</color>
+    <color name="slate_600">#ff475569</color>
+    <color name="slate_700">#ff334155</color>
+    <color name="slate_800">#ff1e293b</color>
+    <color name="slate_900">#ff0f172a</color>
+
+    <!-- Gray scale -->
+    <color name="cool_gray_400">#ff9ca3af</color>
+    <color name="gray_900">#ff111827</color>
+
+    <!-- Neutrals -->
+    <color name="white">#ffffffff</color>
+    <color name="black">#ff000000</color>
+    <color name="mint_white">#fff6f8f6</color>
+
+    <!-- Red scale -->
+    <color name="red_100">#fffee2e2</color>
+    <color name="red_500">#ffef4444</color>
+    <color name="red_800">#ff991b1b</color>
+    <color name="red_900">#ff7f1d1d</color>
+
+    <!-- Emerald scale -->
+    <color name="emerald_100">#ffd1fae5</color>
+    <color name="emerald_600">#ff059669</color>
+
+    <!-- Orange scale -->
+    <color name="orange_400">#fffb923c</color>
+
+    <!-- Blue scale -->
+    <color name="blue_100">#ffdbeafe</color>
+    <color name="blue_900">#ff1e3a8a</color>
+
+    <!-- Overlays -->
+    <color name="white_80">#ccffffff</color>
+    <color name="white_90">#e5ffffff</color>
+    <color name="black_55">#8c000000</color>
+
+    <!-- Hero gradient -->
+    <color name="hunter_green">#ff1a4731</color>
+    <color name="phthalo_green">#ff0d2418</color>
+</resources>

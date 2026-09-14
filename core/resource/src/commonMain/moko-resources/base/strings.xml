@@ -10,4 +10,81 @@
     <string name="error_server">Sunucu hatası (%d)</string>
     <string name="error_client">İstek hatası (%d)</string>
     <string name="error_unknown">Bilinmeyen bir hata oluştu</string>
+
+    <!-- Shared / Buttons -->
+    <string name="google_sign_in_button_text">Google ile Devam Et</string>
+
+    <!-- Onboarding - Welcome -->
+    <string name="onboarding_image_neighborhood_desc">Mahalle görseli</string>
+    <string name="onboarding_welcome_title_line1">Hoş Geldiniz 👋</string>
+    <string name="onboarding_welcome_title_highlight">Taze sebze ve meyveler</string>
+    <string name="onboarding_welcome_title_line3">mahallenize geliyor</string>
+    <string name="onboarding_welcome_body">Her hafta en taze domatesleri doğrudan üreticiden sitenize getiriyoruz. Stres yok, market gezmek yok, sürpriz yok.</string>
+
+    <!-- Onboarding - Effortless -->
+    <string name="onboarding_effortless_title">Haftalık alışverişi\nzahmetsiz hale\ngetiriyoruz</string>
+    <string name="onboarding_effortless_body">Her hafta pazara gitmeye son. Bir kez sipariş verin, teslimat günü apartman önüne gelin, QR kodunuzu okutun ve domateslerinizi alın. İşte bu kadar!</string>
+
+    <!-- Onboarding - Pricing -->
+    <string name="onboarding_pricing_title">Neden bu kadar\nuygun fiyatlı?</string>
+    <string name="onboarding_pricing_body">Çünkü arada aracı yok. Domatesler doğrudan üreticiden size geliyor. Toptancı yok, depo yok, dükkan kirası yok, gereksiz maliyetler yok.</string>
+    <string name="onboarding_pricing_producer_title">Üretici</string>
+    <string name="onboarding_pricing_producer_subtitle">Doğrudan Kaynak</string>
+    <string name="onboarding_pricing_wholesaler_title">Toptancı</string>
+    <string name="onboarding_pricing_wholesaler_subtitle">Kâr Marjı + Depolama</string>
+    <string name="onboarding_pricing_retail_title">Perakende Mağaza</string>
+    <string name="onboarding_pricing_retail_subtitle">Kira + Personel</string>
+    <string name="onboarding_pricing_consumer_title">Siz</string>
+    <string name="onboarding_pricing_consumer_subtitle">Ortalama %%40 tasarruf edin</string>
+
+    <!-- Onboarding - Community -->
+    <string name="onboarding_community_title_line1">Birlikte alalım,</string>
+    <string name="onboarding_community_title_highlight">daha az ödeyelim</string>
+    <string name="onboarding_community_body">Mahallenizde ne kadar çok kişi sipariş verirse, nakliye maliyeti o kadar düşer. Biz de bu tasarrufu doğrudan size yansıtırız. Birlikte sipariş verdiğimizde herkes kazanır.</string>
+    <string name="onboarding_community_price_current">₺2.00</string>
+    <string name="onboarding_community_price_original">₺12.50</string>
+
+    <!-- Onboarding - Trust -->
+    <string name="onboarding_trust_title">Basit. Adil. Şeffaf.</string>
+    <string name="onboarding_trust_body">Siparişinizde eksik veya hasarlı bir ürün varsa, tutarı anında uygulama içi cüzdanınıza iade edilir.</string>
+    <string name="onboarding_trust_feature_producer">Üretici adı görünür</string>
+    <string name="onboarding_trust_feature_location">Üretici şehri görünür</string>
+    <string name="onboarding_trust_feature_guarantee">Memnun kalmazsanız paranız iade!</string>
+
+    <!-- Onboarding - Bottom Bar Button Texts -->
+    <string name="onboarding_btn_welcome">Devam Et</string>
+    <string name="onboarding_btn_effortless">Süpermiş! Hadi başlayalım</string>
+    <string name="onboarding_btn_pricing">Hmm.. Güzelmiş. Başka?</string>
+    <string name="onboarding_btn_community">Uygunsa kalitesi kötü müdür?</string>
+    <string name="onboarding_btn_trust">Ben pazardan alıyorum 😬</string>
+
+    <!-- Onboarding - Login -->
+    <string name="onboarding_login_hero_badge">Taze &amp; Yerel</string>
+    <string name="onboarding_login_subtitle">Haftalık olarak en taze ürünleri sitenize/kapınıza kadar getiriyoruz</string>
+    <string name="onboarding_login_tos_prefix">Devam ederek, </string>
+    <string name="onboarding_login_tos_link1">Hizmet Şartlarımızı</string>
+    <string name="onboarding_login_tos_connector"> ve </string>
+    <string name="onboarding_login_tos_link2">Gizlilik Politikamızı</string>
+    <string name="onboarding_login_tos_suffix"> kabul etmiş olursunuz.</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back_button">Geri</string>
+    <string name="cd_google_icon">Google</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_screen_title">Auth</string>
+    <string name="auth_tos_text">Devam ederek, Hizmet Şartlarımızı ve Gizlilik Politikamızı kabul etmiş olursunuz.</string>
+
+    <!-- Location Selection -->
+    <string name="location_selection_title">Teslimat Bölgesi</string>
+    <string name="location_district_label">İlçe / İl</string>
+    <string name="location_neighborhood_label">Mahalle</string>
+    <string name="location_building_label">Site / Apartman</string>
+    <string name="location_block_label">Blok No</string>
+    <string name="location_apartment_label">Daire No</string>
+    <string name="placeholder_select">Seçiniz</string>
+    <string name="button_continue">Devam Et</string>
+    <string name="location_mock_district">Tuzla/İstanbul</string>
+    <string name="location_mock_neighborhood">Aydınlı Mh.</string>
+    <string name="location_mock_building">Dumankaya Adres Lobi.</string>
 </resources>

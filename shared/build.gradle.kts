@@ -52,6 +52,7 @@ kotlin {
             api(projects.feature.auth.domain)
             api(projects.feature.auth.data)
             api(projects.feature.auth.presentation)
+            api(projects.feature.onboarding.presentation)
 
             api(libs.koin.core)
             api(libs.koin.annotations)

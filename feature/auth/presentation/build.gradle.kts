@@ -16,6 +16,7 @@ dependencies {
     commonMainImplementation(projects.core.resource)
     commonMainImplementation(libs.kotlinx.coroutines.core)
     commonMainImplementation(libs.koin.core.viewmodel)
+    androidMainImplementation(projects.core.design)
     androidMainImplementation(libs.koin.compose)
     androidMainImplementation(libs.navigation3.runtime)
     androidMainImplementation(libs.credentials)

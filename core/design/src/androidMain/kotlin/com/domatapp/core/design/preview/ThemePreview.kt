@@ -56,8 +56,8 @@ private fun DomatThemeDynamicDarkPreview() {
 private fun ThemeShowcase() {
     Surface {
         Column(
-            modifier = Modifier.padding(MaterialTheme.spacing.md),
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm),
+            modifier = Modifier.padding(MaterialTheme.spacing.sp4),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp2),
         ) {
             Text("Display Small", style = MaterialTheme.typography.displaySmall)
             Text("Headline Medium", style = MaterialTheme.typography.headlineMedium)
@@ -67,7 +67,7 @@ private fun ThemeShowcase() {
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp1),
             ) {
                 ColorSwatch("Primary", MaterialTheme.colorScheme.primary)
                 ColorSwatch("Secondary", MaterialTheme.colorScheme.secondary)

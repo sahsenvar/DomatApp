@@ -35,7 +35,7 @@ struct DomatTextField: View {
 
                 if let trailingIcon {
                     Button {
-                        onTrailingIconTap ? ()
+                        onTrailingIconTap?()
                     } label: {
                         Image(systemName: trailingIcon).foregroundStyle(iconColor).font(DomatTypography.bodyMedium)
                     }

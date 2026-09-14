@@ -3,6 +3,11 @@ package com.domatapp.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -22,7 +27,8 @@ import com.domatapp.app.navigation.homeEntries
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.presentation.compose.LocalNavigator
 import com.domatapp.core.presentation.compose.LocalSnackbarHostState
-import com.domatapp.feature.auth.presentation.navigation.authPageEntry
+import com.domatapp.app.navigation.authPresentationEntries
+import com.domatapp.app.navigation.onboardingPresentationEntries
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +55,9 @@ fun DomatApp() {
         Scaffold(
             bottomBar = {},
             floatingActionButton = {},
+            topBar = {
+
+            },
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
                     Snackbar(
@@ -63,10 +72,19 @@ fun DomatApp() {
                 backStack = state.backStack,
                 modifier = Modifier.padding(innerPadding),
                 entryProvider = entryProvider {
-                    authPageEntry()   // generated
-                    homeEntries()       // manual (no MVI pattern yet)
+                    authPresentationEntries()
+                    onboardingPresentationEntries()
+                    homeEntries()
                 },
-                onBack = { mainViewModel.popBack() }
+                onBack = { mainViewModel.popBack() },
+                transitionSpec = {
+                    slideInHorizontally(animationSpec = tween(300, easing = LinearEasing)) { it } togetherWith
+                            slideOutHorizontally(animationSpec = tween(300, easing = LinearEasing)) { -it }
+                },
+                popTransitionSpec = {
+                    slideInHorizontally(animationSpec = tween(300, easing = LinearEasing)) { -it } togetherWith
+                            slideOutHorizontally(animationSpec = tween(300, easing = LinearEasing)) { it }
+                },
             )
         }
     }

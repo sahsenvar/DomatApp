@@ -4,5 +4,7 @@ plugins {
 }
 
 dependencies {
-    commonMainImplementation(projects.core.resource)
+    // api: consumers (core:presentation, feature presentations) resolve
+    // com.domatapp.core.resource.R transitively through the design system.
+    commonMainApi(projects.core.resource)
 }
