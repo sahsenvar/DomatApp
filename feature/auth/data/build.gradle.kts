@@ -1,6 +1,10 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
     alias(libs.plugins.domatapp.kmp.di)
+    // Order matters: the Ktorfit plugin does all of its KSP wiring inside an
+    // `if (extensions.findByName("ksp") != null)` branch, evaluated when it is applied. Applying
+    // it before the KSP plugin silently skips that branch - the processor never registers and the
+    // generated createXxxDataSource() extensions just do not exist. Keep ksp above ktorfit.
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ktorfit)
