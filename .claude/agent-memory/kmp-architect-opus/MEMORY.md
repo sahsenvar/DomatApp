@@ -70,6 +70,39 @@
 - `koinCompiler { logSeverity / versionCheckSeverity }` must be `"info"` here because of
   `allWarningsAsErrors=true`; `compileSafety` off per module, on in `:shared`.
 
+## REST DataSources: Ktorfit (replaced custom @RemoteDataSource KSP)
+
+- The custom `@RemoteDataSource`/`@GET`/`@POST` codegen in `core:remote/annotations` +
+  `core/processor/.../remote/` was removed. REST DataSources now use Ktorfit
+  (`de.jensklingenberg.ktorfit.http.*`) — plain interfaces, no marker annotation.
+- `core:remote` exposes `provideKtorfit(httpClient)` (`@Single`) wrapping the existing `HttpClient`,
+  so headers / ContentNegotiation / RemoteError mapping are unchanged.
+- DI binding is now uniform: `@Factory fun provide...(ktorfit: Ktorfit) = ktorfit.createXxx()`.
+  No more hand-matching a generated constructor signature.
+- Ktorfit must track the project's Ktor major.minor: 2.7.3 -> Ktor 3.4.1, 2.7.4+ -> Ktor 3.5.x.
+  Check this before bumping either one.
+- The Ktorfit **Gradle plugin IS applied** (`alias(libs.plugins.ktorfit)`), but with
+  `ktorfit { compilerPluginVersion.set("-") }`, which disables its Kotlin compiler plugin.
+  Rationale: the compiler plugin exists only to rewrite reified `ktorfit.create<T>()`, and that
+  function is `@Deprecated` in 2.7.5 — unusable here under `allWarningsAsErrors=true`. Disabling it
+  removes the Kotlin-version coupling entirely.
+- Consequence: only the generated `ktorfit.createXxx()` extension works;
+  reified `ktorfit.create<Xxx>()` is unavailable.
+- The plugin registers `<buildDir>/generated/ksp/metadata/commonMain/kotlin` as a commonMain
+  srcDir. `DiConventionPlugin` must register that **exact** path, not the ancestor
+  `build/generated/ksp/metadata` — Gradle only collapses srcDirs resolving to the same `File`, so an
+  ancestor path makes every generated file reachable through two roots.
+- The 2.7.5 Gradle plugin hardcodes `KTORFIT_KSP_PLUGIN_VERSION = "2.7.3"`, so the module also
+  declares `add("kspCommonMainMetadata", libs.network.ktorfit.ksp)` to pull the processor back up to the
+  runtime's version via newest-wins resolution.
+- Ktorfit baseUrl must end with `/`; interface paths must NOT start with `/`.
+- Use `ktorfit-lib-light` (core only) — the project supplies its own engines (OkHttp / Darwin).
+
+## No codegen for WebSocket / Firestore DataSources
+
+- The old system had `@Subscribe`/`@Send`/`@GetDocument`/`@Observe*` annotations with zero usage.
+  They were deleted, not replaced. Write such DataSources by hand until a pattern is agreed.
+
 ## Room Database Requires At Least One Entity
 
 - `@Database(entities = [])` causes compile error

@@ -5,15 +5,15 @@ import androidx.datastore.preferences.core.Preferences
 import com.domatapp.feature.auth.data.datasource.AuthConfigDataSource
 import com.domatapp.feature.auth.data.datasource.AuthConfigDataSourceImpl
 import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSource
-import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSourceImpl
 import com.domatapp.feature.auth.data.datasource.UserProfileRemoteDataSource
-import com.domatapp.feature.auth.data.datasource.UserProfileRemoteDataSourceImpl
+import com.domatapp.feature.auth.data.datasource.createAuthRemoteDataSource
+import com.domatapp.feature.auth.data.datasource.createUserProfileRemoteDataSource
 import com.domatapp.feature.auth.data.repository.AuthRepositoryImpl
 import com.domatapp.feature.auth.data.repository.UserProfileRepositoryImpl
 import com.domatapp.feature.auth.domain.di.AuthDomainModule
 import com.domatapp.feature.auth.domain.repository.AuthRepository
 import com.domatapp.feature.auth.domain.repository.UserProfileRepository
-import io.ktor.client.HttpClient
+import de.jensklingenberg.ktorfit.Ktorfit
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.module.Module as KoinModule
@@ -25,13 +25,13 @@ class AuthDataModule {
 
     @Factory
     fun provideAuthRemoteDataSource(
-        httpClient: HttpClient
-    ): AuthRemoteDataSource = AuthRemoteDataSourceImpl(httpClient = httpClient)
+        ktorfit: Ktorfit
+    ): AuthRemoteDataSource = ktorfit.createAuthRemoteDataSource()
 
     @Factory
     fun provideUserProfileRemoteDataSource(
-        httpClient: HttpClient
-    ): UserProfileRemoteDataSource = UserProfileRemoteDataSourceImpl(httpClient = httpClient)
+        ktorfit: Ktorfit
+    ): UserProfileRemoteDataSource = ktorfit.createUserProfileRemoteDataSource()
 
     @Single
     fun provideAuthConfigDataSource(
