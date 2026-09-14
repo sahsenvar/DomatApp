@@ -74,13 +74,21 @@ class RemoteDataSourceProcessor(
     private data class BackendDependencies(
         val needsRest: Boolean,
         val needsSocket: Boolean,
-        val needsFirestore: Boolean
+        val needsFirestore: Boolean,
+        val usedRestMethods: Set<String>,
+        val usesQuery: Boolean,
+        val usesHeader: Boolean,
+        val usesBody: Boolean
     )
 
     private fun analyzeBackendDependencies(interfaceDeclaration: KSClassDeclaration): BackendDependencies {
         var needsRest = false
         var needsSocket = false
         var needsFirestore = false
+        val usedRestMethods = mutableSetOf<String>()
+        var usesQuery = false
+        var usesHeader = false
+        var usesBody = false
 
         interfaceDeclaration.getAllFunctions()
             .filter { it.parentDeclaration == interfaceDeclaration }
@@ -88,14 +96,35 @@ class RemoteDataSourceProcessor(
                 function.annotations.forEach { annotation ->
                     val name = annotation.shortName.asString()
                     when {
-                        name in restAnnotations -> needsRest = true
+                        name in restAnnotations -> {
+                            needsRest = true
+                            usedRestMethods.add(name.lowercase())
+                        }
                         name in socketAnnotations -> needsSocket = true
                         name in firestoreAnnotations -> needsFirestore = true
                     }
                 }
+
+                function.parameters.forEach { param ->
+                    param.annotations.forEach { annotation ->
+                        when (annotation.shortName.asString()) {
+                            "Query" -> usesQuery = true
+                            "Header", "HeaderMap" -> usesHeader = true
+                            "Body" -> usesBody = true
+                        }
+                    }
+                }
             }
 
-        return BackendDependencies(needsRest, needsSocket, needsFirestore)
+        return BackendDependencies(
+            needsRest,
+            needsSocket,
+            needsFirestore,
+            usedRestMethods,
+            usesQuery,
+            usesHeader,
+            usesBody
+        )
     }
 
     private fun generateImplementation(interfaceDeclaration: KSClassDeclaration) {
@@ -178,19 +207,20 @@ class RemoteDataSourceProcessor(
             val fileSpecBuilder = FileSpec.builder("", implClassName)
 
             if (deps.needsRest) {
-                fileSpecBuilder.addImport(
-                    "io.ktor.client.request",
-                    "get",
-                    "post",
-                    "put",
-                    "patch",
-                    "delete",
-                    "parameter",
-                    "header",
-                    "setBody"
-                )
+                val requestImports = mutableListOf<String>()
+                requestImports.addAll(deps.usedRestMethods)
+                if (deps.usesQuery) requestImports.add("parameter")
+                if (deps.usesHeader) requestImports.add("header")
+                if (deps.usesBody) requestImports.add("setBody")
+
+                if (requestImports.isNotEmpty()) {
+                    fileSpecBuilder.addImport("io.ktor.client.request", requestImports)
+                }
+
                 fileSpecBuilder.addImport("io.ktor.client.call", "body")
-                fileSpecBuilder.addImport("io.ktor.http", "contentType", "ContentType")
+                if (deps.usesBody) {
+                    fileSpecBuilder.addImport("io.ktor.http", "contentType", "ContentType")
+                }
             }
 
             if (deps.needsSocket) {
@@ -219,9 +249,18 @@ class RemoteDataSourceProcessor(
             // Remove the empty package declaration and backticks from keywords
             var contentStr = content.toString().trim()
 
-            // Remove backticks around 'data' and 'annotation' keywords
+            // Remove 'public ' from classes and properties
+            contentStr = contentStr.replace("public class", "class")
+            contentStr = contentStr.replace("public override", "override")
+            contentStr = contentStr.replace("public fun", "fun")
+            contentStr = contentStr.replace("public val", "val")
+            contentStr = contentStr.replace("public var", "var")
+
+            // Remove backticks around 'data', get, header and 'annotation' keywords
             contentStr = contentStr.replace("`data`", "data")
             contentStr = contentStr.replace("`annotation`", "annotation")
+            contentStr = contentStr.replace("`get`", "get")
+            contentStr = contentStr.replace("`header`", "header")
 
             writer.write(contentStr)
         }

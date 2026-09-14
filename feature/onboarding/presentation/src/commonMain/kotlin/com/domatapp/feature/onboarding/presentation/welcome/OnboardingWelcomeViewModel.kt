@@ -18,15 +18,15 @@ class OnboardingWelcomeViewModel : BaseViewModel<
                 if (state.value.targetPage != null) return
                 val next = state.value.currentPage.next()
                 if (next != null) {
-                    updateState { it.copy(targetPage = next) }
+                    updateState { copy(targetPage = next) }
                 } else {
                     emitEffect(OnboardingWelcomeEffect.NavigateToLogin)
                 }
             }
             OnboardingWelcomeIntent.OnScrollConsumed ->
-                updateState { it.copy(targetPage = null) }
+                updateState { copy(targetPage = null) }
             is OnboardingWelcomeIntent.OnPageChanged ->
-                updateState { it.copy(currentPage = OnboardingPage.fromIndex(intent.page)) }
+                updateState { copy(currentPage = OnboardingPage.fromIndex(intent.page)) }
         }
     }
 }

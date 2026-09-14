@@ -5,43 +5,13 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-kotlin {
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
-    sourceSets {
-        commonMain {
-            dependencies {
-                // Projects ========================================================================
-                api(projects.core.resulting)
-                implementation(projects.core.serialization)
-
-                // Libraries =======================================================================
-                implementation(libs.kotlin.stdlib)
-                implementation(libs.kotlinx.coroutines.core)
-
-                // DataStore
-                api(libs.kvStore.datastore)
-                api(libs.kvStore.datastore.preferences)
-
-                // Firebase RemoteConfig
-                implementation(libs.firebase.config)
-
-                // Serialization
-                implementation(libs.kotlinx.serialization.json)
-            }
-        }
-
-        androidMain {
-            dependencies {
-                implementation(project.dependencies.platform(libs.firebase.bom))
-            }
-        }
-
-        iosMain {
-            dependencies {
-            }
-        }
-    }
+dependencies {
+    commonMainApi(projects.core.resulting)
+    commonMainImplementation(projects.core.serialization)
+    commonMainImplementation(libs.kotlinx.coroutines.core)
+    commonMainApi(libs.kvStore.datastore)
+    commonMainApi(libs.kvStore.datastore.preferences)
+    commonMainImplementation(libs.firebase.config)
+    commonMainImplementation(libs.kotlinx.serialization.json)
+    androidMainImplementation(project.dependencies.platform(libs.firebase.bom))
 }

@@ -36,10 +36,11 @@ The project follows a strict layered architecture:
   :core:common/           → Shared utilities and extensions
   :core:data/             → Data utilities and base repository patterns
   :core:domain/           → Shared domain models across features
-  :core:resulting/        → Error handling (DomainError, RemoteError, LocalError, ValidationError, SerializationError)
+  :core:resulting/        → Error handling (DomainError, RemoteError, LocalError, ValidationError, MappingError)
   :core:serialization/    → Serialization abstraction (SerializationApi, custom serializers)
   :core:remote/           → Network layer (Ktor REST/WebSocket, Firebase Firestore)
   :core:config/           → Configuration layer (DataStore key-value, Firebase RemoteConfig)
+  :core:mapping/          → Object mapping annotations and TypeConverters (KSP code generation)
   :core:navigation/       → Navigation definitions
   :core:resource/         → Shared resources
   :core:localization/     → i18n support
@@ -383,6 +384,109 @@ class ProductConfigDataSourceImpl(
 ) : ProductConfigDataSource { ... }
 ```
 
+## Object Mapping Code Generation (KSP Annotations)
+
+The `core:mapping` module provides **compile-time object mapping** via KSP annotations. It
+automatically generates type-safe mapping functions between data models (Remote ↔ Domain ↔ UI).
+
+### Core Components
+
+**MapTypeConverter (abstract class):**
+
+- Bidirectional type converter: `MapTypeConverter<S, T>`
+- Handles null safety automatically - subclasses only implement non-null conversion
+- Methods: `convertToNonNull(S): T`, `convertFromNonNull(T): S`, `convertTo(S?): T?`,
+  `convertFrom(T?): S?`
+
+**Built-in Converters (core:mapping):**
+
+- Primitives: `StringToIntConverter`, `StringToLongConverter`, `IntToLongConverter`, etc.
+- DateTime: `StringToInstantConverter`, `LongToInstantConverter`
+- Platform-specific: `UriToStringConverter` (Android), `NSURLToStringConverter` (iOS)
+
+### Annotations (core:mapping)
+
+**Class-level:**
+
+- `@MapTo(TargetClass::class)` - Generates `toTargetClass()` extension function
+- `@MapFrom(SourceClass::class)` - Generates `toThisClass(source: SourceClass)` function
+
+**Field-level:**
+
+- `@FieldMap(fieldName, targetClass)` - Maps field to different name in target
+- `@MapDefaultValue(expression)` - Default value if source field is null
+- `@UseMapTypeConverter(ConverterClass::class)` - Forces specific converter for field
+- `@Ignore` - Excludes field from mapping (makes it an external parameter)
+
+### Custom Converter Registration
+
+Use `startKMapper { }` DSL to register custom converters with explicit priority order:
+
+```kotlin
+// feature/auth/data/MapperConfiguration.kt
+@KMapperConfiguration
+val authMappers = startKMapper {
+    registerGlobalTypeConverter(CustomIntToStringConverter)
+    registerGlobalTypeConverter(AnotherIntToStringConverter) // Ignored (CustomIntToStringConverter has priority)
+}
+```
+
+**Priority Rules:**
+
+- First registered converter has **highest priority**
+- Custom converters **override built-in converters**
+- Order is preserved in both compile-time (KSP) and runtime
+
+### Usage Example
+
+```kotlin
+// Remote DTO
+@MapTo(UserDomain::class)
+data class UserRemote(
+    @FieldMap(fieldName = "id", targetClass = UserDomain::class)
+    val userId: String?,
+    val email: String?,
+    @MapDefaultValue("Clock.System.now()")
+    val createdAt: Instant?
+) : RemoteModel
+
+// Domain Model
+data class UserDomain(
+    val id: String,
+    val email: String,
+    val createdAt: Instant
+) : DomainModel
+
+// KSP generates automatically:
+fun UserRemote.toUserDomain(): UserDomain = UserDomain(
+    id = userId ?: throw MappingError.RequiredFieldMissing("id"),
+    email = email ?: throw MappingError.RequiredFieldMissing("email"),
+    createdAt = createdAt ?: Clock.System.now()
+)
+```
+
+### Null Safety Rules
+
+1. **Nullable → Nullable**: Direct assignment (`source.field`)
+2. **Non-nullable → Nullable**: Direct assignment (safe)
+3. **Non-nullable → Non-nullable**: Direct assignment (safe)
+4. **Nullable → Non-nullable with @MapDefaultValue**: `source.field ?: defaultValue`
+5. **Nullable → Non-nullable (no default)**:
+   `source.field ?: throw MappingError.RequiredFieldMissing("fieldName")`
+
+### KSP Configuration
+
+Feature modules using mapping annotations must add:
+
+```kotlin
+dependencies {
+    implementation(project(":core:mapping"))
+    add("kspCommonMainMetadata", project(":core:processor"))
+}
+```
+
+Generated mappers appear in `build/generated/ksp/metadata/commonMain/kotlin/`.
+
 ## Local DataSource (Room DAO)
 
 Local data sources are **Room `@Dao` interfaces directly** - no KSP code generation needed. Room's
@@ -445,6 +549,237 @@ dependencies {
 
 Use `kspAndroid` because `@NavigationScreen` and `@NavigationEffectHandler` live in `androidMain`,
 while `@NavigationViewModel` is in `commonMain` but visible during Android compilation.
+
+## Object Mapping Code Generation (KSP Annotations)
+
+The `core:mapping` module provides **compile-time object mapping** using KSP annotations. This
+eliminates boilerplate mapper functions while ensuring type-safety and null-safety at compile time.
+
+### Why Mapping System?
+
+- **Type-safe transformations**: Compile-time errors for type mismatches
+- **Null-safety enforcement**: Automatic null checks with clear error messages
+- **Zero boilerplate**: Generated extension functions replace manual mappers
+- **Bidirectional support**: Domain ↔ Data layer transformations
+- **Type conversion**: Built-in converters for common type transformations
+
+### Marker Interfaces
+
+All models must implement appropriate marker interfaces:
+
+**Data Layer (`core:data`):**
+
+- `RemoteModel` - DTOs from REST/WebSocket/Firestore
+- `LocalModel` - Room entities
+- `ConfigModel` - DataStore/RemoteConfig models
+
+**Domain Layer (`core:domain`):**
+
+- `DomainModel` - Pure business logic models
+- `RequestModel` - Request payloads for APIs
+
+**Presentation Layer (`core:presentation`):**
+
+- `UiModel` - UI state models (must use immutable collections)
+
+### Annotations (core:mapping)
+
+**Class-level:**
+
+- `@MapTo(TargetClass::class)` - Generate `toTargetClass()` extension function
+- `@MapFrom(SourceClass::class)` - Generate reverse mapping (future)
+
+**Field-level:**
+
+- `@FieldMap(fieldName = "targetFieldName")` - Map field to different name in target
+- `@MapDefaultValue(expression = "value")` - Provide default value for null fields
+- `@UseConverter(ConverterClass::class)` - Use custom TypeConverter for field
+
+### Null Safety Rules
+
+1. **Nullable → Nullable**: Direct assignment (`field = sourceField`)
+2. **Non-null → Non-null**: Direct assignment
+3. **Non-null → Nullable**: Direct assignment
+4. **Nullable → Non-null**: Throw `MappingError.RequiredFieldMissing` unless:
+    - Field has `@MapDefaultValue` → use default
+    - Field has default value in constructor → external parameter
+
+### Type Conversion System
+
+**Built-in Converters:**
+
+- String ↔ Int, Long, Double
+- Int, Long, Double → String
+- String → Instant (ISO-8601)
+- Long → Instant (epoch millis)
+- Int ↔ Long
+
+**Custom Converters:**
+
+```kotlin
+object MyConverter : AbstractTypeConverter<SourceType, TargetType>(
+    SourceType::class,
+    TargetType::class
+) {
+    override fun convertToNonNull(value: SourceType): TargetType = /* ... */
+    override fun convertFromNonNull(value: TargetType): SourceType = /* ... */
+}
+```
+
+### Usage Examples
+
+**Basic Mapping:**
+
+```kotlin
+@Serializable
+@MapTo(AuthSession::class)
+data class RemoteUserDto(
+    @SerialName("user_id") val userId: String,
+    @SerialName("email") val email: String,
+    val displayName: String? = null
+) : RemoteModel
+
+data class AuthSession(
+    val userId: String,
+    val email: String,
+    val displayName: String?
+) : DomainModel
+
+// Generated automatically:
+fun RemoteUserDto.toAuthSession(): AuthSession = AuthSession(
+    userId = userId,
+    email = email,
+    displayName = displayName
+)
+```
+
+**Field Name Mapping:**
+
+```kotlin
+@MapTo(UserDomain::class)
+data class UserRemote(
+    @FieldMap(fieldName = "id")
+    val userId: String
+) : RemoteModel
+
+data class UserDomain(val id: String) : DomainModel
+
+// Generated:
+fun UserRemote.toUserDomain(): UserDomain = UserDomain(
+    id = userId
+)
+```
+
+**Type Conversion:**
+
+```kotlin
+@MapTo(UserDomain::class)
+data class UserRemote(
+    val userId: Int?,
+    val createdAt: String?  // ISO-8601 timestamp
+) : RemoteModel
+
+data class UserDomain(
+    val userId: String,
+    val createdAt: Instant
+) : DomainModel
+
+// Generated with built-in converters:
+fun UserRemote.toUserDomain(): UserDomain = UserDomain(
+    userId = IntToStringConverter.convertTo(userId)
+        ?: throw MappingError.RequiredFieldMissing("userId"),
+    createdAt = StringToInstantConverter.convertTo(createdAt)
+        ?: throw MappingError.RequiredFieldMissing("createdAt")
+)
+```
+
+**Default Values:**
+
+```kotlin
+@MapTo(OrderDomain::class)
+data class OrderRemote(val orderId: String?) : RemoteModel
+
+data class OrderDomain(
+    val orderId: String,
+    @MapDefaultValue("Clock.System.now()")
+    val createdAt: Instant
+) : DomainModel
+
+// Generated with default value:
+fun OrderRemote.toOrderDomain(
+    createdAt: Instant = Clock.System.now()
+): OrderDomain = OrderDomain(
+    orderId = orderId ?: throw MappingError.RequiredFieldMissing("orderId"),
+    createdAt = createdAt
+)
+```
+
+**External Fields:**
+
+```kotlin
+@MapTo(UserDomain::class)
+data class UserRemote(val name: String) : RemoteModel
+
+data class UserDomain(
+    val name: String,
+    val id: String  // Not in UserRemote
+) : DomainModel
+
+// Generated with external parameter:
+fun UserRemote.toUserDomain(id: String): UserDomain = UserDomain(
+    name = name,
+    id = id
+)
+```
+
+### KSP Configuration
+
+Modules using mapping annotations must add:
+
+```kotlin
+dependencies {
+    implementation(projects.core.mapping)
+    add("kspCommonMainMetadata", projects.core.processor)
+}
+```
+
+### Generated Code Location
+
+Mappers are generated in:
+
+```
+build/generated/ksp/metadata/commonMain/kotlin/{package}/{SourceClass}Mappers.kt
+```
+
+### Integration Example
+
+**Before (Manual):**
+
+```kotlin
+// feature/auth/data/mapper/AuthMapper.kt
+fun RemoteUserDto.toDomain(): AuthSession {
+    return AuthSession(
+        userId = userId ?: throw IllegalStateException("userId required"),
+        email = email ?: throw IllegalStateException("email required"),
+        displayName = displayName
+    )
+}
+```
+
+**After (Generated):**
+
+```kotlin
+// Mark the DTO
+@MapTo(AuthSession::class)
+data class RemoteUserDto(...) : RemoteModel
+
+// Mark the domain model
+data class AuthSession(...) : DomainModel
+
+// Use generated mapper
+val dto: RemoteUserDto = remoteDataSource.getUser()
+val session = dto.toAuthSession()  // ✅ Type-safe, null-safe, auto-generated
+```
 
 ## Backend Strategy (Concrete Clients + DataSource Pattern)
 
@@ -536,3 +871,4 @@ KSP generates module code at build time. **Never use `module { }` DSL syntax** (
 - **Backend**: Firebase Auth (GitLive 2.4.0), Firebase Firestore, Firebase RemoteConfig
 - **Serialization**: kotlinx.serialization
 - **Error Handling**: Exception-based with core:resulting module
+- **Object Mapping**: KSP-based compile-time mapping with type/null safety (core:mapping)

@@ -16,16 +16,16 @@ class LocationSelectionViewModel : BaseViewModel<
         when (intent) {
             is LocationSelectionIntent.SelectBlock ->
                 updateState {
-                    it.copy(
+                    copy(
                         selectedBlock = intent.block,
-                        isConfirmEnabled = it.selectedApartment != null,
+                        isConfirmEnabled = selectedApartment != null,
                     )
                 }
             is LocationSelectionIntent.SelectApartment ->
                 updateState {
-                    it.copy(
+                    copy(
                         selectedApartment = intent.apartment,
-                        isConfirmEnabled = it.selectedBlock != null,
+                        isConfirmEnabled = selectedBlock != null,
                     )
                 }
             LocationSelectionIntent.Confirm -> emitEffect(LocationSelectionEffect.NavigateToHome)

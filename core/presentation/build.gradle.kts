@@ -1,45 +1,14 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.domatapp.cmp.library)
 }
 
-compose.resources {
-    generateResClass = never
-}
-
-kotlin {
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
-    sourceSets {
-        commonMain {
-            dependencies {
-                implementation(projects.core.domain)
-                implementation(projects.core.common)
-                implementation(projects.core.navigation)
-
-                implementation(libs.kotlin.stdlib)
-                implementation(libs.kotlinx.coroutines.core)
-
-                // Lifecycle ViewModel for KMP
-                api(libs.androidx.lifecycle.viewmodel)
-
-                // Compose Runtime (For ViewModels/State)
-                api(libs.compose.runtime)
-            }
-        }
-        androidMain {
-            dependencies {
-                implementation(projects.core.design)
-                implementation(libs.compose.material3)
-                implementation(libs.compose.uiTooling)
-                implementation(libs.compose.uiToolingPreview)
-            }
-        }
-        iosMain {
-            dependencies {}
-        }
-    }
+dependencies {
+    commonMainImplementation(projects.core.domain)
+    commonMainImplementation(projects.core.common)
+    commonMainImplementation(projects.core.navigation)
+    commonMainImplementation(libs.kotlinx.coroutines.core)
+    commonMainApi(libs.androidx.lifecycle.viewmodel)
+    // Design system (theme tokens + core:resource R) used by the androidMain components
+    androidMainImplementation(projects.core.design)
 }
