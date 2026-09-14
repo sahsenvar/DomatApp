@@ -106,9 +106,9 @@ network-ktorClient-android = { group = "io.ktor", name = "ktor-client-android", 
 network-ktor-utils = { group = "io.ktor", name = "ktor-utils", version.ref = "ktor" }
 
 # KMapper - compile-time object mapping (https://kmapper.gitbook.io/docs)
-mapping-kmapper-core = { module = "io.github.sahsenvar:kmapper-core", version.ref = "kmapper" }
-mapping-kmapper-annotations = { module = "io.github.sahsenvar:kmapper-annotations", version.ref = "kmapper" }
-mapping-kmapper-compiler = { module = "io.github.sahsenvar:kmapper-compiler", version.ref = "kmapper" }
+mapping-kmapper-core = { group = "io.github.sahsenvar", name = "kmapper-core", version.ref = "kmapper" }
+mapping-kmapper-annotations = { group = "io.github.sahsenvar", name = "kmapper-annotations", version.ref = "kmapper" }
+mapping-kmapper-compiler = { group = "io.github.sahsenvar", name = "kmapper-compiler", version.ref = "kmapper" }
 
 # Plugin dependencies for build-logic
 buildlogic-android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
