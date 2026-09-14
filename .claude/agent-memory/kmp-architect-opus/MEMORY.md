@@ -42,11 +42,14 @@
 - Workaround: Use `@MapTo` only for flat models. Manual mappers for nested non-null complex objects.
 - See: `feature/auth/data/mapper/AuthSessionMapper.kt`
 
-## KSP Generated DataSource Impl Constructors
+## DI: Koin compiler plugin, not KSP (see koin-compiler-plugin.md)
 
-- RemoteDataSource KSP generates impl with ONLY clients actually used (HttpClient, etc.)
-- DI Module factory methods must match generated constructor exactly
-- Always check generated impl before writing DI bindings
+- Koin Annotations 4.2.x is processed by `io.insert-koin.compiler.plugin`; `koin-ksp-compiler` is
+  gone. `DiConventionPlugin` applies it — modules add nothing but `alias(libs.plugins.domatapp.kmp.di)`.
+- Two traps: delete `import org.koin.ksp.generated.module` (package no longer exists, `.module`
+  still works), and import `@KoinViewModel` from `org.koin.core.annotation`.
+- `koinCompiler { logSeverity / versionCheckSeverity }` must be `"info"` here because of
+  `allWarningsAsErrors=true`; `compileSafety` off per module, on in `:shared`.
 
 ## Room Database Requires At Least One Entity
 

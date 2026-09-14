@@ -16,6 +16,7 @@ import com.domatapp.feature.auth.domain.repository.UserProfileRepository
 import io.ktor.client.HttpClient
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
+import org.koin.core.module.Module as KoinModule
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 
@@ -53,3 +54,12 @@ class AuthDataModule {
         remoteSource = remoteSource
     )
 }
+
+/**
+ * Entry point for loading this Koin module from another Gradle module.
+ *
+ * The Koin compiler plugin only generates the `module()` accessor inside the compilation that
+ * declares the `@Module` class, so `AuthDataModule().module()` does not resolve from `:shared`.
+ * Every module exposes its own accessor instead.
+ */
+fun authDataModule(): KoinModule = AuthDataModule().module()

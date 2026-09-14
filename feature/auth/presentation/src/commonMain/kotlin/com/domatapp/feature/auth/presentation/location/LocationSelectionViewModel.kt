@@ -3,7 +3,7 @@ package com.domatapp.feature.auth.presentation.location
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationViewModel
 import com.domatapp.core.presentation.base.BaseViewModel
-import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.KoinViewModel
 
 @NavigationViewModel(Route.AuthRoute.LocationSelection::class)
 @KoinViewModel

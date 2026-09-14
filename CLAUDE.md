@@ -821,8 +821,8 @@ Test source sets are currently disabled across core and feature modules. Do not 
 
 ## Dependency Injection (Koin Annotations)
 
-The project uses **Koin with KSP Annotations** for dependency injection, NOT Koin DSL (except for
-`databaseModule` in KoinInitializer).
+The project uses **Koin Annotations processed by the Koin Kotlin compiler plugin** (Koin 4.2+),
+NOT KSP and NOT the Koin DSL.
 
 ### Module Setup
 
@@ -838,25 +838,76 @@ class CoreRemoteModule
 
 - **@Single**: Singleton scoped (repositories, data sources, API clients)
 - **@Factory**: New instance on each injection (use cases)
+- **@KoinViewModel**: ViewModels. Import it from `org.koin.core.annotation`, **not**
+  `org.koin.android.annotation` — it moved packages in Koin Annotations 4.2.
 
-### KSP Configuration
+### Build Setup
 
-All modules using Koin must include:
+**Do not wire DI by hand.** `domatapp.kmp.di` (`DiConventionPlugin`) applies the Koin compiler
+plugin (`io.insert-koin.compiler.plugin`) and adds `koin-core` / `koin-annotations` to `commonMain`
+and `koin-android` to `androidMain` for every module that uses it:
 
 ```kotlin
 plugins {
-    alias(libs.plugins.ksp)
-}
-
-dependencies {
-    implementation(libs.koin.core)
-    implementation(libs.koin.annotations)
-    kspCommonMainMetadata(libs.koin.ksp.compiler)
+    alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.domatapp.kmp.di)
 }
 ```
 
-KSP generates module code at build time. **Never use `module { }` DSL syntax** (except
-`databaseModule` in `KoinInitializer` for Room).
+Because the compiler plugin is a `KotlinCompilerPluginSupportPlugin`, one `pluginManager.apply` in
+the convention plugin covers every compilation — commonMain metadata plus each Android/iOS target.
+There are no generated source files to register and nothing to order build tasks around.
+
+Modules outside the convention plugin that consume Koin (`:shared`) apply
+`alias(libs.plugins.koinCompiler)` directly.
+
+### Loading modules — one accessor per Gradle module
+
+The compiler plugin generates the `module()` accessor **only inside the compilation that declares
+the `@Module` class**. `CoreRemoteModule().module()` therefore does not resolve from `:shared`.
+Every module that declares a `@Module` exposes its own accessor next to it:
+
+```kotlin
+@Module
+@ComponentScan("com.domatapp.core.remote")
+class CoreRemoteModule
+
+fun coreRemoteModule(): KoinModule = CoreRemoteModule().module()
+```
+
+`shared/.../di/KoinInitializer.kt` then calls those functions. Import
+`org.koin.core.module.Module as KoinModule` — the unaliased name collides with the `@Module`
+annotation.
+
+Two things that differ from Koin's published migration guide, both verified by compiling and running
+against Koin 4.2.2 + compiler plugin 1.2.1:
+
+- `module` is a generated **function**, not a property: write `MyModule().module()`.
+- There is no `import org.koin.ksp.generated.module` any more — that package is gone, and the import
+  is an unresolved reference.
+- `startKoin<MyApp>()` with `@KoinApplication` does not exist in koin-core 4.2.2, and
+  `@Configuration` did not auto-register modules. Load modules explicitly via the accessors.
+
+`@Module(includes = [OtherModule::class])` **does** work across Gradle modules — only the `module()`
+accessor is compilation-local.
+
+### koinCompiler settings used here
+
+| Setting | Value | Why |
+|---|---|---|
+| `logSeverity` | `"info"` | `gradle.properties` sets `kotlin.compiler.allWarningsAsErrors=true`; the plugin's informational output defaults to WARNING severity and would fail the build. |
+| `versionCheckSeverity` | `"info"` | Same reason, for the "unverified Kotlin version" notice. |
+| `compileSafety` | `false` in `DiConventionPlugin`, `true` in `:shared` | Per-module graph validation reports dependencies a single Gradle module cannot see, because modules compose via `@Module(includes = [...])`. `:shared` owns `startKoin` and sees the whole graph, so full validation runs there. This replaces the old `KOIN_CONFIG_CHECK` KSP argument. |
+
+Because `:shared` contains `startKoin`, the plugin auto-enables `strictSafety` on it, which makes
+`:shared`'s Kotlin compile task always re-run. That is deliberate on Koin's side — DSL lambda bodies
+are not part of any declaration's ABI, so incremental compilation would otherwise skip
+re-validation. Other modules stay fully incremental.
+
+### KSP is still used — just not for DI
+
+`core:processor` (mapping, config and navigation code generation) and `ktorfit-ksp` still run under
+KSP. Only modules that actually register one of those processors apply `alias(libs.plugins.ksp)`.
 
 ## Key Technologies
 
@@ -864,7 +915,7 @@ KSP generates module code at build time. **Never use `module { }` DSL syntax** (
 - **Android**: minSdk 30, targetSdk 36, AGP 9.0.1
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
 - **Architecture**: Arrow-kt for functional programming, Coroutines + Flow
-- **DI**: Koin 4.1.1 with Annotations 2.3.1 (KSP code generation)
+- **DI**: Koin 4.2.2 with Annotations 4.2.2 (Kotlin compiler plugin, `io.insert-koin.compiler.plugin` 1.2.1)
 - **Networking**: Ktor Client 3.4.1 (REST + WebSocket)
 - **Database**: Room 2.7.0 (KMP)
 - **Storage**: DataStore 1.2.0 (Preferences)

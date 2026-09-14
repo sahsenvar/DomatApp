@@ -1,7 +1,7 @@
 package com.domatapp.feature.onboarding.presentation.pricing
 
 import com.domatapp.core.presentation.base.BaseViewModel
-import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class OnboardingPricingViewModel : BaseViewModel<
