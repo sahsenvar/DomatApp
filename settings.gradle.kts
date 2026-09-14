@@ -49,7 +49,6 @@ include(":core:resulting")
 include(":core:serialization")
 include(":core:presentation")
 include(":core:design")
-include(":core:mapping")
 
 // Features Modules
 include(":feature:auth:domain")

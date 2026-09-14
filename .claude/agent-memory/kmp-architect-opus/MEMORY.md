@@ -36,11 +36,28 @@
 - AuthViewModel (only one currently implemented)
 - Uses MVI pattern: AuthUiState, AuthIntent, AuthEffect
 
-## KSP Mapper Bug: Nested Non-Null Objects
+## Object Mapping: KMapper library (replaced in-repo core:mapping)
 
-- Mapper processor generates nullable safe calls (`?.`) for nested object fields even when non-null
-- Workaround: Use `@MapTo` only for flat models. Manual mappers for nested non-null complex objects.
-- See: `feature/auth/data/mapper/AuthSessionMapper.kt`
+- The in-repo `core:mapping` module + `core/processor/.../mapping/` KSP processor were removed and
+  replaced by the published library **KMapper 2.2.2** (`io.github.sahsenvar`, artifacts
+  `kmapper-core` / `kmapper-annotations` / `kmapper-compiler`). Library docs:
+  https://kmapper.gitbook.io/docs — don't re-document it in CLAUDE.md.
+- Annotation package is **`com.sahsenvar.kmapper.annotations`** (NOT `com.domatapp.*`).
+- Generated functions are `to<Target>Result()` returning **`kotlin.Result<T>`**, emitted into the
+  **receiver's** package. Project convention: unwrap at the call site with `.getOrThrow()` so the
+  existing exception-based error chain (`.catch { throw it.toAuthError() }`) is preserved.
+  Do NOT propagate `Result<T>` into repository/domain layers.
+- This fixed a real bug in the old in-repo processor: it generated nullable safe calls (`?.`) for
+  nested **non-null** object fields. KMapper routes nested pairs through sub-mappers correctly
+  (each level still needs its own `@MapTo`).
+- 1.x -> 2.x renames to watch for: `@Ignore`->`@IgnoreMap`,
+  `@UseMapTypeConverter(X)`->`@ConvertWith(use = X)`, `@MapDefaultValue` removed (use a constructor
+  default), `startKMapper {}` DSL -> `@KMapperConfig` annotation.
+- `MappingError` in `core:resulting` is now unreferenced (KMapper throws its own types, which land
+  in `toAuthError()`'s `else -> AuthError.Unknown` branch). Left in place deliberately; removing it
+  is a separate public-API decision.
+- Only modules that **declare** mappings need `kmapper-compiler` on `kspCommonMainMetadata`.
+  `core:processor` is still required in `feature/auth/data` for `@ConfigDataSource` codegen.
 
 ## DI: Koin compiler plugin, not KSP (see koin-compiler-plugin.md)
 

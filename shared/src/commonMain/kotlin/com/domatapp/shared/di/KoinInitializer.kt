@@ -1,7 +1,6 @@
 package com.domatapp.shared.di
 
 import com.domatapp.core.config.di.coreConfigModule
-import com.domatapp.core.mapping.PlatformConverters
 import com.domatapp.core.remote.di.coreRemoteModule
 import com.domatapp.core.resource.di.coreResourceModule
 import com.domatapp.core.serialization.di.coreSerializationModule
@@ -14,9 +13,6 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication {
-    // Register all platform-specific and built-in type converters
-    PlatformConverters.register()
-
     return startKoin {
         appDeclaration()
         // Each Gradle module exposes its own accessor: the Koin compiler plugin generates the
