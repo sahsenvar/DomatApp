@@ -18,14 +18,6 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
 
 
         extensions.configure(KotlinMultiplatformExtension::class.java) {
-            // Pins the actual JDK used to compile Kotlin/Java to 17, independent of whatever JVM
-            // runs the Gradle daemon itself. Without this, a KSP-generated source (e.g. KMapper's
-            // metadata-compilation output) can pick up the daemon's own JVM as its target - CI
-            // hit this for real once its Gradle process moved to JDK 21 for KtorfitX's plugin:
-            // "Cannot inline bytecode built with JVM target 21 into bytecode that is being built
-            // with JVM target 17."
-            jvmToolchain(17)
-
             applyDefaultHierarchyTemplate()
             iosArm64()
             iosSimulatorArm64()
@@ -52,13 +44,19 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             }
         }
 
+        // JVM 21, not 17: kmapper-core 2.2.2's published classes are compiled targeting JVM 21
+        // bytecode (verified directly - major version 65 in the class file header). Its
+        // KSP-generated mapper calls an inline function from that runtime, and Kotlin refuses to
+        // inline JVM-21 bytecode into a lower-targeted compilation. Raising the floor to 21 is the
+        // fix; a jvmToolchain() pin was tried first and made no difference; a plain compiler-option
+        // target does.
         tasks.withType(KotlinJvmCompile::class.java).configureEach {
-            compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
+            compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
         }
 
         tasks.withType(JavaCompile::class.java).configureEach {
-            sourceCompatibility = JavaVersion.VERSION_17.toString()
-            targetCompatibility = JavaVersion.VERSION_17.toString()
+            sourceCompatibility = JavaVersion.VERSION_21.toString()
+            targetCompatibility = JavaVersion.VERSION_21.toString()
         }
     }
 }

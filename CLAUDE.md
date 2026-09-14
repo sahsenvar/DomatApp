@@ -741,6 +741,13 @@ KSP. Only modules that actually register one of those processors apply `alias(li
 
 - **KMP**: Kotlin 2.4.10 (capped by SKIE 0.10.14), Compose Multiplatform 1.12.0
 - **Android**: minSdk 30, targetSdk 37, compileSdk 37, AGP 9.4.0, Gradle 9.7.1
+- **JVM target**: 21, not 17 — `kmapper-core` 2.2.2's published classes are compiled targeting JVM
+  21 bytecode (verified directly from the jar's class file header, major version 65). Its
+  KSP-generated mapper calls an inline function from that runtime, and a lower target fails with
+  "Cannot inline bytecode built with JVM target 21 into bytecode that is being built with JVM
+  target 17." Set via a plain `compilerOptions.jvmTarget`/`compileOptions` pin in
+  `KmpLibraryConventionPlugin` and `composeApp/build.gradle.kts` — not `kotlin { jvmToolchain(21) }`,
+  which was tried first and had no effect on this specific failure.
 - **Codegen**: KSP 2.3.11 (`core:processor` only — DI no longer uses it)
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
 - **Architecture**: Coroutines + Flow (Arrow-kt is in the catalog but unused)

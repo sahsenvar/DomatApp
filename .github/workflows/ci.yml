@@ -9,21 +9,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Two JDKs: 21 to actually run the Gradle daemon (KtorfitX's Gradle plugin,
+      # JDK 21: needed to run the Gradle daemon itself (KtorfitX's Gradle plugin,
       # cn.ktorfitx:multiplatform-gradle-plugin in feature/auth/data, declares a minimum JVM
-      # runtime of 21 for the build process itself) and 17 for Gradle's own toolchain resolution
-      # to find, since KmpLibraryConventionPlugin now pins `jvmToolchain(17)` for the project's
-      # actual Kotlin/Java compilation. Listing 17 first, 21 last: actions/setup-java sets
-      # JAVA_HOME to the *last* version installed, which needs to be 21 for the daemon; both
-      # become visible to Gradle's toolchain auto-detection via the JAVA_HOME_<major>_X64 env
-      # vars this action also sets.
-      - name: Set up JDKs
+      # runtime of 21), and now also the project's own compile target - see
+      # KmpLibraryConventionPlugin's comment on why (kmapper-core 2.2.2's published classes are
+      # JVM-21 bytecode). One JDK, no toolchain indirection: a plain compiler-option target is
+      # what actually took effect here, a jvmToolchain() pin did not.
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: |
-            17
-            21
+          java-version: "21"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -39,15 +35,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # See the build job's comment - two JDKs are needed, 21 to run Gradle/KtorfitX's plugin, 17
-      # for the jvmToolchain(17) pin the project's own compilation resolves against.
-      - name: Set up JDKs
+      # See the build job's comment.
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: |
-            17
-            21
+          java-version: "21"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

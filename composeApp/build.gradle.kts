@@ -16,7 +16,10 @@ composeCompiler {
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        // 21, not 17: kmapper-core 2.2.2's published classes target JVM 21 bytecode - see
+        // KmpLibraryConventionPlugin's comment. composeApp isn't built by that convention plugin
+        // (it's the Android application module), so the same bump is repeated here.
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
@@ -69,8 +72,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     sourceSets {
