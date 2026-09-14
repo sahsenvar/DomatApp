@@ -12,18 +12,18 @@ dependencies {
     compileOnly(libs.buildlogic.composeCompiler.gradlePlugin)
     // `kotlin-dsl` (applied above) pins org.jetbrains:annotations to `strictly` its embedded
     // Kotlin's own version, to protect Gradle's bundled Kotlin runtime. AGP transitively wants a
-    // newer one, but only via ddmlib/repository/layoutlib-api - Studio/IDE-integration tooling
-    // (device communication, SDK manager, layout preview rendering) that a headless plugin
-    // application never touches. Excluding those three modules removes the only paths that
-    // conflict with the strict pin; two `force()` attempts at resolving the version instead (one on
-    // the root's buildscript classpath, one here via configurations.all) both left the published
-    // `runtimeElements` variant - what the root build substitutes in for this plugin - completely
-    // unchanged, confirmed by two identical CI failures. Excluding the modules changes the declared
-    // dependency graph itself, which does propagate to what gets published.
+    // newer one through more paths than any short list can chase down one at a time - ddmlib,
+    // repository and layoutlib-api (excluding those three alone still left a fourth path open,
+    // through com.android.tools.analytics-library:shared -> kotlinx-coroutines-core:1.9.0, per a
+    // real CI run). None of AGP's own use of org.jetbrains:annotations matters to a headless
+    // `pluginManager.apply("com.android.kotlin.multiplatform.library")` call, so exclude the group
+    // entirely instead of excluding modules as they turn up. Two `force()` attempts at resolving
+    // the version instead (root buildscript classpath; configurations.all here) both left the
+    // published `runtimeElements` variant - what the root build substitutes in for this plugin -
+    // completely unchanged; excluding changes the declared dependency graph itself, which does
+    // propagate to what gets published.
     implementation(libs.buildlogic.android.gradlePlugin) {
-        exclude(group = "com.android.tools.ddms", module = "ddmlib")
-        exclude(group = "com.android.tools", module = "repository")
-        exclude(group = "com.android.tools.layoutlib", module = "layoutlib-api")
+        exclude(group = "org.jetbrains", module = "annotations")
     }
     implementation(libs.buildlogic.ksp.gradlePlugin)
     implementation(libs.buildlogic.koinCompiler.gradlePlugin)
