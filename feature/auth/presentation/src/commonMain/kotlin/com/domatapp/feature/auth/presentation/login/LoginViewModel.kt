@@ -1,8 +1,6 @@
 package com.domatapp.feature.auth.presentation.login
 
 import androidx.lifecycle.viewModelScope
-import com.domatapp.core.navigation.Route
-import com.domatapp.core.navigation.annotations.NavigationViewModel
 import com.domatapp.core.presentation.base.BaseViewModel
 import com.domatapp.core.resource.MR
 import com.domatapp.core.resource.api.StringResourceApi
@@ -21,7 +19,6 @@ import org.koin.core.annotation.KoinViewModel
  * MVI + exception-based error handling: the native UI owns the Google dialog,
  * this ViewModel owns the token exchange and the post-login routing decision.
  */
-@NavigationViewModel(Route.AuthRoute.Login::class)
 @KoinViewModel
 class LoginViewModel(
     private val loginWithGoogle: LoginWithGoogleUseCase,

@@ -138,9 +138,10 @@ dependencies {
     // Kotlinx Serialization
     implementation(libs.serialization.kxSerialization.json)
 
-    // Navigation 3
-    implementation(libs.navigation.nav3.runtime)
-    implementation(libs.navigation.nav3.ui)
+    // Navigation: Gezgin (rememberNavigator / GezginDisplay) + the generated topology in
+    // :core:navigation. Gezgin's own api dependency is what brings androidx.navigation3 in, so
+    // this module declares no Navigation 3 coordinate of its own.
+    implementation(libs.navigation.gezgin.core)
 
     api(libs.ui.compose.uiTooling)
 }

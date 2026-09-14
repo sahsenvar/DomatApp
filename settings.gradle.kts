@@ -19,6 +19,19 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        // Opt-in escape hatch for validating an unreleased Gezgin against this app before it is
+        // published: `./gradlew publishToMavenLocal` in the Gezgin checkout, then build here with
+        // `-PgezginUseMavenLocal=true` and the `gezgin` version in libs.versions.toml pointing at
+        // the locally published version. Off by default - no property, no mavenLocal.
+        if (providers.gradleProperty("gezginUseMavenLocal").orNull.toBoolean()) {
+            mavenLocal {
+                content {
+                    includeModule("io.github.sahsenvar", "gezgin-core")
+                    includeModule("io.github.sahsenvar", "gezgin-processor")
+                    includeModule("io.github.sahsenvar", "gezgin-test")
+                }
+            }
+        }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -37,7 +50,6 @@ include(":shared")
 
 // Core Modules
 include(":core:remote")
-include(":core:processor")
 include(":core:local")
 include(":core:config")
 include(":core:resource")
