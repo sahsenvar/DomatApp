@@ -2,6 +2,7 @@ package com.domatapp.buildlogic
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -18,17 +19,22 @@ class DiConventionPlugin : Plugin<Project> {
             pluginManager.apply(KOIN_COMPILER_PLUGIN_ID)
             configureKoinCompiler()
 
+            // The Koin runtime belongs here, not in every consumer's build file: a module that
+            // applies this plugin gets @Module/@Single processed, so it always needs koin-core and
+            // koin-annotations. Module-specific artifacts (koin-core-viewmodel, koin-compose) stay
+            // declared per module. Versions come from the catalog so they cannot drift from it.
+            val libs = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
             extensions.configure<KotlinMultiplatformExtension> {
                 sourceSets {
                     commonMain {
                         dependencies {
-                            implementation("io.insert-koin:koin-core:$KOIN_VERSION")
-                            implementation("io.insert-koin:koin-annotations:$KOIN_ANNOTATIONS_VERSION")
+                            implementation(libs.findLibrary("di-koin-core").get())
+                            implementation(libs.findLibrary("di-koin-annotations").get())
                         }
                     }
                     androidMain {
                         dependencies {
-                            implementation("io.insert-koin:koin-android:$KOIN_VERSION")
+                            implementation(libs.findLibrary("di-koin-android").get())
                         }
                     }
                 }
@@ -67,8 +73,6 @@ class DiConventionPlugin : Plugin<Project> {
         const val KSP_PLUGIN_ID = "com.google.devtools.ksp"
         const val KMP_PLUGIN_ID = "org.jetbrains.kotlin.multiplatform"
         const val KOIN_COMPILER_PLUGIN_ID = "io.insert-koin.compiler.plugin"
-        const val KOIN_VERSION = "4.2.2"
-        const val KOIN_ANNOTATIONS_VERSION = "4.2.2"
     }
 }
 

@@ -7,15 +7,11 @@ plugins {
 }
 
 dependencies {
+    // :core:presentation re-exposes :core:domain, :core:common, :core:navigation, :core:resource,
+    // :core:design, lifecycle-viewmodel and the Koin ViewModel/Compose artifacts as api.
     commonMainImplementation(projects.core.presentation)
-    commonMainImplementation(projects.core.common)
-    commonMainImplementation(projects.core.navigation)
-    commonMainImplementation(projects.core.resource)
+    // Used directly by this module's sources (StateFlow in the ViewModels).
     commonMainImplementation(libs.concurrency.coroutine.core)
-    commonMainImplementation(libs.di.koin.coreViewmodel)
-    androidMainImplementation(projects.core.design)
-    androidMainImplementation(libs.di.koin.compose)
-    androidMainImplementation(libs.navigation.nav3.runtime)
     kspAndroid(projects.core.processor)
 }
 

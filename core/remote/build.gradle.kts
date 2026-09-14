@@ -30,8 +30,6 @@ dependencies {
     commonMainImplementation(libs.backend.firebase.firestore)
 
     // Koin
-    commonMainImplementation(libs.di.koin.core)
-    commonMainImplementation(libs.di.koin.annotations)
 
     // Android
     androidMainImplementation(project.dependencies.platform(libs.backend.firebase.bom))

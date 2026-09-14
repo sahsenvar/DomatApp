@@ -4,5 +4,4 @@ plugins {
 
 dependencies {
     commonMainApi(libs.concurrency.coroutine.core)
-    commonMainImplementation(libs.di.koin.core)
 }
