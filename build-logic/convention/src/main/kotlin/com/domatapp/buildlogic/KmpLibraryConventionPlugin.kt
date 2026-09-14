@@ -18,6 +18,14 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
 
 
         extensions.configure(KotlinMultiplatformExtension::class.java) {
+            // Pins the actual JDK used to compile Kotlin/Java to 17, independent of whatever JVM
+            // runs the Gradle daemon itself. Without this, a KSP-generated source (e.g. KMapper's
+            // metadata-compilation output) can pick up the daemon's own JVM as its target - CI
+            // hit this for real once its Gradle process moved to JDK 21 for KtorfitX's plugin:
+            // "Cannot inline bytecode built with JVM target 21 into bytecode that is being built
+            // with JVM target 17."
+            jvmToolchain(17)
+
             applyDefaultHierarchyTemplate()
             iosArm64()
             iosSimulatorArm64()
