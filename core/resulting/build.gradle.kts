@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    commonMainApi(libs.kotlinx.coroutines.core)
+    commonMainApi(libs.concurrency.coroutine.core)
 }

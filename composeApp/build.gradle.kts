@@ -106,42 +106,42 @@ dependencies {
     implementation(projects.feature.home.presentation)
 
     // UI & Compose
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.material3)
+    implementation(libs.ui.compose.runtime)
+    implementation(libs.ui.compose.foundation)
+    implementation(libs.ui.compose.material3)
     implementation(compose.materialIconsExtended)
-    implementation(libs.compose.ui)
+    implementation(libs.ui.compose.ui)
 
-    implementation(libs.compose.uiToolingPreview)
-    implementation(libs.compose.components.resources)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.viewmodelCompose)
-    implementation(libs.androidx.lifecycle.runtimeCompose)
+    implementation(libs.ui.compose.uiToolingPreview)
+    implementation(libs.ui.compose.componentsResources)
+    implementation(libs.ui.activity.compose)
+    implementation(libs.core.lifecycle.viewmodelCompose)
+    implementation(libs.core.lifecycle.runtimeCompose)
 
     // Koin for Compose
-    api(libs.koin.core)
-    api(libs.koin.android)
-    api(libs.koin.compose)
-    implementation(libs.androidx.core.ktx)
+    api(libs.di.koin.core)
+    api(libs.di.koin.android)
+    api(libs.di.koin.compose)
+    implementation(libs.core.androidx.ktx)
 
     // Ktor (needed for HttpClient configuration)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.network.ktorClient.core)
+    implementation(libs.network.ktorClient.okhttp)
+    implementation(libs.network.ktorClient.contentNegotiation)
+    implementation(libs.network.ktorClient.logging)
+    implementation(libs.network.ktorClient.kxSerializationJson)
 
     // Credential Manager (Google Sign-In)
-    implementation(libs.credentials)
-    implementation(libs.credentials.play.services)
-    implementation(libs.google.identity)
+    implementation(libs.auth.credentials.core)
+    implementation(libs.auth.credentials.playServices)
+    implementation(libs.auth.googleId.core)
 
     // Kotlinx Serialization
-    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.serialization.kxSerialization.json)
 
     // Navigation 3
-    implementation(libs.navigation3.runtime)
-    implementation(libs.navigation3.ui)
+    implementation(libs.navigation.nav3.runtime)
+    implementation(libs.navigation.nav3.ui)
 
-    api(libs.compose.uiTooling)
+    api(libs.ui.compose.uiTooling)
 }

@@ -3,6 +3,6 @@ plugins {
 }
 
 dependencies {
-    commonMainApi(libs.kotlinx.coroutines.core)
-    commonMainImplementation(libs.koin.core)
+    commonMainApi(libs.concurrency.coroutine.core)
+    commonMainImplementation(libs.di.koin.core)
 }

@@ -10,12 +10,12 @@ dependencies {
     commonMainImplementation(projects.core.remote)
     commonMainImplementation(projects.core.config)
     commonMainImplementation(projects.core.data)
-    commonMainImplementation(libs.kmapper.core)
-    commonMainImplementation(libs.kmapper.annotations)
-    commonMainImplementation(libs.kotlinx.coroutines.core)
-    commonMainImplementation(libs.kotlinx.serialization.json)
+    commonMainImplementation(libs.mapping.kmapper.core)
+    commonMainImplementation(libs.mapping.kmapper.annotations)
+    commonMainImplementation(libs.concurrency.coroutine.core)
+    commonMainImplementation(libs.serialization.kxSerialization.json)
     // core:processor -> @RemoteDataSource / @ConfigDataSource codegen
     add("kspCommonMainMetadata", projects.core.processor)
     // KMapper -> @MapTo codegen
-    add("kspCommonMainMetadata", libs.kmapper.compiler)
+    add("kspCommonMainMetadata", libs.mapping.kmapper.compiler)
 }

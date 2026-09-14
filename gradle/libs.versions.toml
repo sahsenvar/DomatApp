@@ -48,78 +48,78 @@ googleId = "1.2.0"
 kmapper = "2.2.2"
 
 [libraries]
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
-compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
-androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
-androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
-compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
-compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
-firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebase-gitlive" }
-firebase-auth-android = { module = "dev.gitlive:firebase-auth-android", version.ref = "firebase-gitlive" }
-firebase-common = { module = "dev.gitlive:firebase-common", version.ref = "firebase-gitlive" }
-firebase-config = { module = "dev.gitlive:firebase-config", version.ref = "firebase-gitlive" }
-firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebase-gitlive" }
-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-koin-core-viewmodel = { module = "io.insert-koin:koin-core-viewmodel", version.ref = "koin" }
-koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
-koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
-koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
-koin-compiler-gradlePlugin = { module = "io.insert-koin:koin-compiler-gradle-plugin", version.ref = "koin-compiler" }
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
-ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
-ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
-ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
-kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinpoet" }
-androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
-moko-resources = { module = "dev.icerock.moko:resources", version.ref = "moko-resources" }
-moko-resources-compose = { module = "dev.icerock.moko:resources-compose", version.ref = "moko-resources" }
-moko-graphics = { module = "dev.icerock.moko:graphics", version.ref = "moko-graphics" }
-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
-multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
-kvStore-datastore = { group = "androidx.datastore", name = "datastore", version.ref = "dataStoreVersion" }
-kvStore-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStoreVersion" }
-androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
-kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
+ui-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+ui-compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
+core-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
+core-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+ui-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
+ui-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
+ui-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+ui-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
+ui-compose-componentsResources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
+ui-compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
+core-kotlin-standartLibrary = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+backend-firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebase-gitlive" }
+backend-firebase-authAndroid = { module = "dev.gitlive:firebase-auth-android", version.ref = "firebase-gitlive" }
+backend-firebase-common = { module = "dev.gitlive:firebase-common", version.ref = "firebase-gitlive" }
+backend-firebase-config = { module = "dev.gitlive:firebase-config", version.ref = "firebase-gitlive" }
+backend-firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebase-gitlive" }
+backend-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+concurrency-coroutine-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+serialization-kxSerialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+di-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+di-koin-coreViewmodel = { module = "io.insert-koin:koin-core-viewmodel", version.ref = "koin" }
+di-koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+di-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+di-koin-composeViewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+di-koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
+buildlogic-koinCompiler-gradlePlugin = { module = "io.insert-koin:koin-compiler-gradle-plugin", version.ref = "koin-compiler" }
+network-ktorClient-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+network-ktorClient-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+network-ktorClient-kxSerializationJson = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+network-ktorClient-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+network-ktorClient-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
+network-ktorClient-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+network-ktorClient-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+codegen-ksp-core = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+codegen-kotlinpoet-core = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
+codegen-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinpoet" }
+core-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
+resource-moko-core = { module = "dev.icerock.moko:resources", version.ref = "moko-resources" }
+resource-moko-compose = { module = "dev.icerock.moko:resources-compose", version.ref = "moko-resources" }
+resource-moko-graphics = { module = "dev.icerock.moko:graphics", version.ref = "moko-graphics" }
+navigation-nav3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
+navigation-nav3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+storage-multiplatformSettings-core = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
+storage-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "dataStoreVersion" }
+storage-dataStore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStoreVersion" }
+localdb-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+localdb-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+localdb-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+datetime-kxDateTime-core = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+collections-kxCollections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
+functional-arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+network-supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
+network-supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt", version.ref = "supabase" }
+network-supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt", version.ref = "supabase" }
+network-ktorClient-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
+network-ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor" }
 
 # KMapper - compile-time object mapping (https://kmapper.gitbook.io/docs)
-kmapper-core = { module = "io.github.sahsenvar:kmapper-core", version.ref = "kmapper" }
-kmapper-annotations = { module = "io.github.sahsenvar:kmapper-annotations", version.ref = "kmapper" }
-kmapper-compiler = { module = "io.github.sahsenvar:kmapper-compiler", version.ref = "kmapper" }
-arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
-supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
-supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt", version.ref = "supabase" }
-supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt", version.ref = "supabase" }
-ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
-ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor" }
+mapping-kmapper-core = { module = "io.github.sahsenvar:kmapper-core", version.ref = "kmapper" }
+mapping-kmapper-annotations = { module = "io.github.sahsenvar:kmapper-annotations", version.ref = "kmapper" }
+mapping-kmapper-compiler = { module = "io.github.sahsenvar:kmapper-compiler", version.ref = "kmapper" }
 
 # Plugin dependencies for build-logic
-android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
-kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
-ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
-compose-gradlePlugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "composeMultiplatform" }
-composeCompiler-gradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-credentials = { module = "androidx.credentials:credentials", version.ref = "credentialsManager" }
-credentials-play-services = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsManager" }
-google-identity = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleId" }
+buildlogic-android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+buildlogic-kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+buildlogic-ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+buildlogic-compose-gradlePlugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "composeMultiplatform" }
+buildlogic-composeCompiler-gradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
+core-androidx-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+auth-credentials-core = { module = "androidx.credentials:credentials", version.ref = "credentialsManager" }
+auth-credentials-playServices = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsManager" }
+auth-googleId-core = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleId" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

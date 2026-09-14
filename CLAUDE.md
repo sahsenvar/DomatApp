@@ -85,7 +85,7 @@ abstract class AppDatabase : RoomDatabase() {
 2. Create Room `@Dao` interface as `{Name}LocalDataSource` in `feature/{name}/data/datasource/`
 3. Add `abstract fun` to `shared/.../database/AppDatabase.kt`
 4. Add `single { get<AppDatabase>().{name}LocalDataSource() }` to `shared/.../di/KoinInitializer.kt`
-5. Add `implementation(libs.androidx.room.runtime)` to feature's `build.gradle.kts`
+5. Add `implementation(libs.localdb.room.runtime)` to feature's `build.gradle.kts`
 
 ### Dependency Rules
 
@@ -397,9 +397,9 @@ Version catalog entries: `kmapper-core`, `kmapper-annotations`, `kmapper-compile
 
 ```kotlin
 dependencies {
-    commonMainImplementation(libs.kmapper.core)
-    commonMainImplementation(libs.kmapper.annotations)
-    add("kspCommonMainMetadata", libs.kmapper.compiler)
+    commonMainImplementation(libs.mapping.kmapper.core)
+    commonMainImplementation(libs.mapping.kmapper.annotations)
+    add("kspCommonMainMetadata", libs.mapping.kmapper.compiler)
 }
 ```
 
