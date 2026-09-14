@@ -19,5 +19,5 @@ Kimlik doğrulama işlemleri için veri kaynaklarını (Firebase Auth, Remote AP
 ```
 
 ## 🤖 AI Context (Yapay Zeka İçin Notlar)
-- Firebase Auth entegrasyonu `FirebaseAuthRemoteDataSource` içinde kapsüllenmiştir.
+- Firebase Auth entegrasyonu `FirebaseAuthRemoteSource` içinde kapsüllenmiştir.
 - Domain katmanına veri sağlarken Mapper'lar üzerinden dönüşüm yapılmalıdır.

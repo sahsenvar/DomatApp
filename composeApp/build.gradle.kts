@@ -94,7 +94,6 @@ dependencies {
     implementation(projects.core.design)
     implementation(projects.core.navigation)
     implementation(projects.core.presentation)
-    implementation(projects.core.serialization)
     implementation(projects.core.remote)
     implementation(projects.core.config)
 

@@ -57,7 +57,7 @@
   in `toAuthError()`'s `else -> AuthError.Unknown` branch). Left in place deliberately; removing it
   is a separate public-API decision.
 - Only modules that **declare** mappings need `kmapper-compiler` on `kspCommonMainMetadata`.
-  `core:processor` is still required in `feature/auth/data` for `@ConfigDataSource` codegen.
+  `core:processor` is still required in `feature/auth/data` for `@ConfigSource` codegen.
 
 ## DI: Koin compiler plugin, not KSP (see koin-compiler-plugin.md)
 
@@ -148,3 +148,33 @@ firebase-bom versions must come from release notes, not from resolving coordinat
   the owner asks.
 - Renaming an alias must also update `libs.findLibrary("...")` string lookups (used in
   `CmpLibraryConventionPlugin`) - an accessor-only rewrite silently misses them.
+
+## Naming: `*Source`, never `*DataSource`
+
+The three data-layer source types are `{Name}RemoteSource`, `{Name}LocalSource`,
+`{Name}ConfigSource` — and the marker annotation is `@ConfigSource`. The directory stays
+`datasource/`; only the type suffix changed.
+
+Two things bite when renaming these:
+- `ConfigSourceProcessor` matches on the annotation's **simple name**
+  (`it.shortName.asString() == "ConfigSource"`) as well as its FQN string. Renaming the annotation
+  without updating both makes the codegen silently stop emitting the `*Impl`, and the failure shows
+  up as an unresolved `AuthConfigSourceImpl`, not as a processor error.
+- The processor is registered by fully-qualified name in
+  `core/processor/src/main/resources/META-INF/services/com.google.devtools.ksp.processing.SymbolProcessorProvider`.
+  A class rename must update that file — a repo-wide `grep --include=*.kt` will not see it.
+- Ktorfit derives its extension from the interface name (`create${'$'}{classData.name}` in
+  `poetspec/FileSpec.kt`), so renaming `AuthRemoteDataSource` changes the call site to
+  `ktorfit.createAuthRemoteSource()`.
+
+## There is no `core:serialization` module
+
+Removed. It never contained the `SerializationApi`/`KotlinxSerializationApi` abstraction CLAUDE.md
+described — only a `Json` provider and a `toSerializationError()` mapper with **zero call sites**.
+The `Json` `@Single` now lives in `CoreRemoteModule`. Use `kotlinx.serialization` directly; do not
+reintroduce a wrapper.
+
+`SerializationError` stays in `core:resulting` as part of the DomainError hierarchy, but **nothing
+throws it today** — a `kotlinx.serialization.SerializationException` from a malformed response body
+currently escapes unmapped past `HttpResponseValidator` (which only handles response exceptions).
+That gap predates the removal.

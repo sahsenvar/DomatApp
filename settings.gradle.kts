@@ -46,7 +46,6 @@ include(":core:navigation")
 include(":core:domain")
 include(":core:data")
 include(":core:resulting")
-include(":core:serialization")
 include(":core:presentation")
 include(":core:design")
 

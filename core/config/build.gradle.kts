@@ -6,7 +6,6 @@ plugins {
 
 dependencies {
     commonMainApi(projects.core.resulting)
-    commonMainImplementation(projects.core.serialization)
     commonMainImplementation(libs.concurrency.coroutine.core)
     commonMainApi(libs.persistence.dataStore.core)
     commonMainApi(libs.persistence.dataStore.preferences)

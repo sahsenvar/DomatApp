@@ -37,32 +37,32 @@ The project follows a strict layered architecture:
   :core:data/             → Data utilities and base repository patterns
   :core:domain/           → Shared domain models across features
   :core:resulting/        → Error handling (DomainError, RemoteError, LocalError, ValidationError)
-  :core:serialization/    → Serialization abstraction (SerializationApi, custom serializers)
-  :core:remote/           → Network layer (Ktor REST/WebSocket, Firebase Firestore)
+  :core:remote/           → Network layer (Ktor REST via Ktorfit) + the shared Json
   :core:config/           → Configuration layer (DataStore key-value, Firebase RemoteConfig)
   :core:navigation/       → Navigation definitions
   :core:resource/         → Shared resources
   :core:localization/     → i18n support
 :feature:{name}:domain/   → 100% Pure Kotlin (UseCases, Models, Repository Interfaces)
-:feature:{name}:data/     → Repository implementations, DataSources, Room Entity/DAO
+:feature:{name}:data/     → Repository implementations, Sources, Room Entity/DAO
 :feature:{name}:presentation/ → ViewModels, StateFlow, MVI (shared between Android & iOS)
 ```
 
-### DataSource Architecture (3-Layer)
+### Source Architecture (3-Layer)
 
-Each feature's data layer has up to **3 DataSource types**:
+Each feature's data layer has up to **3 Source types**. The suffix is `*Source`, never
+`*DataSource`:
 
 ```
 feature:{name}:data/
 ├── datasource/
-│   ├── {Name}RemoteDataSource    → Ktorfit REST interface (KSP generated impl)
-│   ├── {Name}LocalDataSource     → @Dao (Room DAO) - structured database operations
-│   └── {Name}ConfigDataSource    → @ConfigDataSource (KSP generated) - DataStore + RemoteConfig
+│   ├── {Name}RemoteSource    → Ktorfit REST interface (KSP generated impl)
+│   ├── {Name}LocalSource     → @Dao (Room DAO) - structured database operations
+│   └── {Name}ConfigSource    → @ConfigSource (KSP generated) - DataStore + RemoteConfig
 ├── local/
 │   └── entity/
 │       └── {Name}Entity.kt      → @Entity (Room entity)
 └── repository/
-    └── {Name}RepositoryImpl.kt   → orchestrates all 3 DataSources
+    └── {Name}RepositoryImpl.kt   → orchestrates all 3 Sources
 ```
 
 ### Room Schema Ownership
@@ -74,7 +74,7 @@ aggregates all feature DAOs:
 // shared/.../database/AppDatabase.kt
 @Database(entities = [AuthSessionEntity::class, /* future entities */], version = 1)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun authLocalDataSource(): AuthLocalDataSource
+    abstract fun authLocalSource(): AuthLocalSource
     // future DAOs added here
 }
 ```
@@ -82,9 +82,9 @@ abstract class AppDatabase : RoomDatabase() {
 **Adding a new feature's database schema:**
 
 1. Create Entity in `feature/{name}/data/local/entity/`
-2. Create Room `@Dao` interface as `{Name}LocalDataSource` in `feature/{name}/data/datasource/`
+2. Create Room `@Dao` interface as `{Name}LocalSource` in `feature/{name}/data/datasource/`
 3. Add `abstract fun` to `shared/.../database/AppDatabase.kt`
-4. Add `single { get<AppDatabase>().{name}LocalDataSource() }` to `shared/.../di/KoinInitializer.kt`
+4. Add `single { get<AppDatabase>().{name}LocalSource() }` to `shared/.../di/KoinInitializer.kt`
 5. Add `implementation(libs.localdb.room.runtime)` to feature's `build.gradle.kts`
 
 ### Dependency Rules
@@ -103,9 +103,8 @@ abstract class AppDatabase : RoomDatabase() {
   only `feature:auth:presentation` needs). **Never depends on `data`.**
 
 **Core Module Dependencies:**
-- **core:serialization** → `:core:resulting` (for SerializationError)
-- **core:remote** → `:core:resulting` (for RemoteError), `:core:serialization`
-- **core:config** → `:core:resulting`, `:core:serialization`
+- **core:remote** → `:core:resulting` (for RemoteError). Owns the single `Json` instance.
+- **core:config** → `:core:resulting`
 - **core:data** → `api` on `:core:domain`, `:core:resulting`, `:core:remote`, `:core:config`,
   `:core:local`. Deliberately `api`, not `implementation`: this is the single place the
   "what every feature data module needs" rule is written down. Its only consumers are
@@ -147,7 +146,7 @@ Google Sign-In implementation follows the pattern documented in `feature/auth/AR
 3. **Native UI** observes effects, launches Google Sign-In, receives `idToken`
 4. **Native UI** sends `AuthIntent.OnGoogleTokenReceived(idToken)` back to ViewModel
 5. **ViewModel** calls `LoginWithGoogleUseCase(idToken)`
-6. **Repository** (data layer) uses `AuthRemoteDataSource` (Firebase or Ktor implementation)
+6. **Repository** (data layer) uses `AuthRemoteSource` (Firebase or Ktor implementation)
 
 This keeps the `shared` module pure - no Android `Context` or iOS framework dependencies.
 
@@ -164,28 +163,24 @@ Central error handling module containing:
 - **SerializationError**: Serialization/deserialization errors (encoding, decoding, type mismatch)
 - **ValidationError**: Input validation errors (future use)
 
-### Module: core:serialization
+### Serialization
 
-Serialization abstraction module containing:
-- **SerializationApi**: Interface for serialization/deserialization
-- **KotlinxSerializationApi**: kotlinx.serialization implementation
-- **SerializationExceptionMapper**: Maps library exceptions to SerializationError
-- **Custom Serializers**: Instant, UUID, BigDecimal, etc. (future use)
+There is **no `core:serialization` module**. It was removed: the `SerializationApi` /
+`KotlinxSerializationApi` abstraction it was supposed to hold never existed in code, and the one
+thing it really provided — a configured `kotlinx.serialization.json.Json` — is now a `@Single` in
+`CoreRemoteModule`, next to the ContentNegotiation and Ktorfit code that consumes it.
+
+Use `kotlinx.serialization` directly. Do not reintroduce a wrapper interface around it.
 
 ### Exception Mapping Flow
 
 ```
-kotlinx.serialization Exception (MissingFieldException, SerializationException, etc.)
-  ↓ [core:serialization maps to]
-SerializationError (SerializationError.DecodingError, SerializationError.MissingFieldError, etc.)
-  ↓ [thrown as DomainError]
-
 Ktor Exception (ClientRequestException, TimeoutException, etc.)
   ↓ [core:remote maps to]
 RemoteError (RemoteError.Timeout, RemoteError.ClientError(401), etc.)
   ↓ [both errors flow to feature:data]
 
-SerializationError + RemoteError
+RemoteError
   ↓ [feature:data maps to]
 AuthError (AuthError.InvalidCredentials, AuthError.UserNotFound, etc.)
   ↓ [feature:domain/presentation]
@@ -208,7 +203,7 @@ suspend fun <T> get(/*...*/): T = try {
 ```kotlin
 // Maps RemoteError to feature-specific AuthError
 override fun login(idToken: String): Flow<AuthSession> = flow {
-    val dto = remoteDataSource.signInWithGoogle(idToken)
+    val dto = remoteSource.signInWithGoogle(idToken)
     emit(dto.toDomain())
 }
 .retryWhen { cause, attempt ->
@@ -219,9 +214,9 @@ override fun login(idToken: String): Flow<AuthSession> = flow {
 }
 ```
 
-## Remote DataSource Code Generation (Ktorfit)
+## Remote Source Code Generation (Ktorfit)
 
-REST DataSources are defined as plain Kotlin interfaces annotated with
+REST Sources are defined as plain Kotlin interfaces annotated with
 [Ktorfit](https://github.com/Foso/Ktorfit) HTTP annotations. Ktorfit's KSP processor generates the
 implementation and a `Ktorfit.create{InterfaceName}()` extension function.
 
@@ -256,8 +251,8 @@ target, and gives real compile-time checking of paths and parameters.
 ### Usage Example
 
 ```kotlin
-// feature/auth/data/datasource/AuthRemoteDataSource.kt
-interface AuthRemoteDataSource {
+// feature/auth/data/datasource/AuthRemoteSource.kt
+interface AuthRemoteSource {
 
     @POST("auth/v1/token")
     suspend fun signInWithIdToken(
@@ -275,7 +270,7 @@ interface AuthRemoteDataSource {
 
 ### Koin Wiring
 
-Ktorfit generates `Ktorfit.createAuthRemoteDataSource()` into
+Ktorfit generates `Ktorfit.createAuthRemoteSource()` into
 `build/generated/ksp/metadata/commonMain/kotlin/`. Bind it in the feature's `@Module`:
 
 ```kotlin
@@ -283,9 +278,9 @@ Ktorfit generates `Ktorfit.createAuthRemoteDataSource()` into
 class AuthDataModule {
 
     @Factory
-    fun provideAuthRemoteDataSource(
+    fun provideAuthRemoteSource(
         ktorfit: Ktorfit
-    ): AuthRemoteDataSource = ktorfit.createAuthRemoteDataSource()
+    ): AuthRemoteSource = ktorfit.createAuthRemoteSource()
 }
 ```
 
@@ -323,8 +318,8 @@ Two things to know about this setup:
   `ktorfit.create<T>()` call, and that function is `@Deprecated` in Ktorfit 2.7.5 ("the plan is to
   get rid of the plugin"). With `kotlin.compiler.allWarningsAsErrors=true` it could not be called
   here regardless. Keeping it off also means no Kotlin-version-coupled compiler artifact is loaded
-  into the build. **Always use the generated `ktorfit.createMyDataSource()` extension**; the
-  reified `ktorfit.create<MyDataSource>()` form is not available.
+  into the build. **Always use the generated `ktorfit.createMySource()` extension**; the
+  reified `ktorfit.create<MySource>()` form is not available.
 - **The plugin's srcDir must not be double-registered.** It adds
   `<buildDir>/generated/ksp/metadata/commonMain/kotlin` to `commonMain`, and `DiConventionPlugin`
   adds the same directory. Gradle collapses srcDirs only when they resolve to the identical `File`,
@@ -335,16 +330,16 @@ Two things to know about this setup:
 engines (OkHttp on Android, Darwin on iOS); the light artifact brings only `ktor-client-core`.
 Ktorfit must stay on a release built against the project's Ktor major.minor (2.7.4+ -> Ktor 3.5.x).
 
-### WebSocket and Firestore DataSources
+### WebSocket and Firestore Sources
 
-There is currently **no annotation/codegen system for WebSocket or Firestore DataSources**. The
+There is currently **no annotation/codegen system for WebSocket or Firestore Sources**. The
 previous annotations (`@Subscribe`, `@Send`, `@GetDocument`, `@ObserveCollection`, …) were removed
 because nothing in the codebase used them. Until a pattern is settled, write realtime and Firestore
-DataSources by hand as thin facades over `HttpClient` (WebSockets plugin) or
+Sources by hand as thin facades over `HttpClient` (WebSockets plugin) or
 `FirebaseFirestoreClient`, keeping the same interface + `@Single`/`@Factory` Koin binding shape as
 the generated REST ones.
 
-## Config DataSource Code Generation (KSP Annotations)
+## Config Source Code Generation (KSP Annotations)
 
 The `core:config` module provides configuration storage for both **local preferences** (DataStore)
 and **remote feature flags** (Firebase RemoteConfig). KSP generates implementations automatically.
@@ -377,8 +372,8 @@ and **remote feature flags** (Firebase RemoteConfig). KSP generates implementati
 ### Usage Example
 
 ```kotlin
-@ConfigDataSource(name = "auth")
-interface AuthConfigDataSource {
+@ConfigSource(name = "auth")
+interface AuthConfigSource {
 
     @SaveLocalConfig(key = "access_token")
     suspend fun saveToken(token: String)
@@ -398,9 +393,9 @@ interface AuthConfigDataSource {
 
 // KSP automatically generates:
 @Single
-class AuthConfigDataSourceImpl(
+class AuthConfigSourceImpl(
     @Named("auth") private val dataStore: DataStore<Preferences>
-) : AuthConfigDataSource {
+) : AuthConfigSource {
     override suspend fun saveToken(token: String) {
         dataStore.edit { prefs -> prefs[stringPreferencesKey("access_token")] = token }
     }
@@ -414,11 +409,11 @@ class AuthConfigDataSourceImpl(
 }
 ```
 
-**Mixed Config DataSource (DataStore + RemoteConfig):**
+**Mixed Config Source (DataStore + RemoteConfig):**
 
 ```kotlin
-@ConfigDataSource(name = "product")
-interface ProductConfigDataSource {
+@ConfigSource(name = "product")
+interface ProductConfigSource {
     @SaveLocalConfig(key = "last_category")
     suspend fun saveLastCategory(category: String)
 
@@ -431,10 +426,10 @@ interface ProductConfigDataSource {
 
 // Generated with both clients (FirebaseRemoteConfig injected directly):
 @Single
-class ProductConfigDataSourceImpl(
+class ProductConfigSourceImpl(
     @Named("product") private val dataStore: DataStore<Preferences>,
     private val remoteConfig: FirebaseRemoteConfig
-) : ProductConfigDataSource { ... }
+) : ProductConfigSource { ... }
 ```
 
 ## Object Mapping (KMapper library)
@@ -523,15 +518,15 @@ direction**. Lossy conversions (e.g. `Long -> Int`) are compile errors by design
 explicit converter if your domain guarantees safety. kotlinx-datetime and `kotlin.time.Duration`
 converters are core built-ins; other types have optional `kmapper-converters-*` add-ons.
 
-## Local DataSource (Room DAO)
+## Local Source (Room DAO)
 
 Local data sources are **Room `@Dao` interfaces directly** - no KSP code generation needed. Room's
 own KSP processor generates the implementations.
 
 ```kotlin
-// feature/auth/data/datasource/AuthLocalDataSource.kt
+// feature/auth/data/datasource/AuthLocalSource.kt
 @Dao
-interface AuthLocalDataSource {
+interface AuthLocalSource {
     @Query("SELECT * FROM auth_session WHERE id = :id")
     suspend fun getById(id: String): AuthSessionEntity?
 
@@ -590,7 +585,7 @@ dependencies {
 Use `kspAndroid` because `@NavigationScreen` and `@NavigationEffectHandler` live in `androidMain`,
 while `@NavigationViewModel` is in `commonMain` but visible during Android compilation.
 
-## Backend Strategy (Concrete Clients + DataSource Pattern)
+## Backend Strategy (Concrete Clients + Source Pattern)
 
 ### Concrete Client Architecture
 
@@ -601,7 +596,7 @@ The project provides concrete client classes across two modules:
 - **`HttpClient`** (Ktor): the single, fully configured Ktor client (headers, ContentNegotiation,
   logging, `RemoteError` mapping) — see `provideHttpClient`
 - **`Ktorfit`**: built on top of that `HttpClient` by `provideKtorfit` — used to create REST
-  DataSource implementations
+  Source implementations
 - **`FirebaseFirestoreClient`** (`core:remote/firestore/`): Firebase Firestore CRUD and realtime
 
 **core:config** (Configuration):
@@ -609,15 +604,15 @@ The project provides concrete client classes across two modules:
 - **`DataStore<Preferences>`**: Local key-value storage (platform-specific factory)
 - **`FirebaseRemoteConfig`** (GitLive): Firebase Remote Config, injected directly via Koin
 
-### DataSource Pattern (Feature Layer)
+### Source Pattern (Feature Layer)
 
-Each feature defines its own DataSource interfaces:
+Each feature defines its own Source interfaces:
 
-- **`AuthRemoteDataSource`** → Ktorfit interface (KSP-generated `createAuthRemoteDataSource()`)
-- **`AuthLocalDataSource`** → Room `@Dao` (Room-generated impl)
-- **`AuthConfigDataSource`** → `@ConfigDataSource` (KSP-generated impl)
+- **`AuthRemoteSource`** → Ktorfit interface (KSP-generated `createAuthRemoteSource()`)
+- **`AuthLocalSource`** → Room `@Dao` (Room-generated impl)
+- **`AuthConfigSource`** → `@ConfigSource` (KSP-generated impl)
 
-Repository implementations orchestrate between these 3 DataSources. Never use concrete clients
+Repository implementations orchestrate between these 3 Sources. Never use concrete clients
 directly in repositories.
 
 ## Version Catalog

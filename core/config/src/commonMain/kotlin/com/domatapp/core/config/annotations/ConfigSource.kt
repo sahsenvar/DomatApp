@@ -1,7 +1,7 @@
 package com.domatapp.core.config.annotations
 
 /**
- * Marks an interface for KSP code generation of ConfigDataSource implementations.
+ * Marks an interface for KSP code generation of ConfigSource implementations.
  * The processor analyzes method annotations to determine which backends (DataStore/RemoteConfig)
  * are needed and injects only required dependencies.
  *
@@ -9,4 +9,4 @@ package com.domatapp.core.config.annotations
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class ConfigDataSource(val name: String = "")
+annotation class ConfigSource(val name: String = "")

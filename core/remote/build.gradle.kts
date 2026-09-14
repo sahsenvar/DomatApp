@@ -1,14 +1,12 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
     alias(libs.plugins.domatapp.kmp.di)
-    alias(libs.plugins.kotlinSerialization)
 }
 
 dependencies {
     // Core modules
     commonMainApi(projects.core.common)
     commonMainApi(projects.core.resulting)
-    commonMainApi(projects.core.serialization)
 
     // Ktor Client
     commonMainApi(libs.network.ktorClient.core)
@@ -16,12 +14,12 @@ dependencies {
     commonMainImplementation(libs.network.ktorClient.contentNegotiation)
     commonMainImplementation(libs.network.ktorClient.kxSerializationJson)
     commonMainImplementation(libs.network.ktorClient.logging)
-    commonMainImplementation(libs.network.ktorClient.websockets)
 
-    // Ktorfit (REST DataSource code generation)
+    // Ktorfit (REST Source code generation)
     commonMainApi(libs.network.ktorfit.core)
 
-    // Supabase
+    // Supabase. Declared but not yet used by any Kotlin source - Supabase is the live backend
+    // (see supabaseHost / publicKey in provideHttpClient), so these are kept for the SDK work.
     commonMainApi(libs.network.supabase.postgrest)
     commonMainApi(libs.network.supabase.storage)
     commonMainApi(libs.network.supabase.auth)
@@ -29,13 +27,7 @@ dependencies {
     // Coroutines
     commonMainImplementation(libs.concurrency.coroutine.core)
 
-    // Firebase
-    commonMainImplementation(libs.backend.firebase.firestore)
-
-    // Koin
-
     // Android
-    androidMainImplementation(project.dependencies.platform(libs.backend.firebase.bom))
     androidMainApi(libs.network.ktorClient.android)
     androidMainImplementation(libs.network.ktorClient.okhttp)
 

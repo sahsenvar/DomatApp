@@ -1,6 +1,6 @@
 package com.domatapp.core.data.model
 
 /**
- * Marker interface for remote data models (DTOs from REST/WebSocket/Firestore).
+ * Marker interface for remote data models (DTOs returned by a RemoteSource).
  */
 interface RemoteModel : DataModel

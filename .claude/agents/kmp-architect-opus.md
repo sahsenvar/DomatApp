@@ -93,7 +93,6 @@ Tüm KMP library modülleri `alias(libs.plugins.domatapp.kmp.library)` kullanmal
 
 - Exception-based (Result type kullanma)
 - core:remote → RemoteError fırlatır
-- core:serialization → SerializationError fırlatır
 - feature:data → RemoteError/SerializationError'ı feature-specific DomainError'a map'ler
 - feature:presentation → ViewModel'da catch ile yakalar
 

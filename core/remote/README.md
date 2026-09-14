@@ -1,7 +1,7 @@
 # Module: :core:remote
 
 ## 🎯 Purpose (Amaç)
-Ağ katmanı işlemlerini (API çağrıları, Firebase Firestore/Remote Config) yönetir. Verilerin uzak sunuculardan getirilmesinden sorumludur.
+Ağ katmanı işlemlerini (Ktor/Ktorfit üzerinden REST API çağrıları) yönetir. Verilerin uzak sunuculardan getirilmesinden sorumludur.
 
 ## 🏗️ Architecture (Mimari)
 - **Layer:** Infrastructure Layer
@@ -12,13 +12,12 @@ Ağ katmanı işlemlerini (API çağrıları, Firebase Firestore/Remote Config) 
 [:core:remote]
      |
      +--> [:core:resulting]
-     +--> [:core:serialization]
      +--> [Ktor Client]
-     +--> [Firebase Firestore/Config]
+     +--> [Ktorfit]
      v
 [Koin Core/Annotations]
 ```
 
 ## 🤖 AI Context (Yapay Zeka İçin Notlar)
 - API endpoint tanımları ve Ktor konfigürasyonları buradadır.
-- Firebase implementasyonları `RemoteDataSource` arayüzlerini gerçekleştirir.
+- REST `*RemoteSource` arayüzlerinin implementasyonları Ktorfit KSP tarafından üretilir.

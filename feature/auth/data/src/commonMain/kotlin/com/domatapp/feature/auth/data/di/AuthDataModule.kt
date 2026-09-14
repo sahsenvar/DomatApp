@@ -2,12 +2,12 @@ package com.domatapp.feature.auth.data.di
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.domatapp.feature.auth.data.datasource.AuthConfigDataSource
-import com.domatapp.feature.auth.data.datasource.AuthConfigDataSourceImpl
-import com.domatapp.feature.auth.data.datasource.AuthRemoteDataSource
-import com.domatapp.feature.auth.data.datasource.UserProfileRemoteDataSource
-import com.domatapp.feature.auth.data.datasource.createAuthRemoteDataSource
-import com.domatapp.feature.auth.data.datasource.createUserProfileRemoteDataSource
+import com.domatapp.feature.auth.data.datasource.AuthConfigSource
+import com.domatapp.feature.auth.data.datasource.AuthConfigSourceImpl
+import com.domatapp.feature.auth.data.datasource.AuthRemoteSource
+import com.domatapp.feature.auth.data.datasource.UserProfileRemoteSource
+import com.domatapp.feature.auth.data.datasource.createAuthRemoteSource
+import com.domatapp.feature.auth.data.datasource.createUserProfileRemoteSource
 import com.domatapp.feature.auth.data.repository.AuthRepositoryImpl
 import com.domatapp.feature.auth.data.repository.UserProfileRepositoryImpl
 import com.domatapp.feature.auth.domain.di.AuthDomainModule
@@ -24,32 +24,32 @@ import org.koin.core.annotation.Single
 class AuthDataModule {
 
     @Factory
-    fun provideAuthRemoteDataSource(
+    fun provideAuthRemoteSource(
         ktorfit: Ktorfit
-    ): AuthRemoteDataSource = ktorfit.createAuthRemoteDataSource()
+    ): AuthRemoteSource = ktorfit.createAuthRemoteSource()
 
     @Factory
-    fun provideUserProfileRemoteDataSource(
+    fun provideUserProfileRemoteSource(
         ktorfit: Ktorfit
-    ): UserProfileRemoteDataSource = ktorfit.createUserProfileRemoteDataSource()
+    ): UserProfileRemoteSource = ktorfit.createUserProfileRemoteSource()
 
     @Single
-    fun provideAuthConfigDataSource(
+    fun provideAuthConfigSource(
         @Named("auth") dataStore: DataStore<Preferences>
-    ): AuthConfigDataSource = AuthConfigDataSourceImpl(dataStore = dataStore)
+    ): AuthConfigSource = AuthConfigSourceImpl(dataStore = dataStore)
 
     @Single
     fun provideAuthRepository(
-        remoteDataSource: AuthRemoteDataSource,
-        configDataSource: AuthConfigDataSource
+        remoteSource: AuthRemoteSource,
+        configSource: AuthConfigSource
     ): AuthRepository = AuthRepositoryImpl(
-        remoteDataSource = remoteDataSource,
-        configDataSource = configDataSource
+        remoteSource = remoteSource,
+        configSource = configSource
     )
 
     @Single
     fun provideUserProfileRepository(
-        remoteSource: UserProfileRemoteDataSource
+        remoteSource: UserProfileRemoteSource
     ): UserProfileRepository = UserProfileRepositoryImpl(
         remoteSource = remoteSource
     )

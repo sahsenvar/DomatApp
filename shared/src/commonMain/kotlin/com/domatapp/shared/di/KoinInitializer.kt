@@ -3,7 +3,6 @@ package com.domatapp.shared.di
 import com.domatapp.core.config.di.coreConfigModule
 import com.domatapp.core.remote.di.coreRemoteModule
 import com.domatapp.core.resource.di.coreResourceModule
-import com.domatapp.core.serialization.di.coreSerializationModule
 import com.domatapp.feature.auth.data.di.authDataModule
 import com.domatapp.feature.auth.domain.di.authDomainModule
 import com.domatapp.feature.auth.presentation.di.authPresentationModule
@@ -19,7 +18,6 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication {
         // `module()` accessor only inside the compilation that declares the @Module class, so
         // `CoreRemoteModule().module()` cannot be called from here.
         modules(
-            coreSerializationModule(),
             coreRemoteModule(),
             coreConfigModule(),
             coreResourceModule(),

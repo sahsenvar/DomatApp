@@ -11,8 +11,6 @@ import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.plugins.websocket.pingInterval
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLProtocol
@@ -20,7 +18,6 @@ import io.ktor.http.auth.AuthScheme
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Single
-import kotlin.time.Duration.Companion.seconds
 
 @Single
 fun provideHttpClient(json: Json): HttpClient = HttpClient {
@@ -34,10 +31,6 @@ fun provideHttpClient(json: Json): HttpClient = HttpClient {
 
     install(ContentNegotiation) {
         json(json)
-    }
-
-    WebSockets {
-        pingInterval = 20.seconds
     }
 
     defaultRequest {
