@@ -172,9 +172,8 @@ Two things bite when renaming these:
 - The processor is registered by fully-qualified name in
   `core/processor/src/main/resources/META-INF/services/com.google.devtools.ksp.processing.SymbolProcessorProvider`.
   A class rename must update that file — a repo-wide `grep --include=*.kt` will not see it.
-- Ktorfit derives its extension from the interface name (`create${'$'}{classData.name}` in
-  `poetspec/FileSpec.kt`), so renaming `AuthRemoteDataSource` changes the call site to
-  `ktorfit.createAuthRemoteSource()`.
+- KtorfitX derives its generated extension property from the interface name, so renaming an `@Api`
+  interface changes the `ktorfitx.<name>` call site and the `...impls.<name>` import with it.
 
 ## There is no `core:serialization` module
 
