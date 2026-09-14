@@ -42,6 +42,9 @@ The project follows a strict layered architecture:
   :core:navigation/       → Navigation definitions
   :core:resource/         → Shared resources
   :core:localization/     → i18n support
+  :core:analytics/        → Provider-agnostic event tracking facade. Deliberately empty - no
+                             provider SDK chosen yet. Do not add a dependency here speculatively;
+                             ask which provider before writing anything into this module.
 :feature:{name}:domain/   → 100% Pure Kotlin (UseCases, Models, Repository Interfaces)
 :feature:{name}:data/     → Repository implementations, Sources, Room Entity/DAO
 :feature:{name}:presentation/ → ViewModels, StateFlow, MVI (shared between Android & iOS)
@@ -115,6 +118,7 @@ abstract class AppDatabase : RoomDatabase() {
   "what every feature presentation module needs" rule lives here, once.
 - **core:navigation** → `api` on the Navigation 3 runtime (androidMain only).
 - **core:resulting** → No dependencies (base module for error handling)
+- **core:analytics** → No dependencies. Empty scaffold, not yet consumed by anything.
 
 ### Convention Plugins
 

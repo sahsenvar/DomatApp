@@ -48,6 +48,7 @@ include(":core:data")
 include(":core:resulting")
 include(":core:presentation")
 include(":core:design")
+include(":core:analytics")
 
 // Features Modules
 include(":feature:auth:domain")
