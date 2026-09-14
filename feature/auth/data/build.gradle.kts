@@ -34,7 +34,7 @@ dependencies {
     commonMainImplementation(libs.concurrency.coroutine.core)
     commonMainImplementation(libs.serialization.kxSerialization.json)
 
-    commonMainImplementation(libs.network.ktorfit.libLight)
+    commonMainImplementation(libs.network.ktorfit.core)
     commonMainImplementation(libs.network.ktorfit.annotations)
 
     // core:processor -> @ConfigDataSource codegen (RemoteDataSource codegen was removed by the

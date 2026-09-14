@@ -109,7 +109,7 @@ network-supabase-storage = { group = "io.github.jan-tennert.supabase", name = "s
 network-supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt", version.ref = "supabase" }
 network-ktorClient-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 network-ktor-utils = { group = "io.ktor", name = "ktor-utils", version.ref = "ktor" }
-network-ktorfit-libLight = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
+network-ktorfit-core = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
 network-ktorfit-annotations = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-annotations", version.ref = "ktorfit" }
 network-ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }
 
