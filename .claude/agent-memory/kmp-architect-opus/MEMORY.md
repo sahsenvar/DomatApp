@@ -113,3 +113,21 @@ Three catalog entries cannot simply be bumped to "latest". Details and sources i
 Also: KSP dropped `<kotlin>-<ksp>` version naming at 2.3.0 — `ksp = "2.3.x"` is a standalone KSP
 version, not a Kotlin pairing. Google Maven is unreachable from agent sandboxes, so androidx / AGP /
 firebase-bom versions must come from release notes, not from resolving coordinates.
+
+## Version catalog conventions (owner-mandated, PR #9 review)
+
+- **Alias syntax: `category-libraryIdentifier-artifact`** → `libs.category.libraryIdentifier.artifact`.
+  Origin prefixes (`androidx-`, `kotlinx-`, `ktor-`) are folded away, except `kotlinx` surviving as
+  `kx` inside the identifier (`kxDateTime`, `kxSerializationJson`). Multi-word identifiers are
+  camelCase inside their segment. A library's principal artifact is normalised to `-core`.
+- **Categories in use**: ui, core, concurrency, serialization, collections, datetime, functional,
+  di, network, backend, auth, codegen, resource, navigation, **persistence** (key-value: DataStore,
+  multiplatform-settings), localdb (Room/SQLite), mapping, buildlogic. The owner explicitly
+  preferred `persistence` over `storage` - do not reintroduce `storage-`.
+  (`network-supabase-storage` is unrelated: that is Supabase's Storage product.)
+- **Coordinates: always `group` + `name` + `version.ref`**, never the packed
+  `module = "group:artifact"` form.
+- `[versions]` and `[plugins]` keys are NOT covered by this convention - leave them alone unless
+  the owner asks.
+- Renaming an alias must also update `libs.findLibrary("...")` string lookups (used in
+  `CmpLibraryConventionPlugin`) - an accessor-only rewrite silently misses them.
