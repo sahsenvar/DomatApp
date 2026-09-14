@@ -25,7 +25,9 @@ dependencies {
     kspAndroid(projects.core.processor)
 }
 
-// Ensure kspAndroidMain runs after kspCommonMainKotlinMetadata (Koin KSP)
+// DiConventionPlugin registers build/generated/ksp/metadata/commonMain/kotlin as a commonMain
+// srcDir, which makes kspAndroidMain an implicit consumer of kspCommonMainKotlinMetadata's
+// output. Gradle needs that edge declared even though nothing generates into it today.
 tasks.matching { it.name == "kspAndroidMain" }.configureEach {
     dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
 }

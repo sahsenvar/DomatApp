@@ -73,12 +73,12 @@ class DiConventionPlugin : Plugin<Project> {
 }
 
 /**
- * Shared `koinCompiler { }` settings.
+ * Shared `koinCompiler { }` settings for every module that applies this convention plugin.
  *
- * [compileSafety] is off for ordinary modules and turned back on by the aggregator that owns
- * `startKoin` and therefore sees the whole graph.
+ * `:shared` is not one of them - it applies the Koin plugin directly and configures its own
+ * `koinCompiler { }` block, where `compileSafety` is turned back on.
  */
-internal fun Project.configureKoinCompiler(compileSafety: Boolean = false) {
+internal fun Project.configureKoinCompiler() {
     extensions.configure<KoinGradleExtension> {
         // This project builds with kotlin.compiler.allWarningsAsErrors=true. The Koin plugin emits
         // its informational output and its "unverified Kotlin version" notice at WARNING severity
@@ -89,6 +89,6 @@ internal fun Project.configureKoinCompiler(compileSafety: Boolean = false) {
         // pulls the rest in through @Module(includes = [...]), so per-module graph validation
         // reports dependencies it cannot see. This is the direct replacement for the
         // KOIN_CONFIG_CHECK=false KSP argument it supersedes.
-        this.compileSafety.set(compileSafety)
+        compileSafety.set(false)
     }
 }
