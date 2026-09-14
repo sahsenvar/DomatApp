@@ -27,18 +27,18 @@ class CmpLibraryConventionPlugin : Plugin<Project> {
         extensions.configure(KotlinMultiplatformExtension::class.java) {
             sourceSets.named("commonMain") {
                 dependencies {
-                    api(libs.findLibrary("compose-runtime").get())
-                    implementation(libs.findLibrary("compose-foundation").get())
-                    implementation(libs.findLibrary("compose-material3").get())
-                    implementation(libs.findLibrary("compose-ui").get())
+                    api(libs.findLibrary("ui-compose-runtime").get())
+                    implementation(libs.findLibrary("ui-compose-foundation").get())
+                    implementation(libs.findLibrary("ui-compose-material3").get())
+                    implementation(libs.findLibrary("ui-compose-ui").get())
                     // @Preview annotation — CMP artifact, compiles for all targets
-                    implementation(libs.findLibrary("compose-uiToolingPreview").get())
+                    implementation(libs.findLibrary("ui-compose-uiToolingPreview").get())
                 }
             }
             sourceSets.named("androidMain") {
                 dependencies {
                     // Actual preview rendering engine — Android-only
-                    implementation(libs.findLibrary("compose-uiTooling").get())
+                    implementation(libs.findLibrary("ui-compose-uiTooling").get())
                 }
             }
         }

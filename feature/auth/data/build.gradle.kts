@@ -11,7 +11,7 @@ dependencies {
     commonMainImplementation(projects.core.config)
     commonMainImplementation(projects.core.data)
     commonMainImplementation(projects.core.mapping)
-    commonMainImplementation(libs.kotlinx.coroutines.core)
-    commonMainImplementation(libs.kotlinx.serialization.json)
+    commonMainImplementation(libs.concurrency.coroutine.core)
+    commonMainImplementation(libs.serialization.kxSerialization.json)
     add("kspCommonMainMetadata", projects.core.processor)
 }

@@ -11,11 +11,11 @@ dependencies {
     commonMainImplementation(projects.core.common)
     commonMainImplementation(projects.core.navigation)
     commonMainImplementation(projects.core.resource)
-    commonMainImplementation(libs.kotlinx.coroutines.core)
-    commonMainImplementation(libs.koin.core.viewmodel)
+    commonMainImplementation(libs.concurrency.coroutine.core)
+    commonMainImplementation(libs.di.koin.coreViewmodel)
     androidMainImplementation(projects.core.design)
-    androidMainImplementation(libs.koin.compose)
-    androidMainImplementation(libs.navigation3.runtime)
+    androidMainImplementation(libs.di.koin.compose)
+    androidMainImplementation(libs.navigation.nav3.runtime)
     kspAndroid(projects.core.processor)
 }
 
