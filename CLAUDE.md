@@ -519,11 +519,18 @@ fun UserRemote.toUserDomain(): UserDomain = UserDomain(
 Feature modules using mapping annotations must add:
 
 ```kotlin
+plugins {
+    alias(libs.plugins.ksp)
+}
+
 dependencies {
-    implementation(project(":core:mapping"))
-    add("kspCommonMainMetadata", project(":core:processor"))
+    implementation(projects.core.mapping)
+    add("kspCommonMainMetadata", projects.core.processor)
 }
 ```
+
+The `ksp` plugin is **not** applied by any convention plugin — apply it in the module that
+registers a processor, and only there.
 
 Generated mappers appear in `build/generated/ksp/metadata/commonMain/kotlin/`.
 
@@ -582,6 +589,10 @@ For each Route with matching `@NavigationScreen` + `@NavigationViewModel`:
 Feature presentation modules using these annotations must add:
 
 ```kotlin
+plugins {
+    alias(libs.plugins.ksp)
+}
+
 dependencies {
     add("kspAndroid", projects.core.processor)
 }
@@ -777,6 +788,10 @@ fun UserRemote.toUserDomain(id: String): UserDomain = UserDomain(
 Modules using mapping annotations must add:
 
 ```kotlin
+plugins {
+    alias(libs.plugins.ksp)
+}
+
 dependencies {
     implementation(projects.core.mapping)
     add("kspCommonMainMetadata", projects.core.processor)
@@ -954,15 +969,16 @@ KSP. Only modules that actually register one of those processors apply `alias(li
 
 ## Key Technologies
 
-- **KMP**: Kotlin 2.3.10, Compose Multiplatform 1.10.1
-- **Android**: minSdk 30, targetSdk 36, AGP 9.0.1
+- **KMP**: Kotlin 2.4.10 (capped by SKIE 0.10.14), Compose Multiplatform 1.12.0
+- **Android**: minSdk 30, targetSdk 37, compileSdk 37, AGP 9.4.0, Gradle 9.7.1
+- **Codegen**: KSP 2.3.11 (`core:processor` only — DI no longer uses it)
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
-- **Architecture**: Arrow-kt for functional programming, Coroutines + Flow
+- **Architecture**: Coroutines + Flow (Arrow-kt is in the catalog but unused)
 - **DI**: Koin 4.2.2 with Annotations 4.2.2 (Kotlin compiler plugin, `io.insert-koin.compiler.plugin` 1.2.1)
 - **Networking**: Ktor Client 3.5.2 (REST + WebSocket), Ktorfit 2.7.5 (REST codegen via KSP)
-- **Database**: Room 2.7.0 (KMP)
-- **Storage**: DataStore 1.2.0 (Preferences)
-- **Backend**: Firebase Auth (GitLive 2.4.0), Firebase Firestore, Firebase RemoteConfig
+- **Database**: Room 2.8.5 (KMP)
+- **Storage**: DataStore 1.2.1 (Preferences)
+- **Backend**: Firebase Auth (GitLive 2.7.0), Firebase Firestore, Firebase RemoteConfig
 - **Serialization**: kotlinx.serialization
 - **Error Handling**: Exception-based with core:resulting module
 - **Object Mapping**: KSP-based compile-time mapping with type/null safety (core:mapping)
