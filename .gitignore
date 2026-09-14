@@ -19,4 +19,3 @@ captures
 node_modules/
 /.ralph-state/
 /.gemini/
-/.mcp.json
