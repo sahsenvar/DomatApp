@@ -1,37 +1,49 @@
 [versions]
-agp = "9.1.0"
-android-compileSdk = "36"
+agp = "9.4.0"
+android-compileSdk = "37"
 android-minSdk = "30"
-android-targetSdk = "36"
-androidx-activity = "1.12.4"
-androidx-lifecycle = "2.9.6"
-composeMultiplatform = "1.10.2"
-kotlin = "2.3.10"
-material3 = "1.10.0-alpha05"
-firebase-gitlive = "2.4.0"
-firebase-bom = "34.10.0"
-kotlinx-coroutines = "1.10.2"
-kotlinx-serialization = "1.10.0"
+android-targetSdk = "37"
+androidx-activity = "1.13.0"
+androidx-lifecycle = "2.11.0"
+composeMultiplatform = "1.12.0"
+# Kotlin is capped at 2.4.10 (not 2.4.20) because SKIE 0.10.14 - the newest SKIE release -
+# only ships compiler support up to Kotlin 2.4.10 (touchlab/SKIE#205 is still open).
+kotlin = "2.4.10"
+# Compose Multiplatform publishes material3 on its own track; 1.12.0-alpha03 is the newest
+# release in the line matching composeMultiplatform 1.12.0.
+material3 = "1.12.0-alpha03"
+firebase-gitlive = "2.7.0"
+# Matches the BoM that dev.gitlive:firebase-*-android 2.7.0 itself imports.
+firebase-bom = "34.18.0"
+kotlinx-coroutines = "1.11.0"
+kotlinx-serialization = "1.11.0"
+# Koin deliberately NOT bumped to 4.2.x: Koin Annotations 4.2.x replaces the KSP processor
+# (io.insert-koin:koin-ksp-compiler) with a Kotlin compiler plugin
+# (io.insert-koin:koin-compiler-plugin + koin-compiler-gradle-plugin). That is a migration,
+# not a version bump - it touches DiConventionPlugin and every module's KSP wiring.
 koin = "4.1.1"
 koin-annotations = "2.3.1"
-ktor = "3.4.1"
-ksp = "2.3.6"
-kotlinpoet = "2.2.0"
-moko-resources = "0.26.0"
-moko-graphics = "0.10.1"
-navigation3 = "1.0.1"
+ktor = "3.5.2"
+# KSP held at 2.3.11, one behind 2.3.12: 2.3.12 introduces backing-field symbols, which changes
+# what Resolver.getSymbolsWithAnnotation returns and requires processors to opt in via
+# registerProcessorForNewFeatures + KSVisitorNext. :core:processor would need migrating first.
+ksp = "2.3.11"
+kotlinpoet = "2.4.0"
+moko-resources = "0.27.0"
+moko-graphics = "0.10.2"
+navigation3 = "1.1.7"
 multiplatformSettings = "1.3.0"
-dataStoreVersion = "1.2.0"
-skie = "0.10.10"
-room = "2.7.0"
-sqlite = "2.5.0"
-coreKtx = "1.18.0"
-kotlinx-datetime = "0.6.0"
-kotlinx-collections-immutable = "0.3.7"
-arrow = "1.2.4"
-supabase = "3.0.2"
-credentialsManager = "1.3.0"
-googleId = "1.1.1"
+dataStoreVersion = "1.2.1"
+skie = "0.10.14"
+room = "2.8.5"
+sqlite = "2.7.1"
+coreKtx = "1.19.0"
+kotlinx-datetime = "0.8.0"
+kotlinx-collections-immutable = "0.5.2"
+arrow = "2.2.3"
+supabase = "3.8.0"
+credentialsManager = "1.6.0"
+googleId = "1.2.0"
 kmapper = "2.2.2"
 
 [libraries]
