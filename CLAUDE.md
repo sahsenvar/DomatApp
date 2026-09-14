@@ -393,9 +393,14 @@ Full reference: **https://kmapper.gitbook.io/docs** — do not duplicate it here
 
 ### Setup
 
-Version catalog entries: `kmapper-core`, `kmapper-annotations`, `kmapper-compiler` (`kmapper = "2.2.2"`).
+Version catalog entries: `mapping-kmapper-core`, `mapping-kmapper-annotations`,
+`mapping-kmapper-compiler` (`kmapper = "2.2.2"`).
 
 ```kotlin
+plugins {
+    alias(libs.plugins.ksp)
+}
+
 dependencies {
     commonMainImplementation(libs.mapping.kmapper.core)
     commonMainImplementation(libs.mapping.kmapper.annotations)
@@ -404,9 +409,12 @@ dependencies {
 ```
 
 Only modules that **declare** mappings need the compiler; modules that merely call generated
-functions need just the runtime. The `domatapp.kmp.di` convention plugin already wires
-`kotlin.srcDir("build/generated/ksp/metadata")` and the
-`dependsOn("kspCommonMainKotlinMetadata")` ordering, so generated mappers are visible to all targets.
+functions need just the runtime. Apply `alias(libs.plugins.ksp)` in the module that registers
+the compiler — no convention plugin applies KSP for you. Once KSP is applied, the
+`domatapp.kmp.di` convention plugin wires
+`kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")` and the
+`dependsOn("kspCommonMainKotlinMetadata")` ordering, so generated mappers are visible to all
+targets.
 
 ### Declaring a mapping
 
@@ -516,6 +524,10 @@ For each Route with matching `@NavigationScreen` + `@NavigationViewModel`:
 Feature presentation modules using these annotations must add:
 
 ```kotlin
+plugins {
+    alias(libs.plugins.ksp)
+}
+
 dependencies {
     add("kspAndroid", projects.core.processor)
 }
@@ -654,15 +666,16 @@ KSP. Only modules that actually register one of those processors apply `alias(li
 
 ## Key Technologies
 
-- **KMP**: Kotlin 2.3.10, Compose Multiplatform 1.10.1
-- **Android**: minSdk 30, targetSdk 36, AGP 9.0.1
+- **KMP**: Kotlin 2.4.10 (capped by SKIE 0.10.14), Compose Multiplatform 1.12.0
+- **Android**: minSdk 30, targetSdk 37, compileSdk 37, AGP 9.4.0, Gradle 9.7.1
+- **Codegen**: KSP 2.3.11 (`core:processor` only — DI no longer uses it)
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
-- **Architecture**: Arrow-kt for functional programming, Coroutines + Flow
+- **Architecture**: Coroutines + Flow (Arrow-kt is in the catalog but unused)
 - **DI**: Koin 4.2.2 with Annotations 4.2.2 (Kotlin compiler plugin, `io.insert-koin.compiler.plugin` 1.2.1)
-- **Networking**: Ktor Client 3.4.1 (REST + WebSocket)
-- **Database**: Room 2.7.0 (KMP)
-- **Storage**: DataStore 1.2.0 (Preferences)
-- **Backend**: Firebase Auth (GitLive 2.4.0), Firebase Firestore, Firebase RemoteConfig
+- **Networking**: Ktor Client 3.5.2 (REST + WebSocket)
+- **Database**: Room 2.8.5 (KMP)
+- **Storage**: DataStore 1.2.1 (Preferences)
+- **Backend**: Firebase Auth (GitLive 2.7.0), Firebase Firestore, Firebase RemoteConfig
 - **Serialization**: kotlinx.serialization
 - **Error Handling**: Exception-based with core:resulting module
 - **Object Mapping**: KMapper 2.2.2 (`io.github.sahsenvar`) - external KSP compile-time mapper
