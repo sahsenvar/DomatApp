@@ -51,15 +51,22 @@
   so headers / ContentNegotiation / RemoteError mapping are unchanged.
 - DI binding is now uniform: `@Factory fun provide...(ktorfit: Ktorfit) = ktorfit.createXxx()`.
   No more hand-matching a generated constructor signature.
-- Ktorfit version is pinned to the release built against the project's Ktor version
-  (2.7.3 -> Ktor 3.4.1; 2.7.4+ jumped to Ktor 3.5.0). Check this before bumping.
-- The Ktorfit **Gradle plugin is intentionally not applied**: it registers
-  `build/generated/ksp/metadata/commonMain/kotlin` as a srcDir, which duplicates the broader
-  `build/generated/ksp/metadata` srcDir that `DiConventionPlugin` already adds (duplicate-source
-  compile errors), and it applies a Kotlin compiler plugin versioned independently of the project's
-  Kotlin. `add("kspCommonMainMetadata", libs.ktorfit.ksp)` is used directly instead.
+- Ktorfit must track the project's Ktor major.minor: 2.7.3 -> Ktor 3.4.1, 2.7.4+ -> Ktor 3.5.x.
+  Check this before bumping either one.
+- The Ktorfit **Gradle plugin IS applied** (`alias(libs.plugins.ktorfit)`), but with
+  `ktorfit { compilerPluginVersion.set("-") }`, which disables its Kotlin compiler plugin.
+  Rationale: the compiler plugin exists only to rewrite reified `ktorfit.create<T>()`, and that
+  function is `@Deprecated` in 2.7.5 — unusable here under `allWarningsAsErrors=true`. Disabling it
+  removes the Kotlin-version coupling entirely.
 - Consequence: only the generated `ktorfit.createXxx()` extension works;
-  reified `ktorfit.create<Xxx>()` needs the compiler plugin and is unavailable.
+  reified `ktorfit.create<Xxx>()` is unavailable.
+- The plugin registers `<buildDir>/generated/ksp/metadata/commonMain/kotlin` as a commonMain
+  srcDir. `DiConventionPlugin` must register that **exact** path, not the ancestor
+  `build/generated/ksp/metadata` — Gradle only collapses srcDirs resolving to the same `File`, so an
+  ancestor path makes every generated file reachable through two roots.
+- The 2.7.5 Gradle plugin hardcodes `KTORFIT_KSP_PLUGIN_VERSION = "2.7.3"`, so the module also
+  declares `add("kspCommonMainMetadata", libs.ktorfit.ksp)` to pull the processor back up to the
+  runtime's version via newest-wins resolution.
 - Ktorfit baseUrl must end with `/`; interface paths must NOT start with `/`.
 - Use `ktorfit-lib-light` (core only) — the project supplies its own engines (OkHttp / Darwin).
 

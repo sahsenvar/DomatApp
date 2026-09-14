@@ -278,28 +278,49 @@ class AuthDataModule {
 
 ### Gradle Setup
 
-The Ktorfit Gradle plugin is deliberately **not** applied. It would add its own
-`build/generated/ksp/metadata/commonMain/kotlin` source directory, which collides with the broader
-`build/generated/ksp/metadata` srcDir already registered by the `domatapp.kmp.di` convention plugin,
-and it would also pull in a Kotlin compiler plugin that is versioned independently of the project's
-Kotlin version. Instead, register the KSP processor directly:
+The official Ktorfit Gradle plugin **is** applied, with its compiler plugin switched off:
 
 ```kotlin
+plugins {
+    alias(libs.plugins.ktorfit)
+}
+
+ktorfit {
+    compilerPluginVersion.set("-")   // "-" disables the Ktorfit compiler plugin entirely
+}
+
 dependencies {
     commonMainImplementation(libs.ktorfit.lib.light)
     commonMainImplementation(libs.ktorfit.annotations)
 
+    // The plugin hardcodes ktorfit-ksp 2.7.3; declare the catalog version so Gradle's
+    // newest-wins resolution keeps the processor on the same version as the runtime.
     add("kspCommonMainMetadata", libs.ktorfit.ksp)
 }
 ```
 
+The Gradle plugin registers `ktorfit-ksp` on `kspCommonMainMetadata` and on the per-target `ksp*`
+configurations, passes the `Ktorfit_*` KSP options, and orders compile tasks after
+`kspCommonMainKotlinMetadata`. Running the processor on the per-target configurations is harmless:
+it deliberately skips generating for interfaces declared in `commonMain`.
+
+Two things to know about this setup:
+
+- **The compiler plugin is off on purpose.** Its only job is rewriting the reified
+  `ktorfit.create<T>()` call, and that function is `@Deprecated` in Ktorfit 2.7.5 ("the plan is to
+  get rid of the plugin"). With `kotlin.compiler.allWarningsAsErrors=true` it could not be called
+  here regardless. Keeping it off also means no Kotlin-version-coupled compiler artifact is loaded
+  into the build. **Always use the generated `ktorfit.createMyDataSource()` extension**; the
+  reified `ktorfit.create<MyDataSource>()` form is not available.
+- **The plugin's srcDir must not be double-registered.** It adds
+  `<buildDir>/generated/ksp/metadata/commonMain/kotlin` to `commonMain`, and `DiConventionPlugin`
+  adds the same directory. Gradle collapses srcDirs only when they resolve to the identical `File`,
+  so `DiConventionPlugin` must name that exact path and not an ancestor such as
+  `build/generated/ksp/metadata`.
+
 `ktorfit-lib-light` is used instead of `ktorfit-lib` because the project supplies its own Ktor
 engines (OkHttp on Android, Darwin on iOS); the light artifact brings only `ktor-client-core`.
-Ktorfit is pinned to a release built against the project's exact Ktor version.
-
-Because the Ktorfit compiler plugin is not applied, use the generated
-`ktorfit.createMyDataSource()` extension — the reified `ktorfit.create<MyDataSource>()` form is
-**not** available.
+Ktorfit must stay on a release built against the project's Ktor major.minor (2.7.4+ -> Ktor 3.5.x).
 
 ### WebSocket and Firestore DataSources
 
@@ -887,7 +908,7 @@ KSP generates module code at build time. **Never use `module { }` DSL syntax** (
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
 - **Architecture**: Arrow-kt for functional programming, Coroutines + Flow
 - **DI**: Koin 4.1.1 with Annotations 2.3.1 (KSP code generation)
-- **Networking**: Ktor Client 3.4.1 (REST + WebSocket), Ktorfit 2.7.3 (REST codegen via KSP)
+- **Networking**: Ktor Client 3.5.2 (REST + WebSocket), Ktorfit 2.7.5 (REST codegen via KSP)
 - **Database**: Room 2.7.0 (KMP)
 - **Storage**: DataStore 1.2.0 (Preferences)
 - **Backend**: Firebase Auth (GitLive 2.4.0), Firebase Firestore, Firebase RemoteConfig

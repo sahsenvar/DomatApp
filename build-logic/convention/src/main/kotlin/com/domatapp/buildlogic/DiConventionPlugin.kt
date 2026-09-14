@@ -34,8 +34,15 @@ class DiConventionPlugin : Plugin<Project> {
                             implementation("io.insert-koin:koin-core:4.1.1")
                             implementation("io.insert-koin:koin-annotations:2.3.1")
                         }
-                        // Include KSP-generated code from commonMain metadata in all targets
-                        kotlin.srcDir("build/generated/ksp/metadata")
+                        // Include KSP-generated code from commonMain metadata in all targets.
+                        // This must name the exact output directory, not an ancestor of it: the
+                        // Ktorfit Gradle plugin registers
+                        // "<buildDir>/generated/ksp/metadata/commonMain/kotlin" on the same
+                        // source set, and Gradle only collapses srcDirs that resolve to the very
+                        // same File. Registering the parent "build/generated/ksp/metadata" here
+                        // instead would make every generated file reachable through two distinct
+                        // roots at once.
+                        kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
                     }
                     androidMain {
                         dependencies {
