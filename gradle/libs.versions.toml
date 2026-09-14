@@ -50,6 +50,7 @@ arrow = "2.2.3"
 supabase = "3.8.0"
 credentialsManager = "1.6.0"
 googleId = "1.2.0"
+kmapper = "2.2.2"
 
 [libraries]
 ui-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
@@ -111,6 +112,11 @@ network-ktor-utils = { group = "io.ktor", name = "ktor-utils", version.ref = "kt
 network-ktorfit-libLight = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
 network-ktorfit-annotations = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-annotations", version.ref = "ktorfit" }
 network-ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }
+
+# KMapper - compile-time object mapping (https://kmapper.gitbook.io/docs)
+mapping-kmapper-core = { group = "io.github.sahsenvar", name = "kmapper-core", version.ref = "kmapper" }
+mapping-kmapper-annotations = { group = "io.github.sahsenvar", name = "kmapper-annotations", version.ref = "kmapper" }
+mapping-kmapper-compiler = { group = "io.github.sahsenvar", name = "kmapper-compiler", version.ref = "kmapper" }
 
 # Plugin dependencies for build-logic
 buildlogic-android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }

@@ -27,9 +27,8 @@ ktorfit {
 dependencies {
     commonMainImplementation(projects.feature.auth.domain)
     // :core:data re-exposes :core:domain, :core:resulting, :core:remote, :core:config and
-    // :core:local as api - the set every feature data module needs.
+    // :core:local as api, plus the KMapper runtime - the set every feature data module needs.
     commonMainImplementation(projects.core.data)
-    commonMainImplementation(projects.core.mapping)
     // Declared explicitly because this module's own sources use them directly (@Serializable on
     // the DTOs, Flow in the repositories) rather than relying on a transitive api chain.
     commonMainImplementation(libs.concurrency.coroutine.core)
@@ -38,10 +37,16 @@ dependencies {
     commonMainImplementation(libs.network.ktorfit.libLight)
     commonMainImplementation(libs.network.ktorfit.annotations)
 
+    // core:processor -> @ConfigDataSource codegen (RemoteDataSource codegen was removed by the
+    // Ktorfit migration; this registration now serves ConfigDataSource only).
     add("kspCommonMainMetadata", projects.core.processor)
 
     // The Ktorfit Gradle plugin 2.7.5 hardcodes KTORFIT_KSP_PLUGIN_VERSION = "2.7.3", so on its
     // own it would pair the 2.7.5 runtime with the 2.7.3 processor. Declaring the catalog
     // version here lets Gradle's newest-wins conflict resolution keep both at 2.7.5.
     add("kspCommonMainMetadata", libs.network.ktorfit.ksp)
+
+    // KMapper -> @MapTo codegen. The compiler registration is necessarily per-module;
+    // the runtime and annotations come through :core:data.
+    add("kspCommonMainMetadata", libs.mapping.kmapper.compiler)
 }

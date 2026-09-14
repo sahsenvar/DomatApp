@@ -11,6 +11,10 @@ dependencies {
     commonMainApi(projects.core.remote)
     commonMainApi(projects.core.config)
     commonMainApi(projects.core.local)
+    // Every feature data module maps DTOs to domain models, so the KMapper runtime and
+    // annotations belong here too. Only the KSP compiler stays per-module.
+    commonMainApi(libs.mapping.kmapper.core)
+    commonMainApi(libs.mapping.kmapper.annotations)
 
     commonMainImplementation(libs.concurrency.coroutine.core)
 }
