@@ -4,29 +4,27 @@ plugins {
 
 group = "com.domatapp.buildlogic"
 
-// `kotlin-dsl` pins org.jetbrains:annotations to `strictly` its embedded Kotlin's own version (to
-// protect Gradle's bundled Kotlin runtime), while AGP - a real runtime dependency below, needed for
-// pluginManager.apply("com.android.kotlin.multiplatform.library") to resolve at all, not just to
-// compile against - transitively wants a newer one via ddmlib/repository/layoutlib-api. Because this
-// project's `runtimeElements` variant is what the root build substitutes in for the
-// `domatapp.kmp.library` etc. plugin IDs, an unresolved conflict here surfaces as a "root (classpath)"
-// failure in the *consuming* build, which is the wrong place to fix it: the constraint is added to
-// this project's own configurations by `kotlin-dsl`, so `force` has to be set here to actually change
-// what gets published. org.jetbrains:annotations has never had a breaking release - it only adds
-// annotations - so forcing the newer version is low-risk.
-configurations.all {
-    resolutionStrategy {
-        force("org.jetbrains:annotations:23.0.0")
-    }
-}
-
 dependencies {
     compileOnly(libs.buildlogic.android.gradlePlugin)
     compileOnly(libs.buildlogic.kotlin.gradlePlugin)
     compileOnly(libs.buildlogic.ksp.gradlePlugin)
     compileOnly(libs.buildlogic.compose.gradlePlugin)
     compileOnly(libs.buildlogic.composeCompiler.gradlePlugin)
-    implementation(libs.buildlogic.android.gradlePlugin)
+    // `kotlin-dsl` (applied above) pins org.jetbrains:annotations to `strictly` its embedded
+    // Kotlin's own version, to protect Gradle's bundled Kotlin runtime. AGP transitively wants a
+    // newer one, but only via ddmlib/repository/layoutlib-api - Studio/IDE-integration tooling
+    // (device communication, SDK manager, layout preview rendering) that a headless plugin
+    // application never touches. Excluding those three modules removes the only paths that
+    // conflict with the strict pin; two `force()` attempts at resolving the version instead (one on
+    // the root's buildscript classpath, one here via configurations.all) both left the published
+    // `runtimeElements` variant - what the root build substitutes in for this plugin - completely
+    // unchanged, confirmed by two identical CI failures. Excluding the modules changes the declared
+    // dependency graph itself, which does propagate to what gets published.
+    implementation(libs.buildlogic.android.gradlePlugin) {
+        exclude(group = "com.android.tools.ddms", module = "ddmlib")
+        exclude(group = "com.android.tools", module = "repository")
+        exclude(group = "com.android.tools.layoutlib", module = "layoutlib-api")
+    }
     implementation(libs.buildlogic.ksp.gradlePlugin)
     implementation(libs.buildlogic.koinCompiler.gradlePlugin)
 }
