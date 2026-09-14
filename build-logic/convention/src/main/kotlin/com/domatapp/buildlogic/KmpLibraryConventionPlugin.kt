@@ -19,7 +19,6 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
 
         extensions.configure(KotlinMultiplatformExtension::class.java) {
             applyDefaultHierarchyTemplate()
-            iosX64()
             iosArm64()
             iosSimulatorArm64()
 

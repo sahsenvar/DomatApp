@@ -212,8 +212,9 @@ own feature module.
 
 ### Five traps, all read out of the library's source
 
-- **Register the compiler per target** (`kspAndroid`, `kspIosX64`, `kspIosArm64`,
-  `kspIosSimulatorArm64`), **never on `kspCommonMainMetadata`.** It emits an `actual object` for the
+- **Register the compiler per target** (`kspAndroid`, `kspIosArm64`, `kspIosSimulatorArm64` — no
+  `kspIosX64`, the `iosX64` target was dropped, see below), **never on `kspCommonMainMetadata`.** It
+  emits an `actual object` for the
   user's `expect object XConstructor : PreferencesConstructor<X>`, and an `actual` cannot be
   generated into the common metadata compilation. The library's own sample does the same.
 - **Every `@Set` parameter must be named `value`.** `GenerateSetFunctionUseCase` hard-codes
@@ -232,22 +233,19 @@ Also: KspPreferences writes to `<filesDir>/datastore/<name>.preferences_pb`, whe
 in-repo `DataStoreFactory` used `<filesDir>/<name>.preferences_pb`. Migrating a store means the old
 file is orphaned, not read.
 
-## `iosX64` is already broken on `main` — pre-existing, unrelated to any one PR
+## `iosX64` target was dropped (resolved)
 
-`KmpLibraryConventionPlugin` declares `iosX64()`, `iosArm64()`, `iosSimulatorArm64()`, but CLAUDE.md
-documents only the latter two. Several dependencies publish no `iosX64` variant, so those
-compilations cannot resolve. Verified with a real standalone Gradle run (`gradle dependencies
---configuration iosX64CompileKlibraries`):
+`KmpLibraryConventionPlugin` used to declare `iosX64()` alongside `iosArm64()`/
+`iosSimulatorArm64()`, but CLAUDE.md documented only the latter two, and several dependencies
+(`kmapper-core`, `preferences-annotations`) publish no `iosX64` variant, so `compileKotlinIosX64`
+was unbuildable repo-wide since KMapper was hoisted into `core:data`. Confirmed pre-existing via a
+real standalone Gradle run, not caused by any one feature PR.
 
-- `io.github.sahsenvar:kmapper-core:2.2.2` → **FAILED** on iosX64, resolves on iosArm64.
-  It is `commonMainApi` in `core:data`, so everything downstream inherits the breakage.
-- `io.github.semenciuccosmin:preferences-annotations:2.0.0` → same, no iosX64 variant.
-
-So `:core:data:compileKotlinIosX64` cannot have succeeded since KMapper was hoisted into
-`core:data`. Before blaming a new dependency for an iosX64 failure, check whether the target was
-already unbuildable. The likely fix is dropping `iosX64()` from the convention plugin and
-`:shared` (it is the obsolete Intel-simulator target, and the docs already assume it is gone) — but
-that removes an architecture from `Shared.framework`, so it is the owner's call.
+Fixed by removing `iosX64()` from `KmpLibraryConventionPlugin` and from the target list in
+`shared/build.gradle.kts` — the owner's call, made explicitly (it's the obsolete Intel-simulator
+target; the docs already only assumed `iosArm64`/`iosSimulatorArm64`). If a future PR reintroduces
+an `iosX64()` declaration anywhere, check dependency variant coverage first — this is exactly the
+class of failure that bit `core:data` twice (KMapper, then KspPreferences).
 
 ## CI does not verify anything
 
