@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.ksp)
 }
 
 composeCompiler {
@@ -123,9 +122,7 @@ dependencies {
     api(libs.koin.core)
     api(libs.koin.android)
     api(libs.koin.compose)
-    implementation(libs.koin.annotations)
     implementation(libs.androidx.core.ktx)
-    ksp(libs.koin.ksp.compiler)
 
     // Ktor (needed for HttpClient configuration)
     implementation(libs.ktor.client.core)

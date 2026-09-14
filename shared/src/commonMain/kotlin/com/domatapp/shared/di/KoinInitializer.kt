@@ -1,30 +1,32 @@
 package com.domatapp.shared.di
 
-import com.domatapp.core.config.di.CoreConfigModule
-import com.domatapp.core.remote.di.CoreRemoteModule
-import com.domatapp.core.resource.di.CoreResourceModule
-import com.domatapp.core.serialization.di.CoreSerializationModule
-import com.domatapp.feature.auth.data.di.AuthDataModule
-import com.domatapp.feature.auth.domain.di.AuthDomainModule
-import com.domatapp.feature.auth.presentation.di.AuthPresentationModule
-import com.domatapp.feature.onboarding.presentation.di.OnboardingPresentationModule
+import com.domatapp.core.config.di.coreConfigModule
+import com.domatapp.core.remote.di.coreRemoteModule
+import com.domatapp.core.resource.di.coreResourceModule
+import com.domatapp.core.serialization.di.coreSerializationModule
+import com.domatapp.feature.auth.data.di.authDataModule
+import com.domatapp.feature.auth.domain.di.authDomainModule
+import com.domatapp.feature.auth.presentation.di.authPresentationModule
+import com.domatapp.feature.onboarding.presentation.di.onboardingPresentationModule
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
-import org.koin.ksp.generated.module
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication {
     return startKoin {
         appDeclaration()
+        // Each Gradle module exposes its own accessor: the Koin compiler plugin generates the
+        // `module()` accessor only inside the compilation that declares the @Module class, so
+        // `CoreRemoteModule().module()` cannot be called from here.
         modules(
-            CoreSerializationModule().module,
-            CoreRemoteModule().module,
-            CoreConfigModule().module,
-            CoreResourceModule().module,
-            AuthDomainModule().module,
-            AuthDataModule().module,
-            AuthPresentationModule().module,
-            OnboardingPresentationModule().module,
+            coreSerializationModule(),
+            coreRemoteModule(),
+            coreConfigModule(),
+            coreResourceModule(),
+            authDomainModule(),
+            authDataModule(),
+            authPresentationModule(),
+            onboardingPresentationModule(),
         )
     }
 }

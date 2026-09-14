@@ -59,11 +59,14 @@
 - Only modules that **declare** mappings need `kmapper-compiler` on `kspCommonMainMetadata`.
   `core:processor` is still required in `feature/auth/data` for `@ConfigDataSource` codegen.
 
-## KSP Generated DataSource Impl Constructors
+## DI: Koin compiler plugin, not KSP (see koin-compiler-plugin.md)
 
-- RemoteDataSource KSP generates impl with ONLY clients actually used (HttpClient, etc.)
-- DI Module factory methods must match generated constructor exactly
-- Always check generated impl before writing DI bindings
+- Koin Annotations 4.2.x is processed by `io.insert-koin.compiler.plugin`; `koin-ksp-compiler` is
+  gone. `DiConventionPlugin` applies it — modules add nothing but `alias(libs.plugins.domatapp.kmp.di)`.
+- Two traps: delete `import org.koin.ksp.generated.module` (package no longer exists, `.module`
+  still works), and import `@KoinViewModel` from `org.koin.core.annotation`.
+- `koinCompiler { logSeverity / versionCheckSeverity }` must be `"info"` here because of
+  `allWarningsAsErrors=true`; `compileSafety` off per module, on in `:shared`.
 
 ## Room Database Requires At Least One Entity
 
@@ -76,3 +79,19 @@
 - `apikey: {publicKey}` always sent
 - `Authorization: Bearer {accessToken}` only when accessToken is non-null
 - NEVER use publicKey as Bearer token
+
+## Dependency upgrade ceilings (see dependency-upgrades.md)
+
+Three catalog entries cannot simply be bumped to "latest". Details and sources in
+`dependency-upgrades.md`; the short version:
+
+- **Kotlin is capped by SKIE.** `:shared` applies SKIE, which hard-pins to exact Kotlin versions.
+  Read the supported list out of `co.touchlab.skie:gradle-plugin:<v>` before bumping Kotlin.
+- **KSP 2.3.12+ is a migration, not a bump** (backing-field symbols change
+  `getSymbolsWithAnnotation` results; `:core:processor` must opt in).
+- **Koin Annotations 4.2.x drops `koin-ksp-compiler`** for a Kotlin compiler plugin. Whole-DI
+  migration.
+
+Also: KSP dropped `<kotlin>-<ksp>` version naming at 2.3.0 — `ksp = "2.3.x"` is a standalone KSP
+version, not a Kotlin pairing. Google Maven is unreachable from agent sandboxes, so androidx / AGP /
+firebase-bom versions must come from release notes, not from resolving coordinates.
