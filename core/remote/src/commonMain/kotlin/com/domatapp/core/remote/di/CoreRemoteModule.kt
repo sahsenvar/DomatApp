@@ -21,7 +21,7 @@ class CoreRemoteModule {
      * This used to live in a dedicated `:core:serialization` module behind a `SerializationApi`
      * abstraction. Nothing ever called through that abstraction, so the module was removed and the
      * one thing it really provided moved here, next to its main consumer (ContentNegotiation and
-     * KtorfitX). `core:config`'s FirebaseRemoteConfigClient resolves the same instance through Koin.
+     * KtorfitX). Any other consumer resolves this same instance through Koin.
      */
     @Single
     fun provideJson(): Json = Json {

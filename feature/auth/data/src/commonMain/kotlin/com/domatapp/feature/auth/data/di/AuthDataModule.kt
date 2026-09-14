@@ -1,9 +1,8 @@
 package com.domatapp.feature.auth.data.di
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
+import com.domatapp.core.config.preferences.preferencesContext
 import com.domatapp.feature.auth.data.datasource.AuthConfigSource
-import com.domatapp.feature.auth.data.datasource.AuthConfigSourceImpl
+import com.domatapp.feature.auth.data.datasource.AuthConfigSourceConstructor
 import com.domatapp.feature.auth.data.datasource.AuthRemoteSource
 import com.domatapp.feature.auth.data.datasource.UserProfileRemoteSource
 import com.domatapp.feature.auth.data.datasource.impls.authRemoteSource
@@ -14,10 +13,11 @@ import com.domatapp.feature.auth.domain.di.AuthDomainModule
 import com.domatapp.feature.auth.domain.repository.AuthRepository
 import com.domatapp.feature.auth.domain.repository.UserProfileRepository
 import cn.ktorfitx.multiplatform.core.Ktorfitx
+import io.github.semenciuccosmin.preferences.factory.PreferencesFactory
+import io.github.semenciuccosmin.preferences.factory.create
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.module.Module as KoinModule
-import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 
 @Module(includes = [AuthDomainModule::class])
@@ -33,10 +33,17 @@ class AuthDataModule {
         ktorfitx: Ktorfitx
     ): UserProfileRemoteSource = ktorfitx.userProfileRemoteSource
 
+    /**
+     * `@Single`, not `@Factory`: each instance opens its own DataStore over the same file, and
+     * DataStore rejects a second active reader/writer for one path.
+     *
+     * [AuthConfigSourceConstructor] resolves to a KSP-generated `actual object` per target; the
+     * reflection-based `PreferencesFactory.create<T>()` overload cannot be used here because its
+     * iOS `actual` throws.
+     */
     @Single
-    fun provideAuthConfigSource(
-        @Named("auth") dataStore: DataStore<Preferences>
-    ): AuthConfigSource = AuthConfigSourceImpl(dataStore = dataStore)
+    fun provideAuthConfigSource(): AuthConfigSource =
+        PreferencesFactory.create(AuthConfigSourceConstructor, preferencesContext())
 
     @Single
     fun provideAuthRepository(

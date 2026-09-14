@@ -57,7 +57,9 @@
   in `toAuthError()`'s `else -> AuthError.Unknown` branch). Left in place deliberately; removing it
   is a separate public-API decision.
 - Only modules that **declare** mappings need `kmapper-compiler` on `kspCommonMainMetadata`.
-  `core:processor` is still required in `feature/auth/data` for `@ConfigSource` codegen.
+  `feature/auth/data` no longer registers `core:processor` at all (the `@ConfigSource` processor is
+  gone — see "Local preferences: KspPreferences"). `core:processor` now only serves the two
+  presentation modules, via `kspAndroid`, for navigation codegen.
 
 ## DI: Koin compiler plugin, not KSP (see koin-compiler-plugin.md)
 
@@ -164,12 +166,14 @@ The three data-layer source types are `{Name}RemoteSource`, `{Name}LocalSource`,
 `{Name}ConfigSource` — and the marker annotation is `@ConfigSource`. The directory stays
 `datasource/`; only the type suffix changed.
 
+`@ConfigSource` itself no longer exists — `{Name}ConfigSource` interfaces are now annotated with
+KspPreferences' `@Preferences` (see below). The `*Source` type-name convention is unchanged.
+
 Two things bite when renaming these:
-- `ConfigSourceProcessor` matches on the annotation's **simple name**
-  (`it.shortName.asString() == "ConfigSource"`) as well as its FQN string. Renaming the annotation
-  without updating both makes the codegen silently stop emitting the `*Impl`, and the failure shows
-  up as an unresolved `AuthConfigSourceImpl`, not as a processor error.
-- The processor is registered by fully-qualified name in
+- A KSP processor that matches on an annotation's **simple name** as well as its FQN needs both
+  updated, or codegen silently stops emitting the `*Impl` and the failure surfaces as an unresolved
+  `*Impl` reference rather than a processor error.
+- An in-repo processor is registered by fully-qualified name in
   `core/processor/src/main/resources/META-INF/services/com.google.devtools.ksp.processing.SymbolProcessorProvider`.
   A class rename must update that file — a repo-wide `grep --include=*.kt` will not see it.
 - KtorfitX derives its generated extension property from the interface name, so renaming an `@Api`
@@ -186,3 +190,69 @@ reintroduce a wrapper.
 throws it today** — a `kotlinx.serialization.SerializationException` from a malformed response body
 currently escapes unmapped past `HttpResponseValidator` (which only handles response exceptions).
 That gap predates the removal.
+
+
+## Local preferences: KspPreferences (replaced the in-repo `@ConfigSource` system)
+
+`io.github.semenciuccosmin:preferences-{annotations,compiler}:2.0.0` —
+https://github.com/SemenciucCosmin/KspPreferences. Replaced `core:config`'s hand-written
+`@ConfigSource`/`@SaveLocalConfig`/`@RetrieveLocalConfig`/`@ObserveLocalConfig`/`@ClearLocalConfig`/
+`@ClearAllLocalConfig` annotations and `ConfigSourceProcessor`. Very small/young project (solo
+maintainer); adoption risk accepted deliberately by the owner.
+
+**RemoteConfig support was removed outright** — `FirebaseRemoteConfigClient`,
+`@RetrieveRemoteConfig`/`@ObserveRemoteConfig` and `dev.gitlive:firebase-config` all had zero usage.
+This is the one deliberate exception to the "keep every Firebase library" carve-out, because here
+the code itself was dead, not merely the dependency.
+
+`core:config` is now almost empty: an `expect fun preferencesContext(): Any?` bridge
+(`PreferencesContextHolder.context` on Android, `null` on iOS) plus `api` on the KspPreferences and
+DataStore artifacts. **It declares no Koin module** — each `@Preferences` Source is provided by its
+own feature module.
+
+### Five traps, all read out of the library's source
+
+- **Register the compiler per target** (`kspAndroid`, `kspIosX64`, `kspIosArm64`,
+  `kspIosSimulatorArm64`), **never on `kspCommonMainMetadata`.** It emits an `actual object` for the
+  user's `expect object XConstructor : PreferencesConstructor<X>`, and an `actual` cannot be
+  generated into the common metadata compilation. The library's own sample does the same.
+- **Every `@Set` parameter must be named `value`.** `GenerateSetFunctionUseCase` hard-codes
+  `override suspend fun x(value: T)`. A renamed override parameter is a Kotlin warning, and this
+  repo runs `allWarningsAsErrors=true` — so a different name fails the build.
+- **Primitive preferences are non-nullable.** `@Get` generates `?: defaultValue` and `@GetFlow`
+  `Flow<T>`. Declaring `String?` still compiles (the override narrows, and `Flow` is covariant) but
+  the value is never actually null. Model absence with an explicit default constant.
+- **`@Clear` wipes the whole store** (`dataStore.edit { it.clear() }`); it takes no parameters,
+  must return `Unit`, and has no single-key variant.
+- **`PreferencesFactory.create<T>()` (reflection) throws on iOS** by design. Always use
+  `@ConstructedBy` + `create(constructor, context)`. Bind it `@Single`: two instances open two
+  DataStores over one file.
+
+Also: KspPreferences writes to `<filesDir>/datastore/<name>.preferences_pb`, whereas the old
+in-repo `DataStoreFactory` used `<filesDir>/<name>.preferences_pb`. Migrating a store means the old
+file is orphaned, not read.
+
+## `iosX64` is already broken on `main` — pre-existing, unrelated to any one PR
+
+`KmpLibraryConventionPlugin` declares `iosX64()`, `iosArm64()`, `iosSimulatorArm64()`, but CLAUDE.md
+documents only the latter two. Several dependencies publish no `iosX64` variant, so those
+compilations cannot resolve. Verified with a real standalone Gradle run (`gradle dependencies
+--configuration iosX64CompileKlibraries`):
+
+- `io.github.sahsenvar:kmapper-core:2.2.2` → **FAILED** on iosX64, resolves on iosArm64.
+  It is `commonMainApi` in `core:data`, so everything downstream inherits the breakage.
+- `io.github.semenciuccosmin:preferences-annotations:2.0.0` → same, no iosX64 variant.
+
+So `:core:data:compileKotlinIosX64` cannot have succeeded since KMapper was hoisted into
+`core:data`. Before blaming a new dependency for an iosX64 failure, check whether the target was
+already unbuildable. The likely fix is dropping `iosX64()` from the convention plugin and
+`:shared` (it is the obsolete Intel-simulator target, and the docs already assume it is gone) — but
+that removes an architecture from `Shared.framework`, so it is the owner's call.
+
+## CI does not verify anything
+
+`.github/workflows/ci.yml`'s `build` job runs `echo "build ok"`. Green checks on a PR are
+meaningless — never cite them as validation. No Android SDK and `dl.google.com` is blocked in the
+agent sandbox, so `./gradlew` cannot get past AGP plugin resolution for this project. Maven Central
+*is* reachable: a throwaway KMP project using only `kotlin("multiplatform")` will run, which is the
+way to verify that a dependency's variants actually resolve.

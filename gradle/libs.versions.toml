@@ -38,6 +38,10 @@ moko-resources = "0.27.0"
 moko-graphics = "0.10.2"
 navigation3 = "1.1.7"
 dataStoreVersion = "1.2.1"
+# KspPreferences generates the DataStore-backed implementation of every @Preferences interface.
+# Its `annotations` artifact publishes android/jvm/iosArm64/iosSimulatorArm64 only - there is no
+# iosX64 variant (same as kmapper below).
+kspPreferences = "2.0.0"
 skie = "0.10.14"
 room = "2.8.5"
 sqlite = "2.7.1"
@@ -61,7 +65,6 @@ ui-compose-uiToolingPreview = { group = "org.jetbrains.compose.ui", name = "ui-t
 backend-firebase-auth = { group = "dev.gitlive", name = "firebase-auth", version.ref = "firebase-gitlive" }
 backend-firebase-authAndroid = { group = "dev.gitlive", name = "firebase-auth-android", version.ref = "firebase-gitlive" }
 backend-firebase-common = { group = "dev.gitlive", name = "firebase-common", version.ref = "firebase-gitlive" }
-backend-firebase-config = { group = "dev.gitlive", name = "firebase-config", version.ref = "firebase-gitlive" }
 backend-firebase-firestore = { group = "dev.gitlive", name = "firebase-firestore", version.ref = "firebase-gitlive" }
 backend-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 concurrency-coroutine-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -91,6 +94,8 @@ navigation-nav3-runtime = { group = "androidx.navigation3", name = "navigation3-
 navigation-nav3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 persistence-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "dataStoreVersion" }
 persistence-dataStore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStoreVersion" }
+persistence-kspPreferences-annotations = { group = "io.github.semenciuccosmin", name = "preferences-annotations", version.ref = "kspPreferences" }
+persistence-kspPreferences-compiler = { group = "io.github.semenciuccosmin", name = "preferences-compiler", version.ref = "kspPreferences" }
 localdb-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 localdb-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 localdb-sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqlite" }

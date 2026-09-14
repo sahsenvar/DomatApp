@@ -1,6 +1,5 @@
 package com.domatapp.shared.di
 
-import com.domatapp.core.config.di.coreConfigModule
 import com.domatapp.core.remote.di.coreRemoteModule
 import com.domatapp.core.resource.di.coreResourceModule
 import com.domatapp.feature.auth.data.di.authDataModule
@@ -19,7 +18,9 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication {
         // `CoreRemoteModule().module()` cannot be called from here.
         modules(
             coreRemoteModule(),
-            coreConfigModule(),
+            // :core:config declares no Koin module: since the KspPreferences migration it only
+            // holds the platform `preferencesContext()` bridge, and each @Preferences Source is
+            // provided by its own feature module (see AuthDataModule).
             coreResourceModule(),
             authDomainModule(),
             authDataModule(),

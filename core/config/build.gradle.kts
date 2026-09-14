@@ -1,15 +1,16 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
-    alias(libs.plugins.domatapp.kmp.di)
-    alias(libs.plugins.kotlinSerialization)
 }
 
 dependencies {
-    commonMainApi(projects.core.resulting)
-    commonMainImplementation(libs.concurrency.coroutine.core)
+    // Exposed as `api` on purpose, reaching feature data modules through :core:data.
+    //
+    // KspPreferences generates each `@Preferences` Source implementation *into the feature module
+    // that declares the interface*, and that generated code references both the KspPreferences
+    // runtime (`createDataStore`, `PreferencesFactory`, `PreferencesConstructor`) and DataStore
+    // itself (`DataStore<Preferences>`, `stringPreferencesKey`, `edit`). Declaring the set here
+    // once keeps every feature from re-declaring it, the same rationale as :core:data/:core:presentation.
+    commonMainApi(libs.persistence.kspPreferences.annotations)
     commonMainApi(libs.persistence.dataStore.core)
     commonMainApi(libs.persistence.dataStore.preferences)
-    commonMainImplementation(libs.backend.firebase.config)
-    commonMainImplementation(libs.serialization.kxSerialization.json)
-    androidMainImplementation(project.dependencies.platform(libs.backend.firebase.bom))
 }
