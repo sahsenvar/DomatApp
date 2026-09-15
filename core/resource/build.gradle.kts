@@ -15,6 +15,14 @@ dependencies {
     // every consumer of Res.string/Res.drawable/Res.font needs org.jetbrains.compose.resources on
     // its own compile classpath to use it.
     commonMainApi(libs.ui.compose.componentsResources)
+    // Declared explicitly even though components-resources needs it too. On Android,
+    // components-resources-android's *api* variant (releaseApiElements) exposes only kotlin-stdlib
+    // - compose runtime/foundation are in releaseRuntimeElements, i.e. runtime classpath only. The
+    // Compose compiler plugin checks the *compile* classpath, so without this the build fails with
+    // "The Compose Compiler requires the Compose Runtime to be on the class path, but none could be
+    // found" on :core:resource:compileAndroidMain. domatapp.cmp.library declares the same thing for
+    // the modules that use it.
+    commonMainApi(libs.ui.compose.runtime)
 }
 
 compose.resources {
