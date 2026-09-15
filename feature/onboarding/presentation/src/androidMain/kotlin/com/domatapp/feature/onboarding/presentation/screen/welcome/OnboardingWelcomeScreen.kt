@@ -18,8 +18,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.navigation.Route
-import com.domatapp.core.navigation.annotations.NavigationScreen
+import com.domatapp.core.navigation.OnboardingGraph
+import dev.gezgin.core.annotation.Screen
 import com.domatapp.core.resource.R
 import com.domatapp.feature.onboarding.presentation.welcome.OnboardingPage
 import com.domatapp.feature.onboarding.presentation.welcome.OnboardingWelcomeIntent
@@ -32,7 +32,7 @@ import com.domatapp.feature.onboarding.presentation.screen.trust.OnboardingTrust
 import com.domatapp.feature.onboarding.presentation.screen.effortless.OnboardingEffortlessPageContent
 import com.domatapp.feature.onboarding.presentation.ui.OnboardingWelcomePageContent
 
-@NavigationScreen(Route.OnboardingRoute.Welcome::class)
+@Screen(OnboardingGraph.OnboardingWelcomeRoute::class)
 @Composable
 fun ColumnScope.OnboardingWelcomeScreen(
     uiState: OnboardingWelcomeUiState,

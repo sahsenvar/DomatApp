@@ -31,12 +31,20 @@ ktor = "3.4.2"
 ktorfitx = "3.4.2-3.3.3"
 # KSP held at 2.3.11, one behind 2.3.12: 2.3.12 introduces backing-field symbols, which changes
 # what Resolver.getSymbolsWithAnnotation returns and requires processors to opt in via
-# registerProcessorForNewFeatures + KSVisitorNext. :core:processor would need migrating first.
+# registerProcessorForNewFeatures + KSVisitorNext. Every processor here is now third-party
+# (KtorfitX, KMapper, KspPreferences, Gezgin), so a bump waits on all of them, not on this repo.
 ksp = "2.3.11"
-kotlinpoet = "2.4.0"
 moko-resources = "0.27.0"
 moko-graphics = "0.10.2"
-navigation3 = "1.1.7"
+# Gezgin - type-safe, annotation-driven navigation on top of AndroidX Navigation 3
+# (github.com/sahsenvar/Gezgin). Gezgin's own `api` dependency is what pins the Navigation 3 and
+# lifecycle-navigation3 versions now, so this repo no longer declares androidx.navigation3 itself.
+# 0.3.0 is the release that introduces @ScreenWrapper; see the "Navigation" section of CLAUDE.md.
+# Pinned to -SNAPSHOT rather than the release on the owner's own instruction (2026-09-15): 0.3.0
+# itself is not published yet, but 0.3.0-SNAPSHOT already carries @ScreenWrapper. Resolved from
+# Central's snapshots repository, declared in settings.gradle.kts. Move to the plain "0.3.0" the
+# moment that release is cut - a SNAPSHOT coordinate is mutable and was never meant to stay pinned.
+gezgin = "0.3.0-SNAPSHOT"
 dataStoreVersion = "1.2.1"
 # KspPreferences generates the DataStore-backed implementation of every @Preferences interface.
 # Its `annotations` artifact publishes android/jvm/iosArm64/iosSimulatorArm64 only - there is no
@@ -74,6 +82,7 @@ di-koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "ko
 di-koin-coreViewmodel = { group = "io.insert-koin", name = "koin-core-viewmodel", version.ref = "koin" }
 di-koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 di-koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
+di-koin-composeViewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
 di-koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koin-annotations" }
 buildlogic-koinCompiler-gradlePlugin = { group = "io.insert-koin", name = "koin-compiler-gradle-plugin", version.ref = "koin-compiler" }
 network-ktorClient-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
@@ -84,15 +93,12 @@ network-ktorClient-websockets = { group = "io.ktor", name = "ktor-client-websock
 network-ktorClient-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 network-ktorClient-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 network-ktorClient-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
-codegen-ksp-core = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
-codegen-kotlinpoet-core = { group = "com.squareup", name = "kotlinpoet", version.ref = "kotlinpoet" }
-codegen-kotlinpoet-ksp = { group = "com.squareup", name = "kotlinpoet-ksp", version.ref = "kotlinpoet" }
 core-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 resource-moko-core = { group = "dev.icerock.moko", name = "resources", version.ref = "moko-resources" }
 resource-moko-compose = { group = "dev.icerock.moko", name = "resources-compose", version.ref = "moko-resources" }
 resource-moko-graphics = { group = "dev.icerock.moko", name = "graphics", version.ref = "moko-graphics" }
-navigation-nav3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
-navigation-nav3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
+navigation-gezgin-core = { group = "io.github.sahsenvar", name = "gezgin-core", version.ref = "gezgin" }
+navigation-gezgin-processor = { group = "io.github.sahsenvar", name = "gezgin-processor", version.ref = "gezgin" }
 persistence-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "dataStoreVersion" }
 persistence-dataStore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStoreVersion" }
 persistence-kspPreferences-annotations = { group = "io.github.semenciuccosmin", name = "preferences-annotations", version.ref = "kspPreferences" }

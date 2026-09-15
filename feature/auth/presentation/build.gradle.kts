@@ -18,7 +18,10 @@ dependencies {
     androidMainImplementation(libs.auth.credentials.core)
     androidMainImplementation(libs.auth.credentials.playServices)
     androidMainImplementation(libs.auth.googleId.core)
-    kspAndroid(projects.core.processor)
+    // Generates provideXEntry() per @Screen, wired through :core:presentation's
+    // @ScreenWrapper. Android-only: gezgin-core has no iOS klib and these screens are
+    // androidMain anyway.
+    kspAndroid(libs.navigation.gezgin.processor)
 }
 
 // DiConventionPlugin registers build/generated/ksp/metadata/commonMain/kotlin as a commonMain
@@ -26,4 +29,11 @@ dependencies {
 // output. Gradle needs that edge declared even though nothing generates into it today.
 tasks.matching { it.name == "kspAndroidMain" }.configureEach {
     dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
+}
+
+// The @ScreenWrapper and its @ScreenSlot markers are compiled into :core:presentation, and KSP
+// cannot enumerate annotated declarations on the classpath - so this module names their package.
+// Without it the entries here are generated UNWRAPPED (a KSP warning, not a build failure).
+ksp {
+    arg("gezgin.wrapperPackages", "com.domatapp.core.presentation.screen")
 }
