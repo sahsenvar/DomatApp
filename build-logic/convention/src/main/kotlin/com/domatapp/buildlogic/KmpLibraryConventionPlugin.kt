@@ -44,6 +44,12 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             }
         }
 
+        // JVM 21, not 17: kmapper-core 2.2.2's published classes are compiled targeting JVM 21
+        // bytecode (verified directly - major version 65 in the class file header). Its
+        // KSP-generated mapper calls an inline function from that runtime, and Kotlin refuses to
+        // inline JVM-21 bytecode into a lower-targeted compilation. Raising the floor to 21 is the
+        // fix; a jvmToolchain() pin was tried first and made no difference; a plain compiler-option
+        // target does.
         tasks.withType(KotlinJvmCompile::class.java).configureEach {
             compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
         }

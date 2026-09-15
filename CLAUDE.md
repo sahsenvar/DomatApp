@@ -625,6 +625,28 @@ All dependencies are managed in `gradle/libs.versions.toml`:
 
 Test source sets are currently disabled across core and feature modules. Do not automatically add test dependencies or generate test files unless explicitly requested.
 
+## CI (`.github/workflows/ci.yml`)
+
+Two independent jobs, both `ubuntu-latest`:
+
+- **`build`** — `./gradlew :composeApp:assembleDebug`. A real Gradle build, not a placeholder.
+  **Android only for now**: building `:composeApp` transitively compiles the Android source set of
+  almost every module it depends on (`:shared` and most of `:core`/`:feature`), but not the iOS
+  targets — those need a macOS runner and are a later phase.
+- **`static-analysis`** — `./gradlew detekt`, applied to every subproject from the root
+  `build.gradle.kts` (not per-module: this is a repo-wide concern, not something each module opts
+  into). Detekt's own default `source` only looks at `src/main`/`src/test` — it has no concept of
+  KMP source sets — so the root build script points every `Detekt` task at the whole module
+  (`setSource(projectDir)`, filtered to `**/*.kt`) instead. **Currently `continue-on-error: true`**:
+  this is detekt's first run against the whole codebase and the violation count is unknown. Once
+  someone has triaged the report (fix what's real, or `./gradlew detektBaseline` to record the
+  rest), drop `continue-on-error` so new violations actually fail CI. `build-logic`'s own modules
+  are a separate included build, not a subproject of the root, so they're outside detekt's reach
+  for now.
+
+Both jobs use `gradle/actions/setup-gradle` for dependency + configuration-cache caching. Neither
+runs tests — see *Testing* above.
+
 ## Dependency Injection (Koin Annotations)
 
 The project uses **Koin Annotations processed by the Koin Kotlin compiler plugin** (Koin 4.2+),
@@ -719,6 +741,13 @@ KSP. Only modules that actually register one of those processors apply `alias(li
 
 - **KMP**: Kotlin 2.4.10 (capped by SKIE 0.10.14), Compose Multiplatform 1.12.0
 - **Android**: minSdk 30, targetSdk 37, compileSdk 37, AGP 9.4.0, Gradle 9.7.1
+- **JVM target**: 21, not 17 — `kmapper-core` 2.2.2's published classes are compiled targeting JVM
+  21 bytecode (verified directly from the jar's class file header, major version 65). Its
+  KSP-generated mapper calls an inline function from that runtime, and a lower target fails with
+  "Cannot inline bytecode built with JVM target 21 into bytecode that is being built with JVM
+  target 17." Set via a plain `compilerOptions.jvmTarget`/`compileOptions` pin in
+  `KmpLibraryConventionPlugin` and `composeApp/build.gradle.kts` — not `kotlin { jvmToolchain(21) }`,
+  which was tried first and had no effect on this specific failure.
 - **Codegen**: KSP 2.3.11 (`core:processor` only — DI no longer uses it)
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
 - **Architecture**: Coroutines + Flow (Arrow-kt is in the catalog but unused)

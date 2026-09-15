@@ -50,6 +50,7 @@ supabase = "3.8.0"
 credentialsManager = "1.6.0"
 googleId = "1.2.0"
 kmapper = "2.2.2"
+detekt = "1.23.8"
 
 [libraries]
 ui-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
@@ -140,3 +141,4 @@ ktorfitx = { id = "cn.ktorfitx.multiplatform", version.ref = "ktorfitx" }
 mokoResources = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko-resources" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
 androidxRoom = { id = "androidx.room", version.ref = "room" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
