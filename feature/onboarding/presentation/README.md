@@ -46,7 +46,7 @@ Text(style = MaterialTheme.typography.bodyLarge)
 ### String
 ```kotlin
 // ✓ Doğru
-stringResource(MR.strings.onboarding_btn_welcome)
+stringResource(Res.string.onboarding_btn_welcome)
 
 // ✗ Yanlış — hardcoded string yasaktır
 Text(text = "Devam Et")
@@ -55,23 +55,23 @@ Text(text = "Devam Et")
 ### Image / Icon
 ```kotlin
 // ✓ Doğru
-import dev.icerock.moko.resources.compose.painterResource
-painterResource(MR.images.ic_google)
-
-// ✗ Yanlış — Compose Resources kullanılmaz
 import org.jetbrains.compose.resources.painterResource
 painterResource(Res.drawable.ic_google)
+
+// ✗ Yanlış — androidx.compose.ui.res.painterResource `Int` id bekler
+import androidx.compose.ui.res.painterResource
+painterResource(R.drawable.ic_google)
 ```
 
 ### UiModel tipi içinde image referansı
 ```kotlin
 // ✓ Doğru
-import dev.icerock.moko.resources.ImageResource
-val icon: ImageResource
-
-// ✗ Yanlış
 import org.jetbrains.compose.resources.DrawableResource
 val icon: DrawableResource
+
+// ✗ Yanlış — `@DrawableRes Int` Android'e bağlar, ortak koda taşınamaz
+import androidx.annotation.DrawableRes
+@DrawableRes val icon: Int
 ```
 
 ### State yönetimi

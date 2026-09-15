@@ -2,8 +2,8 @@ import SwiftUI
 
 // MARK: - Color Palette
 
-/// Raw color palette matching Android Moko Resources colors.xml exactly.
-/// All hex values are taken from core/resource/src/commonMain/moko-resources/base/colors.xml
+/// Raw color palette matching the Android colors.xml exactly.
+/// All hex values are taken from core/resource/src/androidMain/res/values/colors.xml
 enum DomatPalette {
     // Green
     static let green900 = Color(hex: 0x002204)

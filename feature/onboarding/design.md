@@ -171,17 +171,23 @@ LaunchedEffect(pagerState.currentPage) {
 
 | Tür | Kullanım | Kaynak Dosya |
 |---|---|---|
-| **Color** | `colorResource(DomatColors.primary)` | `core/resource/.../moko-resources/base/colors.xml` |
+| **Color** | `colorResource(R.color.malachite)` | `core/resource/src/androidMain/res/values/colors.xml` |
 | **Typography** | `MaterialTheme.typography.displayMedium` | `core/design/.../typography/DomatTypographyScale.kt` |
-| **String** | `stringResource(MR.strings.onboarding_btn_welcome)` | `core/resource/.../moko-resources/base/strings.xml` |
-| **Image (SVG)** | `painterResource(MR.images.ic_google)` | `core/resource/.../moko-resources/images/*.svg` |
-| **Image (PNG)** | `painterResource(MR.images.img_welcome_neighborhood)` | `core/resource/.../moko-resources/images/*@1x.png` |
+| **String** | `stringResource(Res.string.onboarding_btn_welcome)` | `core/resource/.../composeResources/values/strings.xml` |
+| **Image (vector)** | `painterResource(Res.drawable.ic_google)` | `core/resource/.../composeResources/drawable/*.xml` |
+| **Image (PNG)** | `painterResource(Res.drawable.img_welcome_neighborhood)` | `core/resource/.../composeResources/drawable/*.png` |
 
 ### Kritik Kurallar
-- `colorResource(DomatColors.*)` kullan, `MaterialTheme.colorScheme.*` **kullanma** (Material You dynamic color riski)
-- `MR.images.*` kullan, `Res.drawable.*` **kullanma**
-- PNG dosyalarına `@1x` / `@2x` suffix zorunlu, aksi halde moko ignore eder
-- `compose.resources { generateResClass = never }` her modülde tanımlı olmalı
+- `colorResource(R.color.*)` kullan, `MaterialTheme.colorScheme.*` **kullanma** (Material You dynamic color riski)
+- `Res.drawable.*` / `Res.string.*` kullan (`org.jetbrains.compose.resources`). `MR.*` artık yok —
+  Moko Resources projeden tamamen kaldırıldı.
+- `painterResource` / `stringResource` importu **`org.jetbrains.compose.resources`** olmalı,
+  `androidx.compose.ui.res` **değil** — aynı isimli iki fonksiyon var, yanlış olanı `Int` id bekler.
+- PNG dosyalarında `@1x` / `@2x` suffix **yasak**: dosya adı Kotlin identifier'ına dönüşüyor.
+  Yoğunluk varyantı gerekiyorsa `drawable-xhdpi/` gibi bir qualifier klasörü kullan.
+- Renkler Compose Resources'a **taşınamaz**: Compose Resources'ın renk kaynağı tipi yok
+  (String / PluralString / StringArray / Drawable / Font var, Color yok). Renkler Android res'te
+  kalır ve `R.color` ile okunur.
 
 ### Canvas Yasağı — Modifier.drawBehind Kullan
 
@@ -190,7 +196,7 @@ Compose'da `Canvas { }` composable **yasaktır**. Şu alternatifleri kullan:
 | İhtiyaç | Çözüm |
 |---|---|
 | Dashed/dotted kenarlık | `Modifier.drawBehind { }` — composable node oluşturmaz, crash riski yok |
-| SVG ikonu | Figma'dan SVG export → `moko-resources/images/*.svg` |
+| Vektör ikon | Figma'dan SVG export → **Android vector drawable XML'e çevir** → `composeResources/drawable/*.xml` |
 | Diğer görseller | Standart Compose layout bileşenleri |
 
 **Örnek — noktalı daire kenarlık** (`OnboardingTrustScreen.kt`):
@@ -220,7 +226,15 @@ Box(
 
 > ⚠️ **`painterResource()` ile Android XML `<shape>` drawable kullanma.** `DrawablePainter` implements `RememberObserver` — `HorizontalPager` prefetch mekanizması ile çakışır → `Cannot disable reuse from root` crash'i.
 >
-> `stroke-dasharray` VectorDrawable'da desteklenmez — SVG doğrudan moko'ya eklense bile dashes kaybolur.
+> `stroke-dasharray` VectorDrawable'da desteklenmez — dashed kenarlıklar `Modifier.drawBehind` ile
+> çizilmeli.
+>
+> ⚠️ **SVG dosyası `composeResources/drawable/` içine doğrudan konulamaz.** Compose Resources SVG'yi
+> Android dışındaki tüm platformlarda destekler; bu uygulamanın Compose UI'ı ise sadece Android'de
+> çalışıyor. Her ikon Android vector drawable XML olarak eklenir.
 
-### moko-resources Renk Format Kuralı
-`colors.xml` dosyasında `#RRGGBB` / `#RRGGBBAA` formatı kullanılır. Android native `#AARRGGBB` formatı **yasaktır** — moko bunu yanlış okur (örn. `#FF13EC49` → pembe üretir).
+### Renk Format Kuralı
+Renkler artık `core/resource/src/androidMain/res/values/colors.xml` içinde, yani normal Android
+resource'u olarak tutulur — dolayısıyla Android'in kendi `#AARRGGBB` formatı kullanılır
+(`#ff13ec49`). Eski moko kuralı (`#RRGGBB` zorunlu, `#AARRGGBB` yasak) **artık geçerli değil**;
+moko'nun hatalı okuma davranışı için vardı.
