@@ -39,7 +39,7 @@ The project follows a strict layered architecture:
   :core:resulting/        → Error handling (DomainError, RemoteError, LocalError, ValidationError)
   :core:remote/           → Network layer (Ktor REST via KtorfitX) + the shared Json
   :core:config/           → Preferences platform bridge (`preferencesContext()`) + DataStore deps
-  :core:navigation/       → Navigation definitions
+  :core:navigation/       → Gezgin navigation graph (@NavGraph routes + declared edges)
   :core:resource/         → Shared strings/drawables/fonts (Compose Resources) + colors.xml
   :core:localization/     → i18n support
   :core:analytics/        → Provider-agnostic event tracking facade. Deliberately empty - no
@@ -101,7 +101,8 @@ abstract class AppDatabase : RoomDatabase() {
 - **Presentation layer**: Depends on its own `domain` plus **`:core:presentation`** — which
   re-exposes `:core:domain`, `:core:common`, `:core:navigation`, `:core:resource`, `:core:design`
   (Android), `lifecycle-viewmodel` and the Koin ViewModel/Compose artifacts as `api`, so no feature
-  re-declares them. `:core:navigation` brings the Navigation 3 runtime on Android. Add a dependency
+  re-declares them. `:core:navigation` brings Gezgin, and with it the Navigation 3 runtime, on
+  Android. Add a dependency
   here only when it is specific to that feature (e.g. Credential Manager / Google Identity, which
   only `feature:auth:presentation` needs). **Never depends on `data`.**
 
@@ -116,7 +117,8 @@ abstract class AppDatabase : RoomDatabase() {
 - **core:presentation** → `api` on `:core:domain`, `:core:common`, `:core:navigation`,
   `:core:resource`, `:core:design` (androidMain). Same rationale as `core:data`: the
   "what every feature presentation module needs" rule lives here, once.
-- **core:navigation** → `api` on the Navigation 3 runtime (androidMain only).
+- **core:navigation** → `api` on `gezgin-core` (androidMain only; `gezgin-core` has no iOS klib,
+  and it is what pulls in the Navigation 3 runtime).
 - **core:resulting** → No dependencies (base module for error handling)
 - **core:analytics** → No dependencies. Empty scaffold, not yet consumed by anything.
 
@@ -681,49 +683,198 @@ interface AuthLocalSource {
 Room handles implementation generation. The DAO is registered in
 `shared/.../database/AppDatabase.kt` and provided via Koin in `shared/.../di/KoinInitializer.kt`.
 
-## Navigation Code Generation (KSP Annotations)
+## Navigation (Gezgin library)
 
-The `core:navigation` module provides annotations for auto-generating route composables and
-navigation entries. KSP generates the boilerplate glue code.
+Navigation is **not** in-repo codegen. The `core:navigation` annotations
+(`@NavigationScreen` / `@NavigationViewModel` / `@NavigationEffectHandler` / `@TopBar` /
+`@BottomBar`), the `NavigationProcessor` in `core:processor`, the hand-rolled global `Navigator`
+interface, `MainViewModel`'s back stack and `LocalNavigator` were all removed and replaced by
+**[Gezgin](https://github.com/sahsenvar/Gezgin)** (`io.github.sahsenvar`, artifacts `gezgin-core`
+and `gezgin-processor`), an annotation + KSP navigation layer on top of AndroidX Navigation 3.
+`:core:processor` no longer exists — navigation was its last remaining processor.
 
-### Annotations (core:navigation)
+The library README is the reference; do not duplicate it here.
 
-- `@NavigationScreen(route)` — Marks a @Composable as the UI screen for a Route
-- `@NavigationViewModel(route)` — Marks a ViewModel as the state holder for a Route
-- `@NavigationEffectHandler(route)` — (Optional) Marks a @Composable as the effect handler for a
-  Route
+### The one idea
 
-### Generated Output
-
-For each Route with matching `@NavigationScreen` + `@NavigationViewModel`:
-
-- `{Name}Route.kt` — Composable that wires ViewModel -> State -> Screen (+ EffectHandler if
-  annotated)
-- `{Feature}PresentationEntries.kt` — `EntryProviderScope<Route>.{feature}PresentationEntries()`
-  extension
-
-### Convention
-
-- Screen: `fun AuthScreen(uiState: AuthUiState, onIntent: (AuthIntent) -> Unit)`
-- EffectHandler: `fun AuthEffectHandler(effectFlow: Flow<AuthEffect>)`
-- ViewModel: `class AuthViewModel : BaseViewModel<AuthUiState, AuthIntent, AuthEffect>`
-
-### Feature Presentation KSP Setup
-
-Feature presentation modules using these annotations must add:
+The graph is a `sealed interface` tree and **edges are declared per route**. KSP generates a typed
+`<X>Navigator` exposing *only* that route's declared edges, so navigating somewhere undeclared is a
+compile error rather than a runtime "route not found".
 
 ```kotlin
-plugins {
-    alias(libs.plugins.ksp)
-}
+// core/navigation/src/androidMain/.../DomatGraph.kt
+@NavGraph
+sealed interface AuthGraph : Route {
 
-dependencies {
-    add("kspAndroid", projects.core.processor)
+    @GoTo(LocationSelectionRoute::class)
+    @ReplaceTo(
+        target = MainGraph.HomeRoute::class,
+        clearUpTo = OnboardingGraph.OnboardingWelcomeRoute::class,
+        inclusive = true,
+    )
+    data object LoginRoute : AuthGraph
 }
 ```
 
-Use `kspAndroid` because `@NavigationScreen` and `@NavigationEffectHandler` live in `androidMain`,
-while `@NavigationViewModel` is in `commonMain` but visible during Android compilation.
+`LoginNavigator` therefore has exactly `goToLocationSelection()`, `replaceToHome()` and the
+implicit `back()`. `@ReplaceTo` with `clearUpTo` = the start destination is how the old
+`Navigator.replaceAll(...)` is expressed.
+
+### Annotation quick table
+
+| Need | Write (on the **route**, in `:core:navigation`) |
+|------|--------------------------------------------------|
+| group routes | `@NavGraph` on the sealed interface |
+| a sub-flow torn down as one unit | `@FlowGraph` (+ `ResultFlow<T>` for a typed result) |
+| push | `@GoTo(Target::class)` → `goToTarget()` |
+| irreversible transition | `@ReplaceTo(Target::class, clearUpTo = X::class, inclusive = true)` → `replaceToTarget()` |
+| pop to a specific route | `@BackTo(Target::class)` → `backToTarget()` |
+| pop to the graph's start | `@BackToStart` → `backToStart()` |
+| ask a sub-flow for a value | `@GoForResult(Target::class)` → `launchTarget()` + `targetResults` |
+| swallow back | `@NoBack` (root is exempt) |
+| single-step pop | nothing — generated for every non-`@NoBack` route |
+
+| Need | Write (in the **feature presentation** module, `androidMain`) |
+|------|---------------------------------------------------------------|
+| the UI | `@Screen(Route::class)` (also `@Dialog` / `@BottomSheet` / `@FullscreenModal`) |
+| the ViewModel | `@ViewModelOf(Route::class)` provider (project-defined, see below) |
+| side effects | `@Effects(Route::class)` provider (project-defined, see below) |
+
+### `@ScreenWrapper` — the app owns what a screen *is*
+
+Gezgin does not resolve ViewModels, collect state or define a container. **One** `@ScreenWrapper`
+composable does, for the whole app — `DomatScreenRoot` in
+`core/presentation/src/androidMain/.../screen/DomatScreenRoot.kt`. Its parameters are slots marked
+`@FilledBy(Marker::class)`, and each marker is a project-defined annotation meta-annotated
+`@ScreenSlot`, declared in a sibling `Annotation.kt` next to the wrapper rather than inline in the
+same file — the project convention for any project-defined annotation going forward, not just
+these two:
+
+```kotlin
+@ScreenSlot @Repeatable annotation class ViewModelOf(val route: KClass<out Route>)
+@ScreenSlot @Repeatable annotation class Effects(val route: KClass<out Route>)
+
+@ScreenWrapper
+@Composable
+fun <S : Any, I : Any, E : Any> DomatScreenRoot(
+    @FilledBy(ViewModelOf::class) viewModel: @Composable () -> BaseViewModel<S, I, E>,
+    @FilledBy(Effects::class) onEffect: (E, DomatEffectScope, (I) -> Unit) -> Unit,
+    @FilledBy(Screen::class) content: @Composable ColumnScope.(S, (I) -> Unit) -> Unit,
+) { /* container, state collection and effect policy live here */ }
+```
+
+Per screen, one provider per marker. The processor unifies their signatures against the slots and
+generates a `provideXEntry()` that calls the wrapper with them — replacing the `{Name}Route.kt`
+files the old processor wrote:
+
+```kotlin
+// feature/auth/presentation/src/androidMain/.../screen/login/LoginBindings.kt
+@ViewModelOf(AuthGraph.LoginRoute::class)
+@Composable
+fun loginViewModel(): LoginViewModel = koinViewModel()
+
+@Effects(AuthGraph.LoginRoute::class)                       // NOT @Composable
+fun handleLoginEffect(
+    effect: LoginEffect,
+    scope: DomatEffectScope,
+    onIntent: (LoginIntent) -> Unit,
+    nav: LoginNavigator,                                    // role, supplied by Gezgin
+) = when (effect) {
+    LoginEffect.NavigateToLocationSelection -> nav.goToLocationSelection()
+    LoginEffect.NavigateToHome -> nav.replaceToHome()
+    /* ... */
+}
+```
+
+`BaseViewModel<S, I, E>` is unchanged — Gezgin knows none of these types.
+
+**Roles vs slot parameters.** A provider's parameters split in two: the exact route type, that
+route's navigator and `GezginSheetController` are *roles* Gezgin supplies; everything else must
+match the slot's function type exactly, in order. Because `@Effects` providers are plain functions
+they cannot read composition locals, which is why `DomatEffectScope` carries the `Context`, a
+`CoroutineScope` and `showMessage` (the app snackbar).
+
+### Host wiring
+
+```kotlin
+val navigator = rememberNavigator(
+    start = OnboardingGraph.OnboardingWelcomeRoute,
+    topology = gezginTopology,          // generated into :core:navigation
+    json = gezginJson,                  // generated into :core:navigation
+    restoreKey = "domat-root",
+    onRootBack = { finish() },
+)
+GezginDisplay(navigator = navigator, transitions = DomatNavTransitions) {
+    onboardingGraphEntries()            // feature-owned bundles of provideXEntry() calls
+    authGraphEntries()
+    mainGraphEntries()
+}
+```
+
+### Gradle setup
+
+`:core:navigation` (owns the graph):
+
+```kotlin
+plugins {
+    alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.ksp)
+}
+dependencies {
+    androidMainApi(libs.navigation.gezgin.core)
+    kspAndroid(libs.navigation.gezgin.processor)
+}
+```
+
+Every `feature:{name}:presentation` that declares screens:
+
+```kotlin
+plugins { alias(libs.plugins.ksp) }
+dependencies { kspAndroid(libs.navigation.gezgin.processor) }
+ksp { arg("gezgin.wrapperPackages", "com.domatapp.core.presentation.screen") }
+```
+
+### Things that will bite you
+
+- **`gezgin.wrapperPackages` is mandatory in every feature module.** KSP cannot enumerate annotated
+  declarations on the classpath, so a module that does not name the wrapper's package simply does
+  not see `DomatScreenRoot` — and the entries are generated **unwrapped**, with a KSP *warning*, not
+  an error. A screen that silently loses its ViewModel and state collection looks like a crash, not
+  a build failure. Same class of failure for `[SW6]`: a `@Screen` whose signature does not match the
+  content slot (`ColumnScope.(S, (I) -> Unit)`) falls back to unwrapped. **Grep build output for
+  `SW6` when a screen misbehaves.**
+- **The graph is `androidMain`-only.** `gezgin-core` publishes `android` and `jvm`; there is no iOS
+  klib. Nothing in `commonMain` may reference a route, or the iOS targets stop compiling.
+- **The graph module must not apply the Compose compiler plugin.** Gezgin's own codegen avoids
+  emitting a `@Composable` there for exactly this reason; a `@Composable` compiled without lowering
+  fails at runtime with `NoSuchMethodError`.
+- **Routes carry no `@Serializable`.** Gezgin generates and registers their serializers
+  (`gezginSerializersModule`, `gezginJson`). Parameter types of routes still need it.
+- **`@ReplaceTo`'s `clearUpTo` must be on the stack**, otherwise `NavEvent.ReplaceTargetMissing` is
+  emitted and **nothing happens** — a silent no-op. The graph anchors on the start destination,
+  which is always the stack bottom, for that reason.
+- **The slot unifier is shallow — it decomposes function types and nothing else.** A slot parameter
+  of a *generic project type* (`DomatEffectScope<I>`) is compared as an opaque whole against the
+  provider's `DomatEffectScope<LoginIntent>` and fails with `[SW8]`. Anything that has to carry a
+  type parameter must be a function-typed slot parameter of its own — which is why the intent sink
+  is a separate `(I) -> Unit` rather than a field on `DomatEffectScope`.
+- **A slot's return type is not unified, so no slot may be left unfilled unless every type parameter
+  is bound elsewhere.** `viewModel: @Composable () -> BaseViewModel<S, I, E>` binds *nothing*: only
+  the parameter positions participate. `E` is bound solely by `onEffect`, which is why that slot has
+  no Kotlin default and every route — including one with no effects — declares an `@Effects`
+  provider. Omitting it fails with `[SW7]`, not with a sensible message about effects.
+- **Navigator parameters must be written by their exact simple name** (`LoginNavigator`), not
+  fully-qualified and not aliased: the type does not exist yet during the KSP round that reads it,
+  so the processor matches it by written name (`[SW11]`).
+- **`koinViewModel()`, not `koinInject()`**, in a `@ViewModelOf` provider: only the former resolves
+  against `LocalViewModelStoreOwner`, which under `GezginDisplay` is the per-entry ViewModelStore.
+- **Effects must not be carried on a `replay = 0` SharedFlow.** A covered Navigation 3 entry leaves
+  composition entirely, so an effect emitted then is dropped. `BaseViewModel` is `Channel`-backed,
+  which holds them.
+- **Not in Gezgin (deliberate V2 items):** multiple/independent back stacks (per-tab history) and
+  deep-link/URL route dispatch. Do not design around them being available.
+- **`@ExperimentalGezginMigrationApi`** gates `BottomSheetDragHandleMode` only, is documented as
+  migration-only and may be removed — do not opt into it for new bottom-sheet UX.
 
 ## Backend Strategy (Concrete Clients + Source Pattern)
 
@@ -766,6 +917,28 @@ All dependencies are managed in `gradle/libs.versions.toml`:
 ## Testing
 
 Test source sets are currently disabled across core and feature modules. Do not automatically add test dependencies or generate test files unless explicitly requested.
+
+## CI (`.github/workflows/ci.yml`)
+
+Two independent jobs, both `ubuntu-latest`:
+
+- **`build`** — `./gradlew :composeApp:assembleDebug`. A real Gradle build, not a placeholder.
+  **Android only for now**: building `:composeApp` transitively compiles the Android source set of
+  almost every module it depends on (`:shared` and most of `:core`/`:feature`), but not the iOS
+  targets — those need a macOS runner and are a later phase.
+- **`static-analysis`** — `./gradlew detekt`, applied to every subproject from the root
+  `build.gradle.kts` (not per-module: this is a repo-wide concern, not something each module opts
+  into). Detekt's own default `source` only looks at `src/main`/`src/test` — it has no concept of
+  KMP source sets — so the root build script points every `Detekt` task at the whole module
+  (`setSource(projectDir)`, filtered to `**/*.kt`) instead. **Currently `continue-on-error: true`**:
+  this is detekt's first run against the whole codebase and the violation count is unknown. Once
+  someone has triaged the report (fix what's real, or `./gradlew detektBaseline` to record the
+  rest), drop `continue-on-error` so new violations actually fail CI. `build-logic`'s own modules
+  are a separate included build, not a subproject of the root, so they're outside detekt's reach
+  for now.
+
+Both jobs use `gradle/actions/setup-gradle` for dependency + configuration-cache caching. Neither
+runs tests — see *Testing* above.
 
 ## Dependency Injection (Koin Annotations)
 
@@ -854,15 +1027,25 @@ re-validation. Other modules stay fully incremental.
 
 ### KSP is still used — just not for DI
 
-`core:processor` (mapping, config and navigation code generation) and `ktorfit-ksp` still run under
-KSP. Only modules that actually register one of those processors apply `alias(libs.plugins.ksp)`.
+KtorfitX, KMapper, KspPreferences and Gezgin all run under KSP; there is no in-repo processor
+module any more (`:core:processor` was deleted with the navigation migration). Only modules that
+actually register one of those processors apply `alias(libs.plugins.ksp)`.
 
 ## Key Technologies
 
 - **KMP**: Kotlin 2.4.10 (capped by SKIE 0.10.14), Compose Multiplatform 1.12.0
 - **Android**: minSdk 30, targetSdk 37, compileSdk 37, AGP 9.4.0, Gradle 9.7.1
-- **Codegen**: KSP 2.3.11 (`core:processor` only — DI no longer uses it)
+- **JVM target**: 21, not 17 — `kmapper-core` 2.2.2's published classes are compiled targeting JVM
+  21 bytecode (verified directly from the jar's class file header, major version 65). Its
+  KSP-generated mapper calls an inline function from that runtime, and a lower target fails with
+  "Cannot inline bytecode built with JVM target 21 into bytecode that is being built with JVM
+  target 17." Set via a plain `compilerOptions.jvmTarget`/`compileOptions` pin in
+  `KmpLibraryConventionPlugin` and `composeApp/build.gradle.kts` — not `kotlin { jvmToolchain(21) }`,
+  which was tried first and had no effect on this specific failure.
+- **Codegen**: KSP 2.3.11 (third-party processors only — no in-repo processor, and DI does not
+  use KSP)
 - **UI**: Jetpack Compose (Android), SwiftUI (iOS)
+- **Navigation**: Gezgin 0.3.0 (`io.github.sahsenvar`) over AndroidX Navigation 3, Android-only
 - **Architecture**: Coroutines + Flow (Arrow-kt is in the catalog but unused)
 - **DI**: Koin 4.2.2 with Annotations 4.2.2 (Kotlin compiler plugin, `io.insert-koin.compiler.plugin` 1.2.1)
 - **Networking**: Ktor Client 3.4.2 (pinned by KtorfitX), KtorfitX 3.4.2-3.3.3 (REST + WebSocket codegen via KSP)

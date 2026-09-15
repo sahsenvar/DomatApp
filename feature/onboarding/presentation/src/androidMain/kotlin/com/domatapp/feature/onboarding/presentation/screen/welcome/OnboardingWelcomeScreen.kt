@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.navigation.Route
-import com.domatapp.core.navigation.annotations.NavigationScreen
+import com.domatapp.core.navigation.OnboardingGraph
+import dev.gezgin.core.annotation.Screen
 import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.onboarding_btn_community
@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.resources.stringResource
 
-@NavigationScreen(Route.OnboardingRoute.Welcome::class)
+@Screen(OnboardingGraph.OnboardingWelcomeRoute::class)
 @Composable
 fun ColumnScope.OnboardingWelcomeScreen(
     uiState: OnboardingWelcomeUiState,

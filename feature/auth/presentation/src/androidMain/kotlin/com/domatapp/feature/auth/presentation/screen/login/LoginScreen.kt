@@ -33,8 +33,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.navigation.Route
-import com.domatapp.core.navigation.annotations.NavigationScreen
+import com.domatapp.core.navigation.AuthGraph
+import dev.gezgin.core.annotation.Screen
 import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.app_name
@@ -56,7 +56,7 @@ import com.domatapp.feature.auth.presentation.screen.component.IconBadge
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-@NavigationScreen(Route.AuthRoute.Login::class)
+@Screen(AuthGraph.LoginRoute::class)
 @Composable
 fun ColumnScope.LoginScreen(
     uiState: LoginUiState,

@@ -26,12 +26,33 @@
 - Spacing: xxs(2) xs(4) sm(8) md(16) lg(24) xl(32) xxl(48)
 - Shapes: small(8) medium(12) large(16) extraLarge(24)
 
-## Navigation
+## Navigation (iOS side)
 
 - NavigationRouter manages root flow (auth/onboarding/main) and NavigationPath
 - Main flow uses TabView with 4 tabs: Home, Wallet, Notifications, Profile
 - Auth flow uses NavigationStack with push navigation
-- AppRoute enum maps to KMP Route sealed interface
+- `AppRoute` is a **pure Swift enum**; it does not consume any Kotlin type. It used to mirror a
+  `Route` sealed interface in `core:navigation`, but that type is gone — the Android graph is now
+  Gezgin's, in androidMain. Keeping the two in sync is a manual, by-eye job.
+
+## Navigation: Gezgin (see navigation-gezgin.md)
+
+`io.github.sahsenvar:gezgin-{core,processor}` — the owner's own library, annotation + KSP
+navigation over AndroidX Navigation 3. Replaced `core:navigation`'s `Route`/`Navigator`/annotations,
+the hand-rolled `Navigator` + `MainViewModel` back stack, `LocalNavigator`, and the **whole
+`:core:processor` module** (navigation was its last processor).
+
+The four things that will actually bite, in `navigation-gezgin.md` with the rest:
+
+- **`ksp { arg("gezgin.wrapperPackages", "com.domatapp.core.presentation.screen") }` is mandatory in
+  every feature presentation module.** Omitting it does not fail the build — entries are generated
+  **unwrapped** with only an `[SW6]` KSP warning, and the screen loses its ViewModel at runtime.
+- **`@ReplaceTo`'s `clearUpTo` must be on the stack or the navigation is a silent no-op.**
+- **The graph is androidMain-only** (`gezgin-core` has no iOS klib) and must not apply the Compose
+  compiler plugin.
+- **`@ScreenWrapper` — the headline feature this migration is for — is 0.3.0-only, and 0.3.0 was
+  not published to Maven Central as of 2026-09-14** (Central has 0.1.0/0.2.0; no `v0.3.0` tag).
+  Gezgin also builds on Kotlin 2.3.21 / KSP 2.3.9 while this repo is on 2.4.10 / 2.3.11.
 
 ## Feature ViewModels Available
 
@@ -59,9 +80,8 @@
   in `toAuthError()`'s `else -> AuthError.Unknown` branch). Left in place deliberately; removing it
   is a separate public-API decision.
 - Only modules that **declare** mappings need `kmapper-compiler` on `kspCommonMainMetadata`.
-  `feature/auth/data` no longer registers `core:processor` at all (the `@ConfigSource` processor is
-  gone — see "Local preferences: KspPreferences"). `core:processor` now only serves the two
-  presentation modules, via `kspAndroid`, for navigation codegen.
+  `:core:processor` no longer exists at all — its last processor was navigation codegen, removed
+  with the Gezgin migration (see below).
 
 ## DI: Koin compiler plugin, not KSP (see koin-compiler-plugin.md)
 
@@ -136,7 +156,8 @@ Three catalog entries cannot simply be bumped to "latest". Details and sources i
 - **Kotlin is capped by SKIE.** `:shared` applies SKIE, which hard-pins to exact Kotlin versions.
   Read the supported list out of `co.touchlab.skie:gradle-plugin:<v>` before bumping Kotlin.
 - **KSP 2.3.12+ is a migration, not a bump** (backing-field symbols change
-  `getSymbolsWithAnnotation` results; `:core:processor` must opt in).
+  `getSymbolsWithAnnotation` results). Every processor is third-party now, so the bump waits on
+  KtorfitX / KMapper / KspPreferences / Gezgin rather than on this repo.
 - **Koin Annotations 4.2.x drops `koin-ksp-compiler`** for a Kotlin compiler plugin. Whole-DI
   migration.
 
@@ -175,9 +196,6 @@ Two things bite when renaming these:
 - A KSP processor that matches on an annotation's **simple name** as well as its FQN needs both
   updated, or codegen silently stops emitting the `*Impl` and the failure surfaces as an unresolved
   `*Impl` reference rather than a processor error.
-- An in-repo processor is registered by fully-qualified name in
-  `core/processor/src/main/resources/META-INF/services/com.google.devtools.ksp.processing.SymbolProcessorProvider`.
-  A class rename must update that file — a repo-wide `grep --include=*.kt` will not see it.
 - KtorfitX derives its generated extension property from the interface name, so renaming an `@Api`
   interface changes the `ktorfitx.<name>` call site and the `...impls.<name>` import with it.
 

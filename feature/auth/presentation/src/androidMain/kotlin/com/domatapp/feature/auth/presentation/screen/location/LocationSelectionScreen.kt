@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.navigation.Route
-import com.domatapp.core.navigation.annotations.NavigationScreen
+import com.domatapp.core.navigation.AuthGraph
+import dev.gezgin.core.annotation.Screen
 import com.domatapp.core.presentation.component.bar.BottomActionBar
 import com.domatapp.core.presentation.component.button.PrimaryButton
 import com.domatapp.core.resource.generated.resources.Res
@@ -44,7 +44,7 @@ import com.domatapp.feature.auth.presentation.screen.component.LocationCardConne
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-@NavigationScreen(Route.AuthRoute.LocationSelection::class)
+@Screen(AuthGraph.LocationSelectionRoute::class)
 @Composable
 fun ColumnScope.LocationSelectionScreen(
     uiState: LocationSelectionUiState,

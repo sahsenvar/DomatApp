@@ -16,6 +16,9 @@ composeCompiler {
 
 kotlin {
     compilerOptions {
+        // 21, not 17: kmapper-core 2.2.2's published classes target JVM 21 bytecode - see
+        // KmpLibraryConventionPlugin's comment. composeApp isn't built by that convention plugin
+        // (it's the Android application module), so the same bump is repeated here.
         jvmTarget.set(JvmTarget.JVM_21)
     }
 }
@@ -100,9 +103,10 @@ dependencies {
     // Kotlinx Serialization
     implementation(libs.serialization.kxSerialization.json)
 
-    // Navigation 3
-    implementation(libs.navigation.nav3.runtime)
-    implementation(libs.navigation.nav3.ui)
+    // Navigation: Gezgin (rememberNavigator / GezginDisplay) + the generated topology in
+    // :core:navigation. Gezgin's own api dependency is what brings androidx.navigation3 in, so
+    // this module declares no Navigation 3 coordinate of its own.
+    implementation(libs.navigation.gezgin.core)
 
     api(libs.ui.compose.uiTooling)
 }

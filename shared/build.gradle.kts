@@ -21,7 +21,6 @@ kotlin {
             isStatic = true
 
             // Exports
-            export(projects.core.navigation)
             export(projects.core.common)
             export(projects.core.resource)
             export(projects.core.presentation)
@@ -34,7 +33,6 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(projects.core.navigation)
             api(projects.core.local)
             api(projects.core.config)
             api(projects.core.remote)
