@@ -12,41 +12,56 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.ic_pricing_consumer
+import com.domatapp.core.resource.generated.resources.ic_pricing_producer
+import com.domatapp.core.resource.generated.resources.ic_pricing_retail
+import com.domatapp.core.resource.generated.resources.ic_pricing_wholesaler
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_body
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_consumer_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_consumer_title
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_title
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_retail_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_retail_title
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_title
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_wholesaler_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_wholesaler_title
 import com.domatapp.feature.onboarding.presentation.ui.SupplyChainRow
 import com.domatapp.feature.onboarding.presentation.ui.SupplyChainRowUiModel
 import com.domatapp.feature.onboarding.presentation.ui.SupplyChainRowVariant
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun OnboardingPricingPageContent(modifier: Modifier = Modifier) {
     val rows = listOf(
         SupplyChainRowUiModel(
-            icon = R.drawable.ic_pricing_producer,
+            icon = Res.drawable.ic_pricing_producer,
             variant = SupplyChainRowVariant.Producer,
-            title = stringResource(R.string.onboarding_pricing_producer_title),
-            subtitle = stringResource(R.string.onboarding_pricing_producer_subtitle),
+            title = stringResource(Res.string.onboarding_pricing_producer_title),
+            subtitle = stringResource(Res.string.onboarding_pricing_producer_subtitle),
         ),
         SupplyChainRowUiModel(
-            icon = R.drawable.ic_pricing_wholesaler,
+            icon = Res.drawable.ic_pricing_wholesaler,
             variant = SupplyChainRowVariant.Inactive,
-            title = stringResource(R.string.onboarding_pricing_wholesaler_title),
-            subtitle = stringResource(R.string.onboarding_pricing_wholesaler_subtitle),
+            title = stringResource(Res.string.onboarding_pricing_wholesaler_title),
+            subtitle = stringResource(Res.string.onboarding_pricing_wholesaler_subtitle),
         ),
         SupplyChainRowUiModel(
-            icon = R.drawable.ic_pricing_retail,
+            icon = Res.drawable.ic_pricing_retail,
             variant = SupplyChainRowVariant.Inactive,
-            title = stringResource(R.string.onboarding_pricing_retail_title),
-            subtitle = stringResource(R.string.onboarding_pricing_retail_subtitle),
+            title = stringResource(Res.string.onboarding_pricing_retail_title),
+            subtitle = stringResource(Res.string.onboarding_pricing_retail_subtitle),
         ),
         SupplyChainRowUiModel(
-            icon = R.drawable.ic_pricing_consumer,
+            icon = Res.drawable.ic_pricing_consumer,
             variant = SupplyChainRowVariant.Consumer,
-            title = stringResource(R.string.onboarding_pricing_consumer_title),
-            subtitle = stringResource(R.string.onboarding_pricing_consumer_subtitle),
+            title = stringResource(Res.string.onboarding_pricing_consumer_title),
+            subtitle = stringResource(Res.string.onboarding_pricing_consumer_subtitle),
             showConnector = false,
         ),
     )
@@ -70,13 +85,13 @@ internal fun OnboardingPricingPageContent(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.onboarding_pricing_title),
+                    text = stringResource(Res.string.onboarding_pricing_title),
                     style = MaterialTheme.typography.headlineLarge,
                     color = colorResource(R.color.slate_900),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 )
                 Text(
-                    text = stringResource(R.string.onboarding_pricing_body),
+                    text = stringResource(Res.string.onboarding_pricing_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = colorResource(R.color.slate_600),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,

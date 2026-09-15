@@ -19,14 +19,30 @@ import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationScreen
 import com.domatapp.core.presentation.component.bar.BottomActionBar
 import com.domatapp.core.presentation.component.button.PrimaryButton
-import com.domatapp.feature.auth.presentation.screen.component.LocationCard
-import com.domatapp.feature.auth.presentation.screen.component.LocationCardConnector
-import com.domatapp.feature.auth.presentation.screen.component.InputDropdown
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.button_continue
+import com.domatapp.core.resource.generated.resources.ic_arrow_forward_white
+import com.domatapp.core.resource.generated.resources.ic_building
+import com.domatapp.core.resource.generated.resources.ic_checkmark
+import com.domatapp.core.resource.generated.resources.ic_chevron_down
+import com.domatapp.core.resource.generated.resources.ic_door
+import com.domatapp.core.resource.generated.resources.ic_lock
+import com.domatapp.core.resource.generated.resources.location_apartment_label
+import com.domatapp.core.resource.generated.resources.location_block_label
+import com.domatapp.core.resource.generated.resources.location_building_label
+import com.domatapp.core.resource.generated.resources.location_district_label
+import com.domatapp.core.resource.generated.resources.location_mock_building
+import com.domatapp.core.resource.generated.resources.location_mock_district
+import com.domatapp.core.resource.generated.resources.location_mock_neighborhood
+import com.domatapp.core.resource.generated.resources.location_neighborhood_label
+import com.domatapp.core.resource.generated.resources.placeholder_select
 import com.domatapp.feature.auth.presentation.location.LocationSelectionIntent
 import com.domatapp.feature.auth.presentation.location.LocationSelectionUiState
+import com.domatapp.feature.auth.presentation.screen.component.InputDropdown
+import com.domatapp.feature.auth.presentation.screen.component.LocationCard
+import com.domatapp.feature.auth.presentation.screen.component.LocationCardConnector
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @NavigationScreen(Route.AuthRoute.LocationSelection::class)
 @Composable
@@ -46,29 +62,29 @@ fun ColumnScope.LocationSelectionScreen(
                 verticalArrangement = Arrangement.spacedBy(0.dp),
             ) {
                 LocationCard(
-                    label = stringResource(R.string.location_district_label),
-                    value = stringResource(R.string.location_mock_district),
-                    checkmarkPainter = painterResource(R.drawable.ic_checkmark),
+                    label = stringResource(Res.string.location_district_label),
+                    value = stringResource(Res.string.location_mock_district),
+                    checkmarkPainter = painterResource(Res.drawable.ic_checkmark),
                     isLocked = true,
-                    lockPainter = painterResource(R.drawable.ic_lock),
+                    lockPainter = painterResource(Res.drawable.ic_lock),
                     cardAlpha = 0.6f,
                 )
                 LocationCardConnector()
                 LocationCard(
-                    label = stringResource(R.string.location_neighborhood_label),
-                    value = stringResource(R.string.location_mock_neighborhood),
-                    checkmarkPainter = painterResource(R.drawable.ic_checkmark),
+                    label = stringResource(Res.string.location_neighborhood_label),
+                    value = stringResource(Res.string.location_mock_neighborhood),
+                    checkmarkPainter = painterResource(Res.drawable.ic_checkmark),
                     isLocked = true,
-                    lockPainter = painterResource(R.drawable.ic_lock),
+                    lockPainter = painterResource(Res.drawable.ic_lock),
                     cardAlpha = 0.8f,
                 )
                 LocationCardConnector()
                 LocationCard(
-                    label = stringResource(R.string.location_building_label),
-                    value = stringResource(R.string.location_mock_building),
-                    checkmarkPainter = painterResource(R.drawable.ic_checkmark),
+                    label = stringResource(Res.string.location_building_label),
+                    value = stringResource(Res.string.location_mock_building),
+                    checkmarkPainter = painterResource(Res.drawable.ic_checkmark),
                     isLocked = true,
-                    lockPainter = painterResource(R.drawable.ic_lock),
+                    lockPainter = painterResource(Res.drawable.ic_lock),
                 )
                 LocationCardConnector()
 
@@ -77,22 +93,22 @@ fun ColumnScope.LocationSelectionScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     InputDropdown(
-                        label = stringResource(R.string.location_block_label),
-                        value = uiState.selectedBlock ?: stringResource(R.string.placeholder_select),
-                        iconPainter = painterResource(R.drawable.ic_building),
-                        chevronPainter = painterResource(R.drawable.ic_chevron_down),
-                        checkmarkPainter = painterResource(R.drawable.ic_checkmark),
+                        label = stringResource(Res.string.location_block_label),
+                        value = uiState.selectedBlock ?: stringResource(Res.string.placeholder_select),
+                        iconPainter = painterResource(Res.drawable.ic_building),
+                        chevronPainter = painterResource(Res.drawable.ic_chevron_down),
+                        checkmarkPainter = painterResource(Res.drawable.ic_checkmark),
                         items = uiState.blockItems,
                         selectedItem = uiState.selectedBlock,
                         onItemSelected = { item -> onIntent(LocationSelectionIntent.SelectBlock(item)) },
                         modifier = Modifier.weight(1f),
                     )
                     InputDropdown(
-                        label = stringResource(R.string.location_apartment_label),
-                        value = uiState.selectedApartment ?: stringResource(R.string.placeholder_select),
-                        iconPainter = painterResource(R.drawable.ic_door),
-                        chevronPainter = painterResource(R.drawable.ic_chevron_down),
-                        checkmarkPainter = painterResource(R.drawable.ic_checkmark),
+                        label = stringResource(Res.string.location_apartment_label),
+                        value = uiState.selectedApartment ?: stringResource(Res.string.placeholder_select),
+                        iconPainter = painterResource(Res.drawable.ic_door),
+                        chevronPainter = painterResource(Res.drawable.ic_chevron_down),
+                        checkmarkPainter = painterResource(Res.drawable.ic_checkmark),
                         items = uiState.apartmentItems,
                         selectedItem = uiState.selectedApartment,
                         onItemSelected = { item -> onIntent(LocationSelectionIntent.SelectApartment(item)) },
@@ -108,13 +124,13 @@ fun ColumnScope.LocationSelectionScreen(
         ) {
             BottomActionBar {
                 PrimaryButton(
-                    text = stringResource(R.string.button_continue),
+                    text = stringResource(Res.string.button_continue),
                     onClick = { onIntent(LocationSelectionIntent.Confirm) },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = uiState.isConfirmEnabled,
                     trailingContent = {
                         Image(
-                            painter = painterResource(R.drawable.ic_arrow_forward_white),
+                            painter = painterResource(Res.drawable.ic_arrow_forward_white),
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                         )

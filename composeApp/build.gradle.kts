@@ -20,31 +20,6 @@ kotlin {
     }
 }
 
-// Bundle compose resources from KMP library modules that use com.android.kotlin.multiplatform.library.
-// That plugin doesn't integrate with CopyResourcesToAndroidAssetsTask's outputDirectory, so we do it manually.
-val onboardingAssetsDir = layout.buildDirectory.dir(
-    "compose-feature-assets/composeResources/domatapp.feature.onboarding.presentation.generated.resources"
-)
-val authAssetsDir = layout.buildDirectory.dir(
-    "compose-feature-assets/composeResources/domatapp.feature.auth.presentation.generated.resources"
-)
-
-val copyOnboardingResources = tasks.register<Copy>("copyOnboardingComposeResources") {
-    dependsOn(":feature:onboarding:presentation:prepareComposeResourcesTaskForCommonMain")
-    from(project(":feature:onboarding:presentation").layout.buildDirectory.dir(
-        "generated/compose/resourceGenerator/preparedResources/commonMain/composeResources"
-    ))
-    into(onboardingAssetsDir)
-}
-
-val copyAuthResources = tasks.register<Copy>("copyAuthComposeResources") {
-    dependsOn(":feature:auth:presentation:prepareComposeResourcesTaskForCommonMain")
-    from(project(":feature:auth:presentation").layout.buildDirectory.dir(
-        "generated/compose/resourceGenerator/preparedResources/commonMain/composeResources"
-    ))
-    into(authAssetsDir)
-}
-
 android {
     namespace = "com.domatapp.app"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -71,19 +46,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    sourceSets {
-        named("main") {
-            assets.srcDirs("${layout.buildDirectory.get().asFile}/compose-feature-assets")
-        }
-    }
-}
-
-afterEvaluate {
-    listOf("Debug", "Release").forEach { variant ->
-        tasks.findByName("merge${variant}Assets")
-            ?.dependsOn(copyOnboardingResources, copyAuthResources)
     }
 }
 

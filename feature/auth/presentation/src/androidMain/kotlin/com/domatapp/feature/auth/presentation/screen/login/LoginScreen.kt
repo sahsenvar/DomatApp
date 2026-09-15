@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -34,14 +35,26 @@ import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationScreen
-import com.domatapp.feature.auth.presentation.screen.component.IconBadge
-import com.domatapp.feature.auth.presentation.screen.component.GoogleSignInButton
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.app_name
+import com.domatapp.core.resource.generated.resources.google_sign_in_button_text
+import com.domatapp.core.resource.generated.resources.ic_google
+import com.domatapp.core.resource.generated.resources.ic_leaf_badge
+import com.domatapp.core.resource.generated.resources.img_hero_login
+import com.domatapp.core.resource.generated.resources.onboarding_login_hero_badge
+import com.domatapp.core.resource.generated.resources.onboarding_login_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_login_tos_connector
+import com.domatapp.core.resource.generated.resources.onboarding_login_tos_link1
+import com.domatapp.core.resource.generated.resources.onboarding_login_tos_link2
+import com.domatapp.core.resource.generated.resources.onboarding_login_tos_prefix
+import com.domatapp.core.resource.generated.resources.onboarding_login_tos_suffix
 import com.domatapp.feature.auth.presentation.login.LoginIntent
 import com.domatapp.feature.auth.presentation.login.LoginUiState
+import com.domatapp.feature.auth.presentation.screen.component.GoogleSignInButton
+import com.domatapp.feature.auth.presentation.screen.component.IconBadge
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @NavigationScreen(Route.AuthRoute.Login::class)
 @Composable
@@ -70,7 +83,7 @@ fun ColumnScope.LoginScreen(
                 .clip(heroShape),
         ) {
             Image(
-                painter = painterResource(R.drawable.img_hero_login),
+                painter = painterResource(Res.drawable.img_hero_login),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
@@ -95,11 +108,11 @@ fun ColumnScope.LoginScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 IconBadge(
-                    iconPainter = painterResource(R.drawable.ic_leaf_badge),
-                    text = stringResource(R.string.onboarding_login_hero_badge),
+                    iconPainter = painterResource(Res.drawable.ic_leaf_badge),
+                    text = stringResource(Res.string.onboarding_login_hero_badge),
                 )
                 Text(
-                    text = stringResource(R.string.app_name),
+                    text = stringResource(Res.string.app_name),
                     style = MaterialTheme.typography.displayLarge,
                     color = Color.White,
                 )
@@ -114,7 +127,7 @@ fun ColumnScope.LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = stringResource(R.string.onboarding_login_subtitle),
+                text = stringResource(Res.string.onboarding_login_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = colorResource(R.color.slate_600),
                 textAlign = TextAlign.Center,
@@ -124,8 +137,8 @@ fun ColumnScope.LoginScreen(
 
             GoogleSignInButton(
                 onClick = { onIntent(LoginIntent.OnGoogleSignInClicked) },
-                iconPainter = painterResource(R.drawable.ic_google),
-                text = stringResource(R.string.google_sign_in_button_text),
+                iconPainter = painterResource(Res.drawable.ic_google),
+                text = stringResource(Res.string.google_sign_in_button_text),
             )
         }
 
@@ -138,25 +151,25 @@ fun ColumnScope.LoginScreen(
         ) {
             Text(
                 text = buildAnnotatedString {
-                    append(stringResource(R.string.onboarding_login_tos_prefix))
+                    append(stringResource(Res.string.onboarding_login_tos_prefix))
                     withStyle(
                         SpanStyle(
                             color = colorResource(R.color.malachite),
                             textDecoration = TextDecoration.Underline,
                         ),
                     ) {
-                        append(stringResource(R.string.onboarding_login_tos_link1))
+                        append(stringResource(Res.string.onboarding_login_tos_link1))
                     }
-                    append(stringResource(R.string.onboarding_login_tos_connector))
+                    append(stringResource(Res.string.onboarding_login_tos_connector))
                     withStyle(
                         SpanStyle(
                             color = colorResource(R.color.malachite),
                             textDecoration = TextDecoration.Underline,
                         ),
                     ) {
-                        append(stringResource(R.string.onboarding_login_tos_link2))
+                        append(stringResource(Res.string.onboarding_login_tos_link2))
                     }
-                    append(stringResource(R.string.onboarding_login_tos_suffix))
+                    append(stringResource(Res.string.onboarding_login_tos_suffix))
                 },
                 style = MaterialTheme.typography.labelMedium,
                 color = colorResource(R.color.slate_400),

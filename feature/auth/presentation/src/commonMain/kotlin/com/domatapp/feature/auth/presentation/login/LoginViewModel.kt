@@ -4,17 +4,17 @@ import androidx.lifecycle.viewModelScope
 import com.domatapp.core.navigation.Route
 import com.domatapp.core.navigation.annotations.NavigationViewModel
 import com.domatapp.core.presentation.base.BaseViewModel
-import com.domatapp.core.resource.MR
 import com.domatapp.core.resource.api.StringResourceApi
-import com.domatapp.core.resource.error_account_disabled
-import com.domatapp.core.resource.error_client
-import com.domatapp.core.resource.error_email_already_in_use
-import com.domatapp.core.resource.error_invalid_credentials
-import com.domatapp.core.resource.error_no_connection
-import com.domatapp.core.resource.error_server
-import com.domatapp.core.resource.error_timeout
-import com.domatapp.core.resource.error_unknown
-import com.domatapp.core.resource.error_user_not_found
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.error_account_disabled
+import com.domatapp.core.resource.generated.resources.error_client
+import com.domatapp.core.resource.generated.resources.error_email_already_in_use
+import com.domatapp.core.resource.generated.resources.error_invalid_credentials
+import com.domatapp.core.resource.generated.resources.error_no_connection
+import com.domatapp.core.resource.generated.resources.error_server
+import com.domatapp.core.resource.generated.resources.error_timeout
+import com.domatapp.core.resource.generated.resources.error_unknown
+import com.domatapp.core.resource.generated.resources.error_user_not_found
 import com.domatapp.core.resulting.error.DomainError
 import com.domatapp.core.resulting.error.RemoteError
 import com.domatapp.feature.auth.domain.error.AuthError
@@ -72,15 +72,15 @@ class LoginViewModel(
     /**
      * Convert DomainError to user-friendly UI message.
      */
-    private fun DomainError.toUiMessage(): String = when (this) {
-        is AuthError.InvalidCredentials -> stringResource.getString(MR.strings.error_invalid_credentials)
-        is AuthError.UserNotFound -> stringResource.getString(MR.strings.error_user_not_found)
-        is AuthError.EmailAlreadyInUse -> stringResource.getString(MR.strings.error_email_already_in_use)
-        is AuthError.AccountDisabled -> stringResource.getString(MR.strings.error_account_disabled)
-        is RemoteError.NoConnection -> stringResource.getString(MR.strings.error_no_connection)
-        is RemoteError.Timeout -> stringResource.getString(MR.strings.error_timeout)
-        is RemoteError.ServerError -> stringResource.getString(MR.strings.error_server, code)
-        is RemoteError.ClientError -> stringResource.getString(MR.strings.error_client, code)
-        else -> message ?: stringResource.getString(MR.strings.error_unknown)
+    private suspend fun DomainError.toUiMessage(): String = when (this) {
+        is AuthError.InvalidCredentials -> stringResource.getString(Res.string.error_invalid_credentials)
+        is AuthError.UserNotFound -> stringResource.getString(Res.string.error_user_not_found)
+        is AuthError.EmailAlreadyInUse -> stringResource.getString(Res.string.error_email_already_in_use)
+        is AuthError.AccountDisabled -> stringResource.getString(Res.string.error_account_disabled)
+        is RemoteError.NoConnection -> stringResource.getString(Res.string.error_no_connection)
+        is RemoteError.Timeout -> stringResource.getString(Res.string.error_timeout)
+        is RemoteError.ServerError -> stringResource.getString(Res.string.error_server, code)
+        is RemoteError.ClientError -> stringResource.getString(Res.string.error_client, code)
+        else -> message ?: stringResource.getString(Res.string.error_unknown)
     }
 }

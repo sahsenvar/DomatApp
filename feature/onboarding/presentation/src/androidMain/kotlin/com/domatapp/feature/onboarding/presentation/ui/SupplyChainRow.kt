@@ -1,6 +1,5 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -24,8 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,11 +30,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.ic_pricing_producer
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_title
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 enum class SupplyChainRowVariant { Producer, Inactive, Consumer }
 
 data class SupplyChainRowUiModel(
-    @DrawableRes val icon: Int,
+    val icon: DrawableResource,
     val variant: SupplyChainRowVariant,
     val title: String,
     val subtitle: String,
@@ -162,10 +166,10 @@ private fun SupplyChainRowPreview() {
     DomatTheme {
         SupplyChainRow(
             uiModel = SupplyChainRowUiModel(
-                icon = R.drawable.ic_pricing_producer,
+                icon = Res.drawable.ic_pricing_producer,
                 variant = SupplyChainRowVariant.Producer,
-                title = stringResource(R.string.onboarding_pricing_producer_title),
-                subtitle = stringResource(R.string.onboarding_pricing_producer_subtitle),
+                title = stringResource(Res.string.onboarding_pricing_producer_title),
+                subtitle = stringResource(Res.string.onboarding_pricing_producer_subtitle),
             )
         )
     }

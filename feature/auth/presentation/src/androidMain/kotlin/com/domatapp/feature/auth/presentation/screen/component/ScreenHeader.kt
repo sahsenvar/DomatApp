@@ -21,12 +21,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.cd_back_button
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ScreenHeader(
@@ -57,7 +59,7 @@ fun ScreenHeader(
             ) {
                 Image(
                     painter = backIconPainter,
-                    contentDescription = stringResource(R.string.cd_back_button),
+                    contentDescription = stringResource(Res.string.cd_back_button),
                     modifier = Modifier.size(16.dp),
                 )
             }

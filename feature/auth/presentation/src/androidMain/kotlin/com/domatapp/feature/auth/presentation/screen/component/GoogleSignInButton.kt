@@ -19,11 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.cd_google_icon
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun GoogleSignInButton(
@@ -43,7 +45,7 @@ fun GoogleSignInButton(
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Image(
                 painter = iconPainter,
-                contentDescription = stringResource(R.string.cd_google_icon),
+                contentDescription = stringResource(Res.string.cd_google_icon),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .padding(start = 20.dp)
