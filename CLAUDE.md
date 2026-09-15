@@ -560,6 +560,11 @@ plugins {
 
 dependencies {
     commonMainApi(libs.ui.compose.componentsResources)
+    // Required, not optional: components-resources' Android releaseApiElements (compile classpath)
+    // variant declares only kotlin-stdlib. The Compose runtime is in releaseRuntimeElements only,
+    // and the Compose compiler plugin checks the compile classpath - without this, applying
+    // org.jetbrains.compose here fails with IncompatibleComposeRuntimeVersionException.
+    commonMainApi(libs.ui.compose.runtime)
 }
 
 compose.resources {
@@ -648,7 +653,10 @@ gone.
 - **iOS framework packaging is not wired yet.** `:shared` builds `Shared.framework` but does not
   apply the Compose Gradle plugin, so Compose Resources' iOS resource-sync task never runs for it.
   Android is unaffected; reading a string on iOS through `StringResourceApi` would fail at runtime.
-  Open follow-up — iOS is not built in CI today either.
+  Open follow-up — iOS is not built in CI today either. Fixing it is more than adding the plugin to
+  `:shared`: `iosApp.xcodeproj/project.pbxproj` links `Shared.framework` by a hardcoded path rather
+  than via `embedAndSignAppleFrameworkForXcode`, so the sync task's output would also need its own
+  Xcode build phase to actually reach the app bundle.
 
 ## Local Source (Room DAO)
 

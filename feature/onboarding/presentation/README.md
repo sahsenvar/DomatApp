@@ -40,7 +40,7 @@ MaterialTheme.colorScheme.primary
 Text(style = MaterialTheme.typography.displayMedium)
 Text(style = MaterialTheme.typography.bodyLarge)
 
-// Font ailesi DomatTheme içinde MR.fonts.nunito_sans_regular olarak otomatik set edilir.
+// Font ailesi DomatTheme içinde Res.font.nunito_sans_regular olarak otomatik set edilir.
 ```
 
 ### String

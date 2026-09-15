@@ -300,4 +300,13 @@ The things that are easy to get wrong, and that cost real investigation:
   as the first thing to check if the app ever launches blank.
 - **`:shared` does not apply the Compose plugin**, so Compose Resources' iOS resource-sync task
   never runs for `Shared.framework`. Reading a string on iOS would fail at runtime. Known gap, not
-  yet fixed, and not covered by the Android-only CI.
+  yet fixed, and not covered by the Android-only CI. Fixing it is more than applying the plugin:
+  `iosApp.xcodeproj/project.pbxproj` links `Shared.framework` by a hardcoded path, not via
+  `embedAndSignAppleFrameworkForXcode`, so the sync task's output needs its own Xcode build phase too.
+- **`components-resources`' Android compile-classpath variant (`releaseApiElements`) declares only
+  `kotlin-stdlib` — the Compose runtime is in `releaseRuntimeElements` only.** Any module that
+  applies `org.jetbrains.compose` directly (as `:core:resource` does, not through
+  `domatapp.cmp.library`) must declare `commonMainApi(libs.ui.compose.runtime)` itself, or the
+  Compose compiler plugin fails with `IncompatibleComposeRuntimeVersionException` — it checks the
+  compile classpath, which has no Compose runtime on it without this. Found the hard way: a real CI
+  run failed on it before this was known; verified from the published `.module` metadata.
