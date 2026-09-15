@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import com.domatapp.core.common.presentation.Environment
 import com.domatapp.core.navigation.AuthGraph
 import com.domatapp.core.navigation.LoginNavigator
 import com.domatapp.core.presentation.screen.DomatEffectScope
@@ -17,9 +18,6 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
-
-private const val WEB_CLIENT_ID =
-    "60308278582-09rmm39o0mmpc5krfdjhp7kkd514j20e.apps.googleusercontent.com"
 
 /** Fills `DomatScreenRoot`'s ViewModel slot for [AuthGraph.LoginRoute]. */
 @ViewModelOf(AuthGraph.LoginRoute::class)
@@ -57,7 +55,7 @@ private suspend fun launchGoogleSignIn(
     val request = GetCredentialRequest.Builder().addCredentialOption(
         GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
-            .setServerClientId(WEB_CLIENT_ID)
+            .setServerClientId(Environment.googleWebClientId)
             .setAutoSelectEnabled(false)
             //.setNonce() todo: Güvenlik için daha sonra eklenecek
             .build()
