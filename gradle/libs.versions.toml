@@ -34,8 +34,6 @@ ktorfitx = "3.4.2-3.3.3"
 # registerProcessorForNewFeatures + KSVisitorNext. Every processor here is now third-party
 # (KtorfitX, KMapper, KspPreferences, Gezgin), so a bump waits on all of them, not on this repo.
 ksp = "2.3.11"
-moko-resources = "0.27.0"
-moko-graphics = "0.10.2"
 # Gezgin - type-safe, annotation-driven navigation on top of AndroidX Navigation 3
 # (github.com/sahsenvar/Gezgin). Gezgin's own `api` dependency is what pins the Navigation 3 and
 # lifecycle-navigation3 versions now, so this repo no longer declares androidx.navigation3 itself.
@@ -94,9 +92,6 @@ network-ktorClient-logging = { group = "io.ktor", name = "ktor-client-logging", 
 network-ktorClient-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 network-ktorClient-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 core-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
-resource-moko-core = { group = "dev.icerock.moko", name = "resources", version.ref = "moko-resources" }
-resource-moko-compose = { group = "dev.icerock.moko", name = "resources-compose", version.ref = "moko-resources" }
-resource-moko-graphics = { group = "dev.icerock.moko", name = "graphics", version.ref = "moko-graphics" }
 navigation-gezgin-core = { group = "io.github.sahsenvar", name = "gezgin-core", version.ref = "gezgin" }
 navigation-gezgin-processor = { group = "io.github.sahsenvar", name = "gezgin-processor", version.ref = "gezgin" }
 persistence-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "dataStoreVersion" }
@@ -144,7 +139,6 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 koinCompiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-compiler" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ktorfitx = { id = "cn.ktorfitx.multiplatform", version.ref = "ktorfitx" }
-mokoResources = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko-resources" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
 androidxRoom = { id = "androidx.room", version.ref = "room" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

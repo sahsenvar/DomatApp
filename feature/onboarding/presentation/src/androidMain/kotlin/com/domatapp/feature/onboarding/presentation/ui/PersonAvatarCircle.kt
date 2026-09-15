@@ -1,6 +1,5 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,15 +13,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.ic_person_community
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
-internal fun PersonAvatarCircle(@DrawableRes icon: Int, backgroundColor: Color, offsetX: Dp) {
+internal fun PersonAvatarCircle(icon: DrawableResource, backgroundColor: Color, offsetX: Dp) {
     Box(
         modifier = Modifier
             .offset(x = offsetX)
@@ -45,7 +47,7 @@ internal fun PersonAvatarCircle(@DrawableRes icon: Int, backgroundColor: Color, 
 private fun PersonAvatarCirclePreview() {
     DomatTheme {
         PersonAvatarCircle(
-            icon = R.drawable.ic_person_community,
+            icon = Res.drawable.ic_person_community,
             backgroundColor = colorResource(R.color.malachite_20),
             offsetX = 0.dp,
         )

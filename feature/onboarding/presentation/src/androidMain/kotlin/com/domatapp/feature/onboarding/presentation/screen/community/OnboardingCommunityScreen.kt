@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -24,14 +23,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.onboarding_community_body
+import com.domatapp.core.resource.generated.resources.onboarding_community_price_current
+import com.domatapp.core.resource.generated.resources.onboarding_community_price_original
+import com.domatapp.core.resource.generated.resources.onboarding_community_title_highlight
+import com.domatapp.core.resource.generated.resources.onboarding_community_title_line1
 import com.domatapp.feature.onboarding.presentation.ui.CommunityHeroCard
 import com.domatapp.feature.onboarding.presentation.ui.CommunityHeroCardUiModel
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
     val heroCard = CommunityHeroCardUiModel(
-        currentPrice = stringResource(R.string.onboarding_community_price_current),
-        originalPrice = stringResource(R.string.onboarding_community_price_original),
+        currentPrice = stringResource(Res.string.onboarding_community_price_current),
+        originalPrice = stringResource(Res.string.onboarding_community_price_original),
     )
 
     Box(
@@ -56,10 +62,10 @@ internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
 
                 Text(
                     text = buildAnnotatedString {
-                        append(stringResource(R.string.onboarding_community_title_line1))
+                        append(stringResource(Res.string.onboarding_community_title_line1))
                         append("\n")
                         withStyle(SpanStyle(color = colorResource(R.color.malachite))) {
-                            append(stringResource(R.string.onboarding_community_title_highlight))
+                            append(stringResource(Res.string.onboarding_community_title_highlight))
                         }
                     },
                     style = MaterialTheme.typography.headlineLarge,
@@ -69,7 +75,7 @@ internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
                 )
 
                 Text(
-                    text = stringResource(R.string.onboarding_community_body),
+                    text = stringResource(Res.string.onboarding_community_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = colorResource(R.color.slate_600),
                     textAlign = TextAlign.Center,

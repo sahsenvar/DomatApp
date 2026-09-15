@@ -6,7 +6,8 @@
 - Uses SwiftUI with iOS 17+ patterns
 - Xcode project at `iosApp/iosApp.xcodeproj/`
 - SKIE 0.10.10 enabled for Swift interop (sealed class -> enum, Flow -> AsyncSequence)
-- Shared.framework is static, exports core:navigation, moko.resources, moko.graphics
+- Shared.framework is static, exports core:navigation/common/resource/presentation + coroutines
+  (the moko.resources / moko.graphics exports are gone with Moko)
 
 ## KMP ViewModel Integration (iOS)
 
@@ -19,7 +20,8 @@
 ## Design System
 
 - Font: Nunito Sans (must be bundled in Xcode project)
-- Colors from Moko Resources `colors.xml` - exact hex values in DomatColors.swift
+- Colors from `core/resource/src/androidMain/res/values/colors.xml` (plain Android res, NOT a
+  multiplatform resource) - exact hex values mirrored by hand in DomatColors.swift
 - Material 3 semantic scheme (light/dark) via DomatColorScheme struct + Environment
 - Spacing: xxs(2) xs(4) sm(8) md(16) lg(24) xl(32) xxl(48)
 - Shapes: small(8) medium(12) large(16) extraLarge(24)
@@ -265,10 +267,64 @@ target; the docs already only assumed `iosArm64`/`iosSimulatorArm64`). If a futu
 an `iosX64()` declaration anywhere, check dependency variant coverage first — this is exactly the
 class of failure that bit `core:data` twice (KMapper, then KspPreferences).
 
-## CI does not verify anything
+## CI: check which workflow the branch actually carries
 
-`.github/workflows/ci.yml`'s `build` job runs `echo "build ok"`. Green checks on a PR are
-meaningless — never cite them as validation. No Android SDK and `dl.google.com` is blocked in the
-agent sandbox, so `./gradlew` cannot get past AGP plugin resolution for this project. Maven Central
-*is* reachable: a throwaway KMP project using only `kotlin("multiplatform")` will run, which is the
-way to verify that a dependency's variants actually resolve.
+The agent sandbox still cannot build: no Android SDK, and `dl.google.com` / `maven.google.com` are
+blocked, so `./gradlew` never gets past AGP plugin resolution. Maven Central *is* reachable —
+downloading an artifact and reading its classes with `javap`/`strings` is the way to settle "does
+this library actually have that API" questions, and it has repeatedly beaten reasoning from memory.
+
+`main`'s `.github/workflows/ci.yml` was still `echo "build ok"` as of the Compose Resources work;
+**a green check on a PR based on it proves nothing.** The real workflow (`:composeApp:assembleDebug`
+on JDK 21 + detekt) lives in PR #16. Until that merges, the way to get real verification is to push
+a throwaway branch carrying a copy of the real workflow — `on: push` fires it — read the result,
+then delete the branch. Do that rather than claiming "should compile".
+
+Reading the logs: `mcp__github__get_job_logs` only returns a tail and the blob URL it hands back is
+egress-blocked, so ask for ~330 tail lines and look for the `e: file://` lines and the
+`> Task :x:y FAILED` line. **Which task failed matters** — `compileAndroidMain` compiles commonMain
+*and* androidMain together, so "only commonMain errors appeared" means androidMain genuinely
+compiled.
+
+
+## Resources: Compose Multiplatform Resources (replaced Moko Resources)
+
+`:core:resource` owns everything under `src/commonMain/composeResources/`, generating
+`com.domatapp.core.resource.generated.resources.Res` with `publicResClass = true`. Moko (`MR`,
+`moko-resources/`, the `dev.icerock.mobile.multiplatform-resources` plugin) is fully removed. Full
+write-up is in CLAUDE.md under *Resources (Compose Multiplatform Resources)*.
+
+The things that are easy to get wrong, and that cost real investigation:
+
+- **`com.android.kotlin.multiplatform.library` keeps Android resource processing OFF by default.**
+  Moko's Gradle plugin was silently turning it on (`dev.icerock.gradle.utils.enableAndroidResources`
+  → `androidResources.enable = true`), which is the only reason `com.domatapp.core.resource.R`
+  resolved. `KmpLibraryConventionPlugin` now sets it. If an R class ever "disappears" after a plugin
+  is removed, check whether that plugin was the one enabling it.
+- **Compose Resources has no color type.** 1.12.0 ships String / PluralString / StringArray /
+  Drawable / Font and nothing else (verified by listing the classes in the published `.aar`). Colors
+  cannot move out of Android res; `colorResource(R.color.x)` stays.
+- **SVG works on every platform except Android**, which is the only platform whose Compose UI runs
+  here. Icons must be committed as Android vector drawable XML.
+- **String formatting regex is `%(\d+)\$[ds]`** and only applies on the `vararg` overloads, so a
+  bare `%d` never substitutes and Moko's `%%` percent escape renders literally. Use `%1$d` and `%`.
+- **Two `stringResource`/`painterResource` functions exist** — `androidx.compose.ui.res` (takes an
+  `Int`) and `org.jetbrains.compose.resources` (takes the resource object). A file can import only
+  one of each pair; mixing them is the most likely mechanical error in a migration like this.
+- **CMP 1.12.0's own plugin handles this AGP plugin type's assets** (`AndroidResourcesKt` hooks
+  `KotlinMultiplatformAndroidComponentsExtension`), so composeApp's hand-written
+  `CopyResourcesToAndroidAssetsTask`-style workaround was deleted, not retargeted. That mechanism is
+  runtime-only, so CI (compile) cannot confirm it — treat "resources missing at runtime on Android"
+  as the first thing to check if the app ever launches blank.
+- **`:shared` does not apply the Compose plugin**, so Compose Resources' iOS resource-sync task
+  never runs for `Shared.framework`. Reading a string on iOS would fail at runtime. Known gap, not
+  yet fixed, and not covered by the Android-only CI. Fixing it is more than applying the plugin:
+  `iosApp.xcodeproj/project.pbxproj` links `Shared.framework` by a hardcoded path, not via
+  `embedAndSignAppleFrameworkForXcode`, so the sync task's output needs its own Xcode build phase too.
+- **`components-resources`' Android compile-classpath variant (`releaseApiElements`) declares only
+  `kotlin-stdlib` — the Compose runtime is in `releaseRuntimeElements` only.** Any module that
+  applies `org.jetbrains.compose` directly (as `:core:resource` does, not through
+  `domatapp.cmp.library`) must declare `commonMainApi(libs.ui.compose.runtime)` itself, or the
+  Compose compiler plugin fails with `IncompatibleComposeRuntimeVersionException` — it checks the
+  compile classpath, which has no Compose runtime on it without this. Found the hard way: a real CI
+  run failed on it before this was known; verified from the published `.module` metadata.

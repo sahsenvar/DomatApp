@@ -1,6 +1,5 @@
 package com.domatapp.feature.onboarding.presentation.screen.trust
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,17 +23,29 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.feature.onboarding.presentation.screen.component.FeatureListItem
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.ic_feature_location
+import com.domatapp.core.resource.generated.resources.ic_feature_origin
+import com.domatapp.core.resource.generated.resources.ic_feature_producer
+import com.domatapp.core.resource.generated.resources.ic_shield_large
+import com.domatapp.core.resource.generated.resources.ic_trust_wallet_badge
+import com.domatapp.core.resource.generated.resources.onboarding_trust_body
+import com.domatapp.core.resource.generated.resources.onboarding_trust_feature_guarantee
+import com.domatapp.core.resource.generated.resources.onboarding_trust_feature_location
+import com.domatapp.core.resource.generated.resources.onboarding_trust_feature_producer
+import com.domatapp.core.resource.generated.resources.onboarding_trust_title
+import com.domatapp.feature.onboarding.presentation.screen.component.FeatureListItem
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 data class TrustFeatureUiModel(
-    @DrawableRes val icon: Int,
+    val icon: DrawableResource,
     val text: String,
 )
 
@@ -42,16 +53,16 @@ data class TrustFeatureUiModel(
 internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
     val features = listOf(
         TrustFeatureUiModel(
-            icon = R.drawable.ic_feature_producer,
-            text = stringResource(R.string.onboarding_trust_feature_producer),
+            icon = Res.drawable.ic_feature_producer,
+            text = stringResource(Res.string.onboarding_trust_feature_producer),
         ),
         TrustFeatureUiModel(
-            icon = R.drawable.ic_feature_location,
-            text = stringResource(R.string.onboarding_trust_feature_location),
+            icon = Res.drawable.ic_feature_location,
+            text = stringResource(Res.string.onboarding_trust_feature_location),
         ),
         TrustFeatureUiModel(
-            icon = R.drawable.ic_feature_origin,
-            text = stringResource(R.string.onboarding_trust_feature_guarantee),
+            icon = Res.drawable.ic_feature_origin,
+            text = stringResource(Res.string.onboarding_trust_feature_guarantee),
         ),
     )
 
@@ -90,12 +101,12 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Image(
-                    painter = painterResource(R.drawable.ic_shield_large),
+                    painter = painterResource(Res.drawable.ic_shield_large),
                     contentDescription = null,
                     modifier = Modifier.size(width = 70.dp, height = 90.dp),
                 )
                 Image(
-                    painter = painterResource(R.drawable.ic_trust_wallet_badge),
+                    painter = painterResource(Res.drawable.ic_trust_wallet_badge),
                     contentDescription = null,
                     modifier = Modifier
                         .size(width = 42.dp, height = 41.dp)
@@ -115,13 +126,13 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(11.dp),
         ) {
             Text(
-                text = stringResource(R.string.onboarding_trust_title),
+                text = stringResource(Res.string.onboarding_trust_title),
                 style = MaterialTheme.typography.headlineLarge,
                 color = colorResource(R.color.slate_900),
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = stringResource(R.string.onboarding_trust_body),
+                text = stringResource(Res.string.onboarding_trust_body),
                 style = MaterialTheme.typography.bodyMedium,
                 color = colorResource(R.color.slate_600),
                 textAlign = TextAlign.Center,

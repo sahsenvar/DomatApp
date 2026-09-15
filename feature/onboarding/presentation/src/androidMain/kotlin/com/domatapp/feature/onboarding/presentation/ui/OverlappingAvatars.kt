@@ -11,6 +11,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.ic_person_community
+import com.domatapp.core.resource.generated.resources.ic_person_community_white
 
 @Composable
 internal fun OverlappingAvatars(primary20: Color, primary30: Color, primary: Color) {
@@ -19,10 +22,10 @@ internal fun OverlappingAvatars(primary20: Color, primary30: Color, primary: Col
             .width(48.dp + 48.dp + 48.dp + 48.dp - 16.dp - 16.dp - 16.dp)
             .height(48.dp),
     ) {
-        PersonAvatarCircle(icon = R.drawable.ic_person_community, backgroundColor = primary20, offsetX = 0.dp)
-        PersonAvatarCircle(icon = R.drawable.ic_person_community, backgroundColor = primary30, offsetX = 32.dp)
-        PersonAvatarCircle(icon = R.drawable.ic_person_community, backgroundColor = primary30, offsetX = 64.dp)
-        PersonAvatarCircle(icon = R.drawable.ic_person_community_white, backgroundColor = primary, offsetX = 96.dp)
+        PersonAvatarCircle(icon = Res.drawable.ic_person_community, backgroundColor = primary20, offsetX = 0.dp)
+        PersonAvatarCircle(icon = Res.drawable.ic_person_community, backgroundColor = primary30, offsetX = 32.dp)
+        PersonAvatarCircle(icon = Res.drawable.ic_person_community, backgroundColor = primary30, offsetX = 64.dp)
+        PersonAvatarCircle(icon = Res.drawable.ic_person_community_white, backgroundColor = primary, offsetX = 96.dp)
     }
 }
 

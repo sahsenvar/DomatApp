@@ -22,13 +22,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.img_effortless_illustration
+import com.domatapp.core.resource.generated.resources.onboarding_effortless_body
+import com.domatapp.core.resource.generated.resources.onboarding_effortless_title
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
@@ -76,7 +80,7 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
-                    painter = painterResource(R.drawable.img_effortless_illustration),
+                    painter = painterResource(Res.drawable.img_effortless_illustration),
                     contentDescription = null,
                     modifier = Modifier.size(320.dp),
                     contentScale = ContentScale.Fit,
@@ -92,13 +96,13 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.onboarding_effortless_title),
+                    text = stringResource(Res.string.onboarding_effortless_title),
                     style = MaterialTheme.typography.headlineLarge,
                     color = colorResource(R.color.slate_900),
                     textAlign = TextAlign.Center,
                 )
                 Text(
-                    text = stringResource(R.string.onboarding_effortless_body),
+                    text = stringResource(Res.string.onboarding_effortless_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = colorResource(R.color.slate_600),
                     textAlign = TextAlign.Center,

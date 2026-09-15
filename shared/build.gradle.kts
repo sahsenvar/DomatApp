@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.koinCompiler)
     alias(libs.plugins.skie)
-    alias(libs.plugins.mokoResources)
 }
 
 kotlin {
@@ -29,8 +28,6 @@ kotlin {
             export(projects.feature.auth.presentation)
 
             export(libs.concurrency.coroutine.core)
-            export(libs.resource.moko.core)
-            export(libs.resource.moko.graphics)
         }
     }
 
@@ -52,16 +49,8 @@ kotlin {
             api(libs.di.koin.core)
             api(libs.di.koin.annotations)
             api(libs.concurrency.coroutine.core)
-
-            api(libs.resource.moko.core)
-            api(libs.resource.moko.graphics)
-
         }
     }
-}
-
-multiplatformResources {
-    resourcesPackage.set("com.domatapp.shared")
 }
 
 koinCompiler {

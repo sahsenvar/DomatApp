@@ -18,8 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -27,6 +25,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.img_welcome_neighborhood
+import com.domatapp.core.resource.generated.resources.onboarding_image_neighborhood_desc
+import com.domatapp.core.resource.generated.resources.onboarding_welcome_body
+import com.domatapp.core.resource.generated.resources.onboarding_welcome_title_highlight
+import com.domatapp.core.resource.generated.resources.onboarding_welcome_title_line1
+import com.domatapp.core.resource.generated.resources.onboarding_welcome_title_line3
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun OnboardingWelcomePageContent(modifier: Modifier = Modifier) {
@@ -45,8 +52,8 @@ internal fun OnboardingWelcomePageContent(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                painter = painterResource(R.drawable.img_welcome_neighborhood),
-                contentDescription = stringResource(R.string.onboarding_image_neighborhood_desc),
+                painter = painterResource(Res.drawable.img_welcome_neighborhood),
+                contentDescription = stringResource(Res.string.onboarding_image_neighborhood_desc),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp)),
@@ -58,13 +65,13 @@ internal fun OnboardingWelcomePageContent(modifier: Modifier = Modifier) {
 
         Text(
             text = buildAnnotatedString {
-                append(stringResource(R.string.onboarding_welcome_title_line1))
+                append(stringResource(Res.string.onboarding_welcome_title_line1))
                 append("\n")
                 withStyle(SpanStyle(color = colorResource(R.color.malachite))) {
-                    append(stringResource(R.string.onboarding_welcome_title_highlight))
+                    append(stringResource(Res.string.onboarding_welcome_title_highlight))
                 }
                 append("\n")
-                append(stringResource(R.string.onboarding_welcome_title_line3))
+                append(stringResource(Res.string.onboarding_welcome_title_line3))
             },
             style = MaterialTheme.typography.displayMedium,
             color = colorResource(R.color.slate_900),
@@ -73,7 +80,7 @@ internal fun OnboardingWelcomePageContent(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = stringResource(R.string.onboarding_welcome_body),
+            text = stringResource(Res.string.onboarding_welcome_body),
             style = MaterialTheme.typography.bodyLarge,
             color = colorResource(R.color.slate_600),
         )

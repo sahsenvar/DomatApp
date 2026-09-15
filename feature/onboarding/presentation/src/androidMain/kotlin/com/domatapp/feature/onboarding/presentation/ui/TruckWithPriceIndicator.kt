@@ -22,7 +22,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.ic_delivery_truck_green
+import com.domatapp.core.resource.generated.resources.ic_trending_down
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun TruckWithPriceIndicator(
@@ -69,7 +72,7 @@ internal fun TruckWithPriceIndicator(
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                painter = painterResource(R.drawable.ic_delivery_truck_green),
+                painter = painterResource(Res.drawable.ic_delivery_truck_green),
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
             )
@@ -86,7 +89,7 @@ internal fun TruckWithPriceIndicator(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Image(
-                    painter = painterResource(R.drawable.ic_trending_down),
+                    painter = painterResource(Res.drawable.ic_trending_down),
                     contentDescription = null,
                     modifier = Modifier.size(width = 12.dp, height = 7.dp),
                 )

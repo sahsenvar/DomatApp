@@ -1,16 +1,22 @@
 package com.domatapp.core.design.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.typography.DomatTypographyScale
-import com.domatapp.core.resource.R
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.nunito_sans_regular
+import org.jetbrains.compose.resources.Font
 
+// @Composable because Compose Resources' Font() loads the font through the resource reader
+// rather than resolving an Android font resource id. Called from DomatTheme, which is itself
+// composable, so this costs nothing at the call site.
+@Composable
 internal fun domatTypography(): Typography {
-    val nunito = FontFamily(Font(R.font.nunito_sans_regular))
+    val nunito = FontFamily(Font(Res.font.nunito_sans_regular))
 
     return Typography(
         displayLarge = TextStyle(
