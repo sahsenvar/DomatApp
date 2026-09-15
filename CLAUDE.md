@@ -604,7 +604,9 @@ Gezgin does not resolve ViewModels, collect state or define a container. **One**
 composable does, for the whole app — `DomatScreenRoot` in
 `core/presentation/src/androidMain/.../screen/DomatScreenRoot.kt`. Its parameters are slots marked
 `@FilledBy(Marker::class)`, and each marker is a project-defined annotation meta-annotated
-`@ScreenSlot`:
+`@ScreenSlot`, declared in a sibling `Annotation.kt` next to the wrapper rather than inline in the
+same file — the project convention for any project-defined annotation going forward, not just
+these two:
 
 ```kotlin
 @ScreenSlot @Repeatable annotation class ViewModelOf(val route: KClass<out Route>)

@@ -14,40 +14,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.domatapp.core.presentation.base.BaseViewModel
 import com.domatapp.core.presentation.compose.LocalSnackbarHostState
-import dev.gezgin.core.Route
 import dev.gezgin.core.annotation.FilledBy
 import dev.gezgin.core.annotation.Screen
-import dev.gezgin.core.annotation.ScreenSlot
 import dev.gezgin.core.annotation.ScreenWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlin.reflect.KClass
-
-/**
- * Binds a `@Composable` provider to the ViewModel of [route].
- *
- * The provider calls DI itself (`koinViewModel()` here, or a plain `viewModel { }` for a screen
- * that has no injected collaborators) and may take the route instance as a parameter when it needs
- * its arguments. Gezgin never resolves a ViewModel - it only supplies the typed route.
- */
-@ScreenSlot
-@Repeatable
-annotation class ViewModelOf(val route: KClass<out Route>)
-
-/**
- * Binds a **plain** (non-composable) effect handler to [route].
- *
- * The handler takes the effect, a [DomatEffectScope] for the capabilities a plain function cannot
- * reach on its own (an Android `Context`, a `CoroutineScope`, the app snackbar), the owning
- * ViewModel's typed intent sink, and - supplied by Gezgin as a *role* parameter, not a slot one -
- * that route's navigator, written by its exact simple name (`LoginNavigator`, ...).
- *
- * [DomatScreenRoot] is what collects `BaseViewModel.effect` and calls this; the handler itself is
- * a `when` over the effect type and nothing else.
- */
-@ScreenSlot
-@Repeatable
-annotation class Effects(val route: KClass<out Route>)
 
 /**
  * Everything an [Effects] handler needs that it cannot obtain itself, because it is a plain
