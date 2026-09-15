@@ -32,6 +32,20 @@ dependencyResolutionManagement {
                 }
             }
         }
+        // `mavenCentral()` below only serves released coordinates - it 404s on any -SNAPSHOT.
+        // `gezgin` is pinned to 0.3.0-SNAPSHOT (owner's instruction, 2026-09-15: 0.3.0 itself
+        // isn't published yet, but the snapshot already carries @ScreenWrapper), so its actual
+        // artifacts come from Central's separate snapshots repository instead. Scoped to just the
+        // three Gezgin modules, same as the mavenLocal block above, so this repository is never
+        // consulted for anything else.
+        maven {
+            url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            content {
+                includeModule("io.github.sahsenvar", "gezgin-core")
+                includeModule("io.github.sahsenvar", "gezgin-processor")
+                includeModule("io.github.sahsenvar", "gezgin-test")
+            }
+        }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")

@@ -40,7 +40,11 @@ moko-graphics = "0.10.2"
 # (github.com/sahsenvar/Gezgin). Gezgin's own `api` dependency is what pins the Navigation 3 and
 # lifecycle-navigation3 versions now, so this repo no longer declares androidx.navigation3 itself.
 # 0.3.0 is the release that introduces @ScreenWrapper; see the "Navigation" section of CLAUDE.md.
-gezgin = "0.3.0"
+# Pinned to -SNAPSHOT rather than the release on the owner's own instruction (2026-09-15): 0.3.0
+# itself is not published yet, but 0.3.0-SNAPSHOT already carries @ScreenWrapper. Resolved from
+# Central's snapshots repository, declared in settings.gradle.kts. Move to the plain "0.3.0" the
+# moment that release is cut - a SNAPSHOT coordinate is mutable and was never meant to stay pinned.
+gezgin = "0.3.0-SNAPSHOT"
 dataStoreVersion = "1.2.1"
 # KspPreferences generates the DataStore-backed implementation of every @Preferences interface.
 # Its `annotations` artifact publishes android/jvm/iosArm64/iosSimulatorArm64 only - there is no
