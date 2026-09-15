@@ -19,7 +19,6 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
 
         extensions.configure(KotlinMultiplatformExtension::class.java) {
             applyDefaultHierarchyTemplate()
-            iosX64()
             iosArm64()
             iosSimulatorArm64()
 
@@ -46,12 +45,12 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
         }
 
         tasks.withType(KotlinJvmCompile::class.java).configureEach {
-            compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
+            compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
         }
 
         tasks.withType(JavaCompile::class.java).configureEach {
-            sourceCompatibility = JavaVersion.VERSION_17.toString()
-            targetCompatibility = JavaVersion.VERSION_17.toString()
+            sourceCompatibility = JavaVersion.VERSION_21.toString()
+            targetCompatibility = JavaVersion.VERSION_21.toString()
         }
     }
 }

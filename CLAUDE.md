@@ -409,7 +409,6 @@ dependencies {
     // Runtime + annotations arrive through :core:data -> :core:config. Only the compiler
     // registration is per-module, and it is per *target*, not kspCommonMainMetadata.
     add("kspAndroid", libs.persistence.kspPreferences.compiler)
-    add("kspIosX64", libs.persistence.kspPreferences.compiler)
     add("kspIosArm64", libs.persistence.kspPreferences.compiler)
     add("kspIosSimulatorArm64", libs.persistence.kspPreferences.compiler)
 }

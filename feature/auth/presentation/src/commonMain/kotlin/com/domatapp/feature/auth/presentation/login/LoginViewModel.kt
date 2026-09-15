@@ -4,6 +4,15 @@ import androidx.lifecycle.viewModelScope
 import com.domatapp.core.presentation.base.BaseViewModel
 import com.domatapp.core.resource.MR
 import com.domatapp.core.resource.api.StringResourceApi
+import com.domatapp.core.resource.error_account_disabled
+import com.domatapp.core.resource.error_client
+import com.domatapp.core.resource.error_email_already_in_use
+import com.domatapp.core.resource.error_invalid_credentials
+import com.domatapp.core.resource.error_no_connection
+import com.domatapp.core.resource.error_server
+import com.domatapp.core.resource.error_timeout
+import com.domatapp.core.resource.error_unknown
+import com.domatapp.core.resource.error_user_not_found
 import com.domatapp.core.resulting.error.DomainError
 import com.domatapp.core.resulting.error.RemoteError
 import com.domatapp.feature.auth.domain.error.AuthError

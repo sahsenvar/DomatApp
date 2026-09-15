@@ -1,6 +1,6 @@
 # GitHub Copilot Instructions for DomatApp
 
-This document guides AI assistants (Copilot, Claude, etc.) working on the DomatApp codebase. For detailed guidance on specific tools, see `CLAUDE.md` and `GEMINI.md`.
+This document guides AI assistants (Copilot, Claude, etc.) working on the DomatApp codebase. For detailed guidance, see `CLAUDE.md`.
 
 ## Quick Start
 
@@ -315,7 +315,6 @@ Test source sets (`commonTest`, `androidInstrumentedTest`, etc.) are **currently
 | File | Purpose |
 |------|---------|
 | `CLAUDE.md` | Detailed architecture guide for Claude AI |
-| `GEMINI.md` | Developer persona & operating instructions for Gemini CLI |
 | `build-logic/` | Convention plugins enforcing consistent Gradle configs |
 | `gradle/libs.versions.toml` | Single centralized dependency catalog |
 | `settings.gradle.kts` | All module definitions |

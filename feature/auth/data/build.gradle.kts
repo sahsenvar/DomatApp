@@ -49,7 +49,6 @@ dependencies {
     // that edge by hand: the KtorfitX plugin already applies dependsOn("kspCommonMainKotlinMetadata")
     // to every KspAATask in the module.
     add("kspAndroid", libs.persistence.kspPreferences.compiler)
-    add("kspIosX64", libs.persistence.kspPreferences.compiler)
     add("kspIosArm64", libs.persistence.kspPreferences.compiler)
     add("kspIosSimulatorArm64", libs.persistence.kspPreferences.compiler)
 }
