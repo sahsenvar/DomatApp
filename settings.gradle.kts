@@ -23,12 +23,18 @@ dependencyResolutionManagement {
         // published: `./gradlew publishToMavenLocal` in the Gezgin checkout, then build here with
         // `-PgezginUseMavenLocal=true` and the `gezgin` version in libs.versions.toml pointing at
         // the locally published version. Off by default - no property, no mavenLocal.
+        // `gezgin-(core|processor|test)` are KMP modules: each publishes per-target artifacts
+        // under their own module names (e.g. `gezgin-core-android`, `gezgin-core-iosarm64`), not
+        // just the three "root" names below. A real CI run proved this the hard way -
+        // `includeModule("io.github.sahsenvar", "gezgin-core")` alone resolves the root module's
+        // own metadata fine, but leaves `gezgin-core-android` unmatched, so Gradle falls through to
+        // mavenCentral()/google() for it and fails there instead. `includeModuleByRegex` with an
+        // optional `-<target>` suffix is what actually needs to be scoped.
+        val gezginModuleNameRegex = "gezgin-(core|processor|test)(-.+)?"
         if (providers.gradleProperty("gezginUseMavenLocal").orNull.toBoolean()) {
             mavenLocal {
                 content {
-                    includeModule("io.github.sahsenvar", "gezgin-core")
-                    includeModule("io.github.sahsenvar", "gezgin-processor")
-                    includeModule("io.github.sahsenvar", "gezgin-test")
+                    includeModuleByRegex("io\\.github\\.sahsenvar", gezginModuleNameRegex)
                 }
             }
         }
@@ -36,14 +42,12 @@ dependencyResolutionManagement {
         // `gezgin` is pinned to 0.3.0-SNAPSHOT (owner's instruction, 2026-09-15: 0.3.0 itself
         // isn't published yet, but the snapshot already carries @ScreenWrapper), so its actual
         // artifacts come from Central's separate snapshots repository instead. Scoped to just the
-        // three Gezgin modules, same as the mavenLocal block above, so this repository is never
-        // consulted for anything else.
+        // Gezgin modules (see gezginModuleNameRegex above), so this repository is never consulted
+        // for anything else.
         maven {
             url = uri("https://central.sonatype.com/repository/maven-snapshots/")
             content {
-                includeModule("io.github.sahsenvar", "gezgin-core")
-                includeModule("io.github.sahsenvar", "gezgin-processor")
-                includeModule("io.github.sahsenvar", "gezgin-test")
+                includeModuleByRegex("io\\.github\\.sahsenvar", gezginModuleNameRegex)
             }
         }
         google {
