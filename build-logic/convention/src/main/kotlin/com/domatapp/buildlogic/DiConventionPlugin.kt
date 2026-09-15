@@ -65,6 +65,17 @@ class DiConventionPlugin : Plugin<Project> {
                         dependsOn("kspCommonMainKotlinMetadata")
                     }
                 }
+
+                // The per-target KSP tasks (KspAATask) are not KotlinCompilationTask, so the block
+                // above does not reach them - yet they read the very same commonMain source set,
+                // which the srcDir above has just pointed at the metadata processor's output.
+                // Gradle 9.7 fails the build on that undeclared producer/consumer edge instead of
+                // only warning, so order them explicitly too.
+                tasks.matching {
+                    it.name.startsWith("ksp") && it.name != "kspCommonMainKotlinMetadata"
+                }.configureEach {
+                    dependsOn("kspCommonMainKotlinMetadata")
+                }
             }
         }
     }
