@@ -4,10 +4,25 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-    <key>UIAppFonts</key>
-    <array>
-        <string>nunito_sans_regular.ttf</string>
-        <string>nunito_sans_italic.ttf</string>
-    </array>
+	<!-- The Nunito Sans faces are no longer registered here. They ship inside Shared.framework as
+	     Compose Multiplatform resources (core/resource/src/commonMain/composeResources/font) and
+	     are loaded by `domatTypography()`, so the duplicated .ttf files in iosApp were removed. -->
+
+	<!-- Google sign-in. GIDClientID is this app's *iOS* OAuth client ID, from the Google Cloud
+	     console; the SDK reads it from here. The web client ID the backend validates against is
+	     passed in from Kotlin (Environment.googleWebClientId), not stored here.
+	     TODO: fill in before the first iOS sign-in, together with the reversed-client-ID URL scheme
+	     below, and add the iOS client ID to Supabase's authorized client IDs. -->
+	<key>GIDClientID</key>
+	<string></string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- The reversed GIDClientID, e.g. com.googleusercontent.apps.123456-abcdef -->
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

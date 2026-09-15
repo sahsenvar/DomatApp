@@ -1,0 +1,54 @@
+package com.domatapp.feature.onboarding.presentation.ui
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import com.domatapp.core.design.theme.DomatColors
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.domatapp.core.design.theme.DomatTheme
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.ic_person_community
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+
+@Composable
+internal fun PersonAvatarCircle(icon: DrawableResource, backgroundColor: Color, offsetX: Dp) {
+    Box(
+        modifier = Modifier
+            .offset(x = offsetX)
+            .size(48.dp)
+            .border(4.dp, Color.White, CircleShape)
+            .clip(CircleShape)
+            .background(backgroundColor),
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PersonAvatarCirclePreview() {
+    DomatTheme {
+        PersonAvatarCircle(
+            icon = Res.drawable.ic_person_community,
+            backgroundColor = DomatColors.Malachite20,
+            offsetX = 0.dp,
+        )
+    }
+}

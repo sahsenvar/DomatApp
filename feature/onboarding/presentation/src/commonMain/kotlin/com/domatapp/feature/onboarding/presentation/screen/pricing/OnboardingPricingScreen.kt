@@ -1,0 +1,117 @@
+package com.domatapp.feature.onboarding.presentation.screen.pricing
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import com.domatapp.core.design.theme.DomatColors
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.domatapp.core.design.theme.DomatTheme
+import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.ic_pricing_consumer
+import com.domatapp.core.resource.generated.resources.ic_pricing_producer
+import com.domatapp.core.resource.generated.resources.ic_pricing_retail
+import com.domatapp.core.resource.generated.resources.ic_pricing_wholesaler
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_body
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_consumer_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_consumer_title
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_title
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_retail_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_retail_title
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_title
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_wholesaler_subtitle
+import com.domatapp.core.resource.generated.resources.onboarding_pricing_wholesaler_title
+import com.domatapp.feature.onboarding.presentation.ui.SupplyChainRow
+import com.domatapp.feature.onboarding.presentation.ui.SupplyChainRowUiModel
+import com.domatapp.feature.onboarding.presentation.ui.SupplyChainRowVariant
+import org.jetbrains.compose.resources.stringResource
+
+@Composable
+internal fun OnboardingPricingPageContent(modifier: Modifier = Modifier) {
+    val rows = listOf(
+        SupplyChainRowUiModel(
+            icon = Res.drawable.ic_pricing_producer,
+            variant = SupplyChainRowVariant.Producer,
+            title = stringResource(Res.string.onboarding_pricing_producer_title),
+            subtitle = stringResource(Res.string.onboarding_pricing_producer_subtitle),
+        ),
+        SupplyChainRowUiModel(
+            icon = Res.drawable.ic_pricing_wholesaler,
+            variant = SupplyChainRowVariant.Inactive,
+            title = stringResource(Res.string.onboarding_pricing_wholesaler_title),
+            subtitle = stringResource(Res.string.onboarding_pricing_wholesaler_subtitle),
+        ),
+        SupplyChainRowUiModel(
+            icon = Res.drawable.ic_pricing_retail,
+            variant = SupplyChainRowVariant.Inactive,
+            title = stringResource(Res.string.onboarding_pricing_retail_title),
+            subtitle = stringResource(Res.string.onboarding_pricing_retail_subtitle),
+        ),
+        SupplyChainRowUiModel(
+            icon = Res.drawable.ic_pricing_consumer,
+            variant = SupplyChainRowVariant.Consumer,
+            title = stringResource(Res.string.onboarding_pricing_consumer_title),
+            subtitle = stringResource(Res.string.onboarding_pricing_consumer_subtitle),
+            showConnector = false,
+        ),
+    )
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(DomatColors.White),
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 48.dp, bottom = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Text(
+                    text = stringResource(Res.string.onboarding_pricing_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = DomatColors.Slate900,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                )
+                Text(
+                    text = stringResource(Res.string.onboarding_pricing_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = DomatColors.Slate600,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 3.dp),
+            ) {
+                rows.forEach { row -> SupplyChainRow(uiModel = row) }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun OnboardingPricingPageContentPreview() {
+    DomatTheme {
+        OnboardingPricingPageContent()
+    }
+}

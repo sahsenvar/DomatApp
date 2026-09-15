@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DomatApp is a **Kotlin Multiplatform (KMP)** application targeting Android and iOS with strict **Feature-Based Modularization** and **Clean Architecture**. The project uses **Jetpack Compose for Android** and **100% Native SwiftUI for iOS** - UI code is NOT shared between platforms.
+DomatApp is a **Kotlin Multiplatform (KMP)** application targeting Android and iOS with strict **Feature-Based Modularization** and **Clean Architecture**. The UI is **Compose Multiplatform, shared by both platforms** - one set of screens in `commonMain`, hosted by a `ComponentActivity` on Android and a `ComposeUIViewController` on iOS.
+
+This is a reversal. Until Gezgin gained iOS targets, the rule here was "Jetpack Compose for Android, 100% native SwiftUI for iOS, UI code is NOT shared" - because the navigation layer had no iOS klib, so routes, screens and the `@ScreenWrapper` could not leave `androidMain`, and iOS drove its own SwiftUI `NavigationStack`. That SwiftUI tree never became functional (its `LoginView` was a placeholder with the ViewModel wiring written out in comments), and with `gezgin-core` publishing `iosArm64` / `iosSimulatorArm64` there is no longer a reason to write every screen twice. The SwiftUI feature views, the hand-rolled `NavigationRouter` and the Swift design system were deleted; `iosApp` is now a shell - `iOSApp.swift`, a `UIViewControllerRepresentable`, and the one Swift file Kotlin genuinely cannot replace (Google sign-in, see *Authentication Architecture*).
 
 ## Build Commands
 
@@ -47,7 +49,8 @@ The project follows a strict layered architecture:
                              ask which provider before writing anything into this module.
 :feature:{name}:domain/   → 100% Pure Kotlin (UseCases, Models, Repository Interfaces)
 :feature:{name}:data/     → Repository implementations, Sources, Room Entity/DAO
-:feature:{name}:presentation/ → ViewModels, StateFlow, MVI (shared between Android & iOS)
+:feature:{name}:presentation/ → ViewModels, StateFlow, MVI *and the Compose screens*
+                             (all commonMain; androidMain/iosMain only for platform SDK calls)
 ```
 
 ### Source Architecture (3-Layer)
@@ -99,12 +102,14 @@ abstract class AppDatabase : RoomDatabase() {
   `:core:local` as `api`, so no feature re-declares them. Add a dependency here only when it is
   specific to that feature (KtorfitX, a mapping compiler, a particular SDK).
 - **Presentation layer**: Depends on its own `domain` plus **`:core:presentation`** — which
-  re-exposes `:core:domain`, `:core:common`, `:core:navigation`, `:core:resource`, `:core:design`
-  (Android), `lifecycle-viewmodel` and the Koin ViewModel/Compose artifacts as `api`, so no feature
-  re-declares them. `:core:navigation` brings Gezgin, and with it the Navigation 3 runtime, on
-  Android. Add a dependency
+  re-exposes `:core:domain`, `:core:common`, `:core:navigation`, `:core:resource`, `:core:design`,
+  `lifecycle-viewmodel`, `lifecycle-viewmodel-compose`, `lifecycle-runtime-compose` and the Koin
+  ViewModel/Compose artifacts as `api`, so no feature re-declares them. All of that is `commonMain`
+  now, not `androidMain`. `:core:navigation` brings Gezgin, and with it the Navigation 3 runtime, on
+  both platforms. Add a dependency
   here only when it is specific to that feature (e.g. Credential Manager / Google Identity, which
-  only `feature:auth:presentation` needs). **Never depends on `data`.**
+  only `feature:auth:presentation` needs, and only in its `androidMain`). **Never depends on
+  `data`.**
 
 **Core Module Dependencies:**
 - **core:remote** → `:core:resulting` (for RemoteError). Owns the single `Json` instance.
@@ -115,10 +120,14 @@ abstract class AppDatabase : RoomDatabase() {
   "what every feature data module needs" rule is written down. Its only consumers are
   `feature:{name}:data` modules, so nothing leaks outside the data layer.
 - **core:presentation** → `api` on `:core:domain`, `:core:common`, `:core:navigation`,
-  `:core:resource`, `:core:design` (androidMain). Same rationale as `core:data`: the
-  "what every feature presentation module needs" rule lives here, once.
-- **core:navigation** → `api` on `gezgin-core` (androidMain only; `gezgin-core` has no iOS klib,
-  and it is what pulls in the Navigation 3 runtime).
+  `:core:resource`, `:core:design`. Same rationale as `core:data`: the
+  "what every feature presentation module needs" rule lives here, once. It also declares
+  `lifecycle-viewmodel-compose` and `lifecycle-runtime-compose` itself: Gezgin deliberately keeps
+  the JetBrains Navigation 3 / lifecycle artifacts out of its *common* metadata POM (they are
+  `compileOnly` on its shared non-Android source set and `api` only from its leaf ones), so
+  `viewModel { }` and `collectAsStateWithLifecycle` do not arrive transitively.
+- **core:navigation** → `api` on `gezgin-core` (`commonMain`; `gezgin-core` publishes `iosArm64`
+  and `iosSimulatorArm64` klibs, and it is what pulls in the Navigation 3 runtime).
 - **core:resulting** → No dependencies (base module for error handling)
 - **core:analytics** → No dependencies. Empty scaffold, not yet consumed by anything.
 
@@ -146,16 +155,43 @@ Only `:shared` module exports an iOS framework (`Shared.framework`). Individual 
 
 ## Authentication Architecture (MVI + Side Effects)
 
-Google Sign-In implementation follows the pattern documented in `feature/auth/ARCHITECTURE.md`:
+The MVI chain is identical on both platforms and lives entirely in `commonMain`:
 
-1. **Native UI** (Compose/SwiftUI) handles OS-specific modal dialogs
-2. **Shared ViewModel** (presentation layer) emits `AuthEffect.LaunchGoogleSignIn`
-3. **Native UI** observes effects, launches Google Sign-In, receives `idToken`
-4. **Native UI** sends `AuthIntent.OnGoogleTokenReceived(idToken)` back to ViewModel
+1. `LoginScreen` sends `LoginIntent.OnGoogleSignInClicked`
+2. `LoginViewModel` emits `LoginEffect.LaunchGoogleSignIn`
+3. `handleLoginEffect` (the `@Effects` provider) calls `requestGoogleIdToken(...)`
+4. It feeds the result back as `LoginIntent.OnGoogleTokenReceived(idToken)`, or
+   `LoginIntent.OnGoogleSignInCancelled` when the token is `null`
 5. **ViewModel** calls `LoginWithGoogleUseCase(idToken)`
-6. **Repository** (data layer) uses `AuthRemoteSource` (Firebase or Ktor implementation)
+6. **Repository** (data layer) uses `AuthRemoteSource`
 
-This keeps the `shared` module pure - no Android `Context` or iOS framework dependencies.
+Only step 3 is platform-specific, and it is one `expect suspend fun` -
+`feature/auth/presentation/.../screen/login/GoogleSignIn.kt`:
+
+| | Android | iOS |
+|---|---|---|
+| SDK | Credential Manager + Google Identity | GoogleSignIn-iOS (a **Swift** package) |
+| Written in | Kotlin (`androidMain` `actual`) | Swift, called *back* into from Kotlin |
+| Host handle | the Activity, via `PlatformContext` | none needed; Swift presents from its own window |
+
+**The iOS direction is inverted, and that is not an oversight.** GoogleSignIn-iOS is consumed by the
+Xcode project through SwiftPM; the Kotlin compiler never sees it and no cinterop definition exists.
+So `iosMain` declares a `GoogleSignInPresenter` interface, Swift implements it
+(`iosApp/iosApp/GoogleSignInPresenterImpl.swift`) and registers it on `GoogleSignInBridge` from
+`iOSApp.init()`, and the `actual` awaits that callback through `suspendCancellableCoroutine`.
+Registering nothing is not a crash - sign-in reports cancellation, so a build that forgets the
+registration shows a button that does nothing rather than a `NullPointerException` in a coroutine.
+
+`PlatformContext` (`:core:presentation`) is what let `DomatScreenRoot` and `DomatEffectScope` move to
+`commonMain`: it is an `expect abstract class` that is `actual typealias`-ed to
+`android.content.Context` on Android and is an empty marker on iOS. `abstract` is load-bearing - an
+`expect class` with no declared constructor implies a no-arg one, which abstract `Context` cannot
+supply.
+
+**Before the first iOS sign-in:** fill `GIDClientID` (the *iOS* OAuth client ID) and the
+reversed-client-ID URL scheme into `iosApp/iosApp/Info.plist`, and add that iOS client ID to
+Supabase's authorized client IDs. The web client ID the backend validates against is passed in from
+Kotlin (`Environment.googleWebClientId`) and is not duplicated in the plist.
 
 ## Error Handling Architecture (Exception-Based)
 
@@ -545,8 +581,15 @@ core/resource/src/commonMain/composeResources/
 ├── values/strings.xml      →  Res.string.*  and  Res.plurals.*
 ├── drawable/*.xml, *.png   →  Res.drawable.*
 └── font/*.ttf              →  Res.font.*
-core/resource/src/androidMain/res/values/colors.xml  →  R.color.*
 ```
+
+Colors are **not** here. Compose Resources has no color resource type, so they used to sit in
+`core/resource/src/androidMain/res/values/colors.xml` and be read with `colorResource(R.color.x)`.
+That file is gone: an Android `R` class does not exist on iOS, and the screens that read it are
+`commonMain` now. The palette is Kotlin - `DomatColors` in `:core:design` - and it is the single
+source of truth for both the Material color schemes and the tokens Material 3 does not model
+(the slate ramp, the overlay alphas, the hero gradient). Prefer `MaterialTheme.colorScheme`; reach
+into `DomatColors` only for the rest.
 
 ### Gradle setup
 
@@ -632,13 +675,12 @@ gone.
   Compose UI runs here, so every icon is committed as an Android vector drawable XML, not as `.svg`.
 - **There is no color resource type.** Compose Resources 1.12.0 ships `StringResource`,
   `PluralStringResource`, `StringArrayResource`, `DrawableResource` and `FontResource` — that is the
-  whole list. Colors therefore stay in `core/resource/src/androidMain/res/values/colors.xml` and are
-  still read with `colorResource(R.color.x)`.
+  whole list. Hence `DomatColors` in Kotlin (see above); do not reintroduce `colors.xml`.
 - **`androidResources.enable = true` is set by `KmpLibraryConventionPlugin`.** Android resource
   processing is off by default under `com.android.kotlin.multiplatform.library`. Moko's plugin used
-  to switch it on as a side effect, which is why `com.domatapp.core.resource.R` resolved at all;
-  with Moko gone the build has to ask for it explicitly, or `colors.xml` is ignored and no R class
-  is generated.
+  to switch it on as a side effect; with Moko gone the build has to ask for it explicitly, or
+  Compose Resources' Android asset packaging is skipped. It no longer has anything to do with
+  `colors.xml`.
 - **Filenames become Kotlin identifiers.** Moko's mandatory `@1x` PNG suffix is illegal here
   (`img_hero_login@1x.png` → `img_hero_login.png`); density variants use a qualifier directory
   (`drawable-xhdpi/`) instead.
@@ -652,13 +694,12 @@ gone.
   `AndroidResourcesKt` handles `com.android.kotlin.multiplatform.library` through
   `KotlinMultiplatformAndroidComponentsExtension`, so the hand-written `Copy` task that used to sit
   in `composeApp/build.gradle.kts` (`compose-feature-assets`) is gone. Do not reintroduce it.
-- **iOS framework packaging is not wired yet.** `:shared` builds `Shared.framework` but does not
-  apply the Compose Gradle plugin, so Compose Resources' iOS resource-sync task never runs for it.
-  Android is unaffected; reading a string on iOS through `StringResourceApi` would fail at runtime.
-  Open follow-up — iOS is not built in CI today either. Fixing it is more than adding the plugin to
-  `:shared`: `iosApp.xcodeproj/project.pbxproj` links `Shared.framework` by a hardcoded path rather
-  than via `embedAndSignAppleFrameworkForXcode`, so the sync task's output would also need its own
-  Xcode build phase to actually reach the app bundle.
+- **iOS framework packaging is wired now.** `:shared` applies `domatapp.cmp.library` (and through
+  it `org.jetbrains.compose`), so Compose Resources' iOS resource-sync task runs for
+  `Shared.framework` and `StringResourceApi` resolves at runtime on iOS. The hardcoded
+  `Shared.framework` path in `iosApp.xcodeproj` is gone too — see *iOS app and Swift Package
+  Manager* below. **Still unverified on a device:** iOS is not built in CI, and this repository's
+  CI host cannot build Apple targets at all.
 
 ## Local Source (Room DAO)
 
@@ -702,7 +743,7 @@ The graph is a `sealed interface` tree and **edges are declared per route**. KSP
 compile error rather than a runtime "route not found".
 
 ```kotlin
-// core/navigation/src/androidMain/.../DomatGraph.kt
+// core/navigation/src/commonMain/.../DomatGraph.kt
 @NavGraph
 sealed interface AuthGraph : Route {
 
@@ -734,7 +775,7 @@ implicit `back()`. `@ReplaceTo` with `clearUpTo` = the start destination is how 
 | swallow back | `@NoBack` (root is exempt) |
 | single-step pop | nothing — generated for every non-`@NoBack` route |
 
-| Need | Write (in the **feature presentation** module, `androidMain`) |
+| Need | Write (in the **feature presentation** module, `commonMain`) |
 |------|---------------------------------------------------------------|
 | the UI | `@Screen(Route::class)` (also `@Dialog` / `@BottomSheet` / `@FullscreenModal`) |
 | the ViewModel | `@ViewModelOf(Route::class)` provider (project-defined, see below) |
@@ -768,7 +809,7 @@ generates a `provideXEntry()` that calls the wrapper with them — replacing the
 files the old processor wrote:
 
 ```kotlin
-// feature/auth/presentation/src/androidMain/.../screen/login/LoginBindings.kt
+// feature/auth/presentation/src/commonMain/.../screen/login/LoginBindings.kt
 @ViewModelOf(AuthGraph.LoginRoute::class)
 @Composable
 fun loginViewModel(): LoginViewModel = koinViewModel()
@@ -821,8 +862,8 @@ plugins {
     alias(libs.plugins.ksp)
 }
 dependencies {
-    androidMainApi(libs.navigation.gezgin.core)
-    kspAndroid(libs.navigation.gezgin.processor)
+    commonMainApi(libs.navigation.gezgin.core)
+    add("kspCommonMainMetadata", libs.navigation.gezgin.processor)
 }
 ```
 
@@ -830,9 +871,16 @@ Every `feature:{name}:presentation` that declares screens:
 
 ```kotlin
 plugins { alias(libs.plugins.ksp) }
-dependencies { kspAndroid(libs.navigation.gezgin.processor) }
+dependencies { add("kspCommonMainMetadata", libs.navigation.gezgin.processor) }
 ksp { arg("gezgin.wrapperPackages", "com.domatapp.core.presentation.screen") }
 ```
+
+**`kspCommonMainMetadata`, not `kspAndroid`.** What Gezgin generates - the topology, the typed
+navigators, `provideXEntry()` - is platform-independent, so the processor runs once over the common
+metadata and its output is added to `commonMain`. (Contrast KspPreferences, which emits an
+`actual object` and therefore *must* be registered per target.) `domatapp.kmp.di` wires the source
+directory and the task ordering for that; a module that runs KSP without applying it -
+`:core:navigation` and `:feature:home:presentation` - repeats those four lines itself.
 
 ### Things that will bite you
 
@@ -843,8 +891,24 @@ ksp { arg("gezgin.wrapperPackages", "com.domatapp.core.presentation.screen") }
   a build failure. Same class of failure for `[SW6]`: a `@Screen` whose signature does not match the
   content slot (`ColumnScope.(S, (I) -> Unit)`) falls back to unwrapped. **Grep build output for
   `SW6` when a screen misbehaves.**
-- **The graph is `androidMain`-only.** `gezgin-core` publishes `android` and `jvm`; there is no iOS
-  klib. Nothing in `commonMain` may reference a route, or the iOS targets stop compiling.
+- **The graph is `commonMain` now** — `gezgin-core` publishes `iosArm64` and `iosSimulatorArm64`
+  klibs alongside `android` and `jvm`. There is still **no `iosX64`**, because JetBrains'
+  `navigation3-ui` does not publish one, so Intel Mac simulators are unsupported; that is why
+  `KmpLibraryConventionPlugin` declares exactly `iosArm64` + `iosSimulatorArm64`.
+- **Gezgin's JetBrains Navigation 3 / lifecycle dependencies do not reach your `commonMain`.** They
+  are `compileOnly` on its shared non-Android source set and `api` only from its leaf ones, so the
+  common metadata POM stays clean (that is deliberate — it keeps them out of an Android consumer's
+  graph). `GezginDisplay` and `rememberNavigator` resolve fine because they are `expect`s in
+  gezgin-core's own `commonMain`; `viewModel { }` and `collectAsStateWithLifecycle` do not, and
+  `:core:presentation` declares `lifecycle-viewmodel-compose` and `lifecycle-runtime-compose` for
+  them.
+- **iOS edge-swipe back does not work yet.** In-app back (a top bar, a programmatic `back()`) is
+  fine and is covered by Gezgin's simulator tests; the edge-swipe gesture does not deliver a back
+  event to Compose in this configuration. Upstream question, tracked in Gezgin's
+  `docs/gezgin-ios-support-spec.md` S-7.2. Do not design an iOS flow whose only way back is the
+  gesture.
+- **Root back on iOS is a no-op.** Apple forbids an app from terminating itself, so
+  `MainViewController()` passes an empty `onRootBack` where Android passes `finish()`.
 - **The graph module must not apply the Compose compiler plugin.** Gezgin's own codegen avoids
   emitting a `@Composable` there for exactly this reason; a `@Composable` compiled without lowering
   fails at runtime with `NoSuchMethodError`.
@@ -875,6 +939,61 @@ ksp { arg("gezgin.wrapperPackages", "com.domatapp.core.presentation.screen") }
   deep-link/URL route dispatch. Do not design around them being available.
 - **`@ExperimentalGezginMigrationApi`** gates `BottomSheetDragHandleMode` only, is documented as
   migration-only and may be removed — do not opt into it for new bottom-sheet UX.
+
+## iOS app and Swift Package Manager
+
+`iosApp` is a shell around the shared Compose hierarchy. Four files, and that is the whole app:
+
+```
+iosApp/iosApp/iOSApp.swift                    starts Koin, registers the Google sign-in presenter
+iosApp/iosApp/ContentView.swift               UIViewControllerRepresentable → MainViewControllerKt
+iosApp/iosApp/GoogleSignInPresenterImpl.swift the one thing Kotlin cannot do (see *Authentication*)
+iosApp/iosApp/Info.plist                      GIDClientID + the reversed-client-ID URL scheme
+iosApp/Packages/Shared/Package.swift          the local Swift package wrapping Shared.xcframework
+```
+
+`MainViewController()` lives in `shared/src/iosMain/.../app/MainViewController.kt` and is just
+`ComposeUIViewController { DomatApp(onRootBack = {}) }`. Kotlin/Native exports a file's top-level
+functions on a class named after the file, hence `MainViewControllerKt` from Swift.
+
+### Build the framework before opening Xcode
+
+```bash
+./gradlew :shared:syncDebugSharedXCFramework      # day-to-day, simulator + device
+./gradlew :shared:syncReleaseSharedXCFramework    # archiving
+```
+
+These assemble `Shared.xcframework` over both Apple targets and copy it to
+`iosApp/Packages/Shared/`, where `Package.swift` wraps it as a `.binaryTarget(path:)`. The copy is
+gitignored. **Apple targets only link on macOS.**
+
+### Why a local package instead of CocoaPods or a linked framework
+
+Neither of the two things it replaced actually worked as documented:
+
+- `shared/shared.podspec` was a leftover. `:shared` never applied the CocoaPods plugin, and the
+  Xcode project has no `Podfile` — nothing consumed it. Deleted.
+- `iosApp.xcodeproj` linked `Shared.framework` by the hardcoded path
+  `../shared/build/bin/iosSimulatorArm64/debugFramework/Shared.framework` — simulator-only, debug-only,
+  and stale the moment either changed. Meanwhile a build phase called
+  `embedAndSignAppleFrameworkForXcode`, which writes somewhere else entirely.
+
+The Kotlin docs' SPM recipe (`.binaryTarget(url:checksum:)`) is for handing a framework to a
+*separate* iOS repository: it wants the XCFramework published as a zip and the checksum refreshed on
+every Kotlin change. This is one repository, so a local `path:` avoids all of that. SwiftPM refuses
+binary-target paths that escape the package directory, which is why Gradle copies the XCFramework
+next to the manifest rather than pointing at `shared/build/`.
+
+### Two things to know
+
+- **Automatic `Package.swift` generation needs Kotlin 2.4.20-RC3**; this project is pinned to 2.4.10
+  by SKIE 0.10.14, so the manifest is hand-written. It is nine lines and only changes if the product
+  name or the deployment target does.
+- **A Kotlin change lands one build late.** SwiftPM resolves the binary target *before* build phases
+  run, so the `Sync Kotlin XCFramework` phase refreshes the framework for the *next* build. Run the
+  Gradle task yourself after changing Kotlin, or build twice. This is the cost of the SPM route;
+  `embedAndSignAppleFrameworkForXcode` does not have it, and is the standard choice for a monorepo
+  if the staleness ever becomes annoying enough to switch back.
 
 ## Backend Strategy (Concrete Clients + Source Pattern)
 
@@ -925,7 +1044,10 @@ Two independent jobs, both `ubuntu-latest`:
 - **`build`** — `./gradlew :composeApp:assembleDebug`. A real Gradle build, not a placeholder.
   **Android only for now**: building `:composeApp` transitively compiles the Android source set of
   almost every module it depends on (`:shared` and most of `:core`/`:feature`), but not the iOS
-  targets — those need a macOS runner and are a later phase.
+  targets — those need a macOS runner and are a later phase. That gap matters more since the UI
+  became shared: a `commonMain` change that breaks only the Apple targets, or a broken
+  `iosApp.xcodeproj`, passes CI today. Adding a `macos-latest` job that runs
+  `:shared:syncDebugSharedXCFramework` and `xcodebuild` on `iosApp` is the obvious next step.
 - **`static-analysis`** — `./gradlew detekt`, applied to every subproject from the root
   `build.gradle.kts` (not per-module: this is a repo-wide concern, not something each module opts
   into). Detekt's own default `source` only looks at `src/main`/`src/test` — it has no concept of
@@ -1044,8 +1166,12 @@ actually register one of those processors apply `alias(libs.plugins.ksp)`.
   which was tried first and had no effect on this specific failure.
 - **Codegen**: KSP 2.3.11 (third-party processors only — no in-repo processor, and DI does not
   use KSP)
-- **UI**: Jetpack Compose (Android), SwiftUI (iOS)
-- **Navigation**: Gezgin 0.3.0 (`io.github.sahsenvar`) over AndroidX Navigation 3, Android-only
+- **UI**: Compose Multiplatform on both platforms; SwiftUI only as the iOS app shell
+- **Navigation**: Gezgin 0.3.0-SNAPSHOT (`io.github.sahsenvar`) over AndroidX Navigation 3 on
+  Android and JetBrains Navigation 3 on iOS. `iosArm64` + `iosSimulatorArm64`; no `iosX64`
+- **iOS packaging**: `Shared.xcframework` consumed as a local Swift package (SwiftPM), replacing the
+  hardcoded framework path and the unused CocoaPods podspec
+- **Google Sign-In**: Credential Manager (Android) / GoogleSignIn-iOS 9.2.x via SwiftPM (iOS)
 - **Architecture**: Coroutines + Flow (Arrow-kt is in the catalog but unused)
 - **DI**: Koin 4.2.2 with Annotations 4.2.2 (Kotlin compiler plugin, `io.insert-koin.compiler.plugin` 1.2.1)
 - **Networking**: Ktor Client 3.4.2 (pinned by KtorfitX), KtorfitX 3.4.2-3.3.3 (REST + WebSocket codegen via KSP)

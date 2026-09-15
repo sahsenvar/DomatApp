@@ -9,26 +9,23 @@ plugins {
 dependencies {
     commonMainImplementation(projects.feature.auth.domain)
     // :core:presentation re-exposes :core:domain, :core:common, :core:navigation, :core:resource,
-    // :core:design, lifecycle-viewmodel and the Koin ViewModel/Compose artifacts as api.
+    // :core:design, the lifecycle Compose artifacts and the Koin ViewModel/Compose artifacts as api.
     commonMainImplementation(projects.core.presentation)
     commonMainImplementation(projects.core.resulting)
-    // Used directly by this module's sources (StateFlow in the ViewModels).
+    // Used directly by this module's sources (StateFlow in the ViewModels, and the iOS
+    // suspendCancellableCoroutine that awaits Swift's Google sign-in callback).
     commonMainImplementation(libs.concurrency.coroutine.core)
-    // Auth-specific: Google Sign-In via Credential Manager.
+    // Auth-specific: Google Sign-In via Credential Manager. Android only - the iOS `actual` of
+    // requestGoogleIdToken delegates to the GoogleSignIn-iOS SDK through a Swift-registered
+    // GoogleSignInPresenter, because that SDK is a Swift package the Kotlin compiler never sees.
     androidMainImplementation(libs.auth.credentials.core)
     androidMainImplementation(libs.auth.credentials.playServices)
     androidMainImplementation(libs.auth.googleId.core)
-    // Generates provideXEntry() per @Screen, wired through :core:presentation's
-    // @ScreenWrapper. Android-only: gezgin-core has no iOS klib and these screens are
-    // androidMain anyway.
-    kspAndroid(libs.navigation.gezgin.processor)
-}
-
-// DiConventionPlugin registers build/generated/ksp/metadata/commonMain/kotlin as a commonMain
-// srcDir, which makes kspAndroidMain an implicit consumer of kspCommonMainKotlinMetadata's
-// output. Gradle needs that edge declared even though nothing generates into it today.
-tasks.matching { it.name == "kspAndroidMain" }.configureEach {
-    dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
+    // Generates provideXEntry() per @Screen, wired through :core:presentation's @ScreenWrapper.
+    // Registered on kspCommonMainMetadata, not per target: the screens are common now, and what
+    // Gezgin generates from them is platform-independent, so the processor runs once and its
+    // output is added to commonMain by DiConventionPlugin.
+    add("kspCommonMainMetadata", libs.navigation.gezgin.processor)
 }
 
 // The @ScreenWrapper and its @ScreenSlot markers are compiled into :core:presentation, and KSP

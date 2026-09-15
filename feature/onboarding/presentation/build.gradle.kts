@@ -8,21 +8,15 @@ plugins {
 
 dependencies {
     // :core:presentation re-exposes :core:domain, :core:common, :core:navigation, :core:resource,
-    // :core:design, lifecycle-viewmodel and the Koin ViewModel/Compose artifacts as api.
+    // :core:design, the lifecycle Compose artifacts and the Koin ViewModel/Compose artifacts as api.
     commonMainImplementation(projects.core.presentation)
     // Used directly by this module's sources (StateFlow in the ViewModels).
     commonMainImplementation(libs.concurrency.coroutine.core)
-    // Generates provideXEntry() per @Screen, wired through :core:presentation's
-    // @ScreenWrapper. Android-only: gezgin-core has no iOS klib and these screens are
-    // androidMain anyway.
-    kspAndroid(libs.navigation.gezgin.processor)
-}
-
-// DiConventionPlugin registers build/generated/ksp/metadata/commonMain/kotlin as a commonMain
-// srcDir, which makes kspAndroidMain an implicit consumer of kspCommonMainKotlinMetadata's
-// output. Gradle needs that edge declared even though nothing generates into it today.
-tasks.matching { it.name == "kspAndroidMain" }.configureEach {
-    dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
+    // Generates provideXEntry() per @Screen, wired through :core:presentation's @ScreenWrapper.
+    // kspCommonMainMetadata rather than per target: the screens are common now and Gezgin's output
+    // for them is platform-independent. DiConventionPlugin adds that output to commonMain and
+    // orders every compile and per-target KSP task after it.
+    add("kspCommonMainMetadata", libs.navigation.gezgin.processor)
 }
 
 // The @ScreenWrapper and its @ScreenSlot markers are compiled into :core:presentation, and KSP

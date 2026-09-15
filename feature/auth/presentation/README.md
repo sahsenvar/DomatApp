@@ -20,5 +20,10 @@ Giriş yap, kayıt ol gibi ekranların UI mantığını (ViewModels) ve ortak UI
 ```
 
 ## 🤖 AI Context (Yapay Zeka İçin Notlar)
-- ViewModels, Moko MVVM kullanarak `BaseViewModel`'dan türetilir.
-- UI State'ler StateFlow olarak dışarı açılır (Android/iOS uyumlu).
+- ViewModels `BaseViewModel`'dan türetilir; UI State'ler StateFlow olarak dışarı açılır.
+- Ekranlar (`LoginScreen`, `LocationSelectionScreen`) ve binding'leri `commonMain`'de — Android ve
+  iOS aynı Compose kodunu çalıştırır.
+- Platforma özgü tek yüzey Google hesap seçici: `GoogleSignIn.kt` içindeki
+  `expect suspend fun requestGoogleIdToken`. `androidMain` actual'ı Credential Manager'ı çağırır;
+  `iosMain` actual'ı ise Swift'in `GoogleSignInBridge`'e kaydettiği `GoogleSignInPresenter`'ı
+  bekler — GoogleSignIn-iOS bir Swift paketi olduğu için yön tersine dönüyor.

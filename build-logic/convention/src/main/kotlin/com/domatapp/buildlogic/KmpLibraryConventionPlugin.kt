@@ -43,12 +43,12 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 minSdk = 30
 
                 // com.android.kotlin.multiplatform.library keeps Android resource processing off
-                // by default, so without this a module's src/androidMain/res is ignored and no R
-                // class is generated for it. Until now Moko Resources' Gradle plugin turned this on
-                // as a side effect (dev.icerock.gradle.utils.enableAndroidResources), which is why
-                // com.domatapp.core.resource.R resolved while Moko was applied. Moko is gone, so
-                // the project has to ask for it itself - :core:resource's colors.xml, and Compose
-                // Resources' Android asset packaging, both depend on it.
+                // by default. Moko Resources' Gradle plugin used to turn it on as a side effect
+                // (dev.icerock.gradle.utils.enableAndroidResources); Moko is gone, so the build has
+                // to ask for it itself, and Compose Resources' Android asset packaging depends on
+                // it. It no longer has anything to do with :core:resource's colors.xml - that file
+                // was deleted when the UI moved to commonMain (no Android R class exists on iOS),
+                // and the palette now lives in Kotlin as :core:design's DomatColors.
                 androidResources.enable = true
             }
         }
