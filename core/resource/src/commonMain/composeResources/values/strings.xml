@@ -89,6 +89,95 @@
     <string name="location_mock_building">Dumankaya Adres Lobi.</string>
 
     <!-- Plurals -->
+    <!-- Shared components -->
+    <string name="consent_read_text">Metni oku</string>
+    <string name="consent_hide_text">Metni gizle</string>
+
+    <!-- C4 - Ödeme (design/screens/C4/card.yaml → strings) -->
+    <string name="c4_title">Ödeme</string>
+    <string name="c4_personal_title">Kişisel Bilgiler</string>
+    <string name="c4_first_name">Ad</string>
+    <string name="c4_last_name">Soyad</string>
+    <string name="c4_email">E-posta (isteğe bağlı)</string>
+    <string name="c4_email_helper">Sipariş özetini e-postayla da almak istersen.</string>
+    <string name="c4_marketing_consent">Kampanya ve duyurulardan e-postayla haberdar olmak istiyorum.</string>
+    <string name="c4_kvkk_reminder">Bu bilgiler, kayıt olurken onayladığın KVKK aydınlatma metni kapsamında işlenir.</string>
+    <string name="c4_second_order_title">Bu, bu haftaki %1$d. siparişin.</string>
+    <string name="c4_second_order_body">%1$s ayrıca bloke edilecek. İlk siparişinle birlikte %2$s altında tek teslimatta buluşacaklar.</string>
+    <string name="c4_cancellation_passed">Bu ekleme, iptal hakkı kapanmış bir teslimata eklenecek — bu siparişi daha sonra iptal edemezsin.</string>
+    <string name="c4_summary_title">Sipariş Özeti</string>
+    <string name="c4_summary_total">Toplam (en fazla)</string>
+    <string name="c4_provision_explainer">Şimdi %1$s kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak.</string>
+    <string name="c4_payment_title">Ödeme Yöntemi</string>
+    <string name="c4_use_other_card">Farklı kart kullan</string>
+    <string name="c4_card_number">Kart numarası</string>
+    <string name="c4_card_expiry">Son kullanma</string>
+    <string name="c4_card_expiry_placeholder">AA/YY</string>
+    <string name="c4_cvv">CVV</string>
+    <string name="c4_save_card">Kartımı sakla, sonraki siparişlerde tekrar girmeyeyim.</string>
+    <string name="c4_card_declined_title">Ödeme alınamadı</string>
+    <string name="c4_card_declined_3x_body">Farklı bir kart dener misin?</string>
+    <string name="c4_retry">Tekrar Dene</string>
+    <string name="c4_contract_label">Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum.</string>
+    <string name="c4_contract_legal_text">&lt;Mesafeli satış sözleşmesi + ön bilgilendirme formu — hukuk tarafından sağlanacak&gt;</string>
+    <string name="c4_cta_pay">Öde ve Siparişi Tamamla · %1$s</string>
+    <string name="c4_below_minimum">Bu sepet biraz küçük kaldı. En az %1$s'lik bir sipariş verebilirsin — her siparişin işlem maliyeti sabit olduğu için küçük tutarlarda zarar ediyoruz.</string>
+    <string name="c4_back_to_cart">Sepete Dön ve Ürün Ekle</string>
+
+    <!-- C1 - Telefon Numarası Girişi (design/screens/C1/card.yaml → strings) -->
+    <string name="c1_title">Telefon Numaran</string>
+    <string name="c1_rationale">Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.</string>
+    <string name="c1_phone_label">Telefon numarası</string>
+    <string name="c1_phone_error">Geçerli bir cep telefonu numarası gir (5XX XXX XX XX).</string>
+    <string name="c1_kvkk_label">KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.</string>
+    <string name="c1_kvkk_legal_text">&lt;KVKK aydınlatma metni — hukuk tarafından sağlanacak; telefon, ad-soyad, e-posta, adres ve ödeme/fatura bilgisini kapsar&gt;</string>
+    <string name="c1_cta">Kod Gönder</string>
+
+    <!-- C2 - OTP Doğrulama (design/screens/C2/card.yaml → strings) -->
+    <string name="c2_title">Kodu Gir</string>
+    <string name="c2_description">%1$s numarasına bir kod gönderdik.</string>
+    <string name="c2_change_number">Numarayı Değiştir</string>
+    <string name="c2_resend">Kodu Tekrar Gönder</string>
+    <string name="c2_resend_countdown">%1$d sn sonra tekrar gönderebilirsin</string>
+    <string name="c2_error_wrong_code">Kod hatalı. Tekrar dener misin?</string>
+    <string name="c2_linked_account">Bu numarayla daha önce bir hesap açmışsın, ona bağlandık.</string>
+
+    <!-- C3 - Adres Ekleme (design/screens/C3/card.yaml → strings) -->
+    <string name="c3_title">Teslimat Adresi</string>
+    <string name="c3_site_label">Site</string>
+    <string name="c3_form_title">Adres bilgileri</string>
+    <string name="c3_block_label">Blok</string>
+    <string name="c3_block_not_found">Listede bulamadım</string>
+    <string name="c3_block_free_label">Blok adı</string>
+    <string name="c3_block_manual_review">Bu bilgiyi elle kontrol edeceğiz, teslimat gününe kadar seninle iletişime geçebiliriz.</string>
+    <string name="c3_apartment_label">Daire no</string>
+    <string name="c3_note_label">Teslimat notu (isteğe bağlı)</string>
+    <string name="c3_note_placeholder">Örn. 3. kat, soldaki daire</string>
+    <string name="c3_note_helper">Dağıtıcımız bu notu teslimat listesinde görür.</string>
+    <string name="c3_invoice_pending">Fatura bilgin bir sonraki adımda alınacak.</string>
+    <string name="c3_invoice_label">Fatura</string>
+    <string name="c3_invoice_edit">Düzenle</string>
+    <string name="c3_cta">Devam Et</string>
+
+    <!-- C5 - Sipariş Onay (design/screens/C5/card.yaml → strings) -->
+    <string name="c5_title_first">Siparişin alındı!</string>
+    <string name="c5_title_addition">Eklemen tamamlandı!</string>
+    <string name="c5_subtitle">Cumartesi, kapının önünde.</string>
+    <string name="c5_delivery_title">Teslimat</string>
+    <string name="c5_delivery_code">Teslimat kodu</string>
+    <string name="c5_delivery_day">Tahmini teslimat</string>
+    <string name="c5_payment_title">Ödeme</string>
+    <string name="c5_blocked_amount">Bloke edilen tutar</string>
+    <string name="c5_provision_reminder">Bu tutar Cumartesi öncesi hesabından çekilmeyecek, sadece gerçek tutar çekilecek.</string>
+    <string name="c5_community_title">Topluluğa katkın</string>
+    <string name="c5_share_whatsapp">WhatsApp'ta Paylaş</string>
+    <string name="c5_back_to_market">Pazar'a Dön</string>
+
+    <!-- Pencere Kapandı (design/screens/WindowClosed/card.yaml → strings) -->
+    <string name="window_closed_title">Bu haftanın siparişleri az önce kapandı.</string>
+    <string name="window_closed_body">Sepetin cihazında duruyor, gelecek hafta pencere açılınca güncel fiyatlarla devam edebilirsin.</string>
+    <string name="window_closed_cta">Pazar'a Dön</string>
+
     <plurals name="items_count">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>

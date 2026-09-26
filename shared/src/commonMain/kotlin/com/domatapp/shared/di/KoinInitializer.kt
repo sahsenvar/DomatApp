@@ -5,6 +5,7 @@ import com.domatapp.core.resource.di.coreResourceModule
 import com.domatapp.feature.auth.data.di.authDataModule
 import com.domatapp.feature.auth.domain.di.authDomainModule
 import com.domatapp.feature.auth.presentation.di.authPresentationModule
+import com.domatapp.feature.checkout.presentation.di.checkoutPresentationModule
 import com.domatapp.feature.onboarding.presentation.di.onboardingPresentationModule
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
@@ -26,6 +27,7 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}): KoinApplication {
             authDataModule(),
             authPresentationModule(),
             onboardingPresentationModule(),
+            checkoutPresentationModule(),
         )
     }
 }

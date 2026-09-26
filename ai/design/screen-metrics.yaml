@@ -1,0 +1,30 @@
+# Ekran başına ilk deneme ölçümleri — öğrenme döngüsünün işe yarayıp yaramadığını gösterir.
+# design-verify skill'i her ekran kodlandığında bir kayıt ekler. Retro akıştan akışa eğilime bakar.
+#
+# Alanlar:
+#   screen            ekran kimliği (C4, B3 …)
+#   flow              akış harfi
+#   date              kodlandığı gün
+#   states            tasarım durumu sayısı
+#   first_pass_diff   ilk render'da en kötü durumun AA-toleranslı fark yüzdesi (compare_design_package.py "diff")
+#   final_diff        kabul edildiğinde en kötü durum
+#   fix_rounds        eşiğe inene kadar yapılan düzeltme turu (kod veya tasarım)
+#   text_check_fails  check_design_texts.py'nin ilk çalıştırmadaki hatalı metin sayısı
+#   core_changes      kod ajanının core bileşenlerde yaptığı değişiklik sayısı (spec eksikliğinin göstergesi)
+#   learnings         bu ekranda açılan/artırılan öğrenim kayıtları
+#   note              kısa açıklama
+
+screens:
+  - {screen: C4, flow: C, date: 2026-09-26, states: 7, first_pass_diff: null, final_diff: 2.94, fix_rounds: 6, text_check_fails: 1, core_changes: 10,
+     learnings: [L-001, L-002, L-003, L-004, L-005, L-006, L-007, L-008],
+     note: "İlk kör test; ölçüm altyapısı yoktu. Roborazzi sonrası ilk ölçüm (AA toleranssız) %7,5–10,3. Core değişiklikleri: 8 yeni bileşen + 2 change."}
+  - {screen: C1, flow: C, date: 2026-09-26, states: 5, first_pass_diff: 1.73, final_diff: 1.61, fix_rounds: 1, text_check_fails: 3, core_changes: 0,
+     learnings: [L-011, L-023], note: "Düzeltme turu tasarım tarafında (pasif opaklık)."}
+  - {screen: C2, flow: C, date: 2026-09-26, states: 5, first_pass_diff: 0.76, final_diff: 0.61, fix_rounds: 1, text_check_fails: 6, core_changes: 0,
+     learnings: [L-011, L-023], note: "Metin hataları örnek veri eksikliği (OTP rakamları)."}
+  - {screen: C3, flow: C, date: 2026-09-26, states: 4, first_pass_diff: 2.23, final_diff: 2.14, fix_rounds: 1, text_check_fails: 7, core_changes: 0,
+     learnings: [L-011, L-016, L-023], note: "Açık dropdown için odak taklidi eklendi."}
+  - {screen: C5, flow: C, date: 2026-09-26, states: 2, first_pass_diff: 2.57, final_diff: 2.57, fix_rounds: 0, text_check_fails: 0, core_changes: 0,
+     learnings: [], note: ""}
+  - {screen: WindowClosed, flow: C, date: 2026-09-26, states: 1, first_pass_diff: 1.69, final_diff: 1.69, fix_rounds: 0, text_check_fails: 0, core_changes: 0,
+     learnings: [], note: ""}

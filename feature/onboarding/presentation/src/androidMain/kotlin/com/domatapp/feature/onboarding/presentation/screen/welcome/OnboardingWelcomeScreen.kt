@@ -1,5 +1,6 @@
 package com.domatapp.feature.onboarding.presentation.screen.welcome
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -11,12 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.navigation.OnboardingGraph
 import dev.gezgin.core.annotation.Screen
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.onboarding_btn_community
 import com.domatapp.core.resource.generated.resources.onboarding_btn_effortless
@@ -66,7 +65,7 @@ fun ColumnScope.OnboardingWelcomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.white)),
+            .background(MaterialTheme.colorScheme.surface),
     ) {
         HorizontalPager(
             state = pagerState,

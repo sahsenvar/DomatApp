@@ -3,6 +3,7 @@ package com.domatapp.core.navigation
 import dev.gezgin.core.Route
 import dev.gezgin.core.annotation.GoTo
 import dev.gezgin.core.annotation.NavGraph
+import dev.gezgin.core.annotation.NoBack
 import dev.gezgin.core.annotation.ReplaceTo
 
 /**
@@ -74,4 +75,70 @@ sealed interface MainGraph : Route {
      * that back reaches `onRootBack` and finishes the Activity.
      */
     data object HomeRoute : MainGraph
+}
+
+@NavGraph
+sealed interface CheckoutGraph : Route {
+
+    /**
+     * C1 - Telefon Numarası Girişi (design/screens/C1). A successful OTP request pushes C2 with the
+     * number; back is the implicit single-step `back()` to the cart. Nothing navigates *to* this
+     * route yet (the cart, B3, does not exist).
+     */
+    @GoTo(OtpVerifyRoute::class)
+    data object PhoneEntryRoute : CheckoutGraph
+
+    /**
+     * C2 - OTP Doğrulama (design/screens/C2). "Numarayı Değiştir" is the implicit `back()` to C1.
+     *
+     * After a successful verify + cart merge the sign-in funnel (C1 and C2) must not be reachable
+     * by back any more, so every forward edge replaces up to and including [PhoneEntryRoute] -
+     * which is always on the stack under C2. Back from the next screen returns to the cart.
+     */
+    @ReplaceTo(target = AddressRoute::class, clearUpTo = PhoneEntryRoute::class, inclusive = true)
+    @ReplaceTo(target = PaymentRoute::class, clearUpTo = PhoneEntryRoute::class, inclusive = true)
+    @ReplaceTo(target = WindowClosedRoute::class, clearUpTo = PhoneEntryRoute::class, inclusive = true)
+    data class OtpVerifyRoute(val phoneNumber: String) : CheckoutGraph
+
+    /**
+     * C3 - Adres Ekleme (design/screens/C3). Both "Devam Et" (after the save) and the invoice row's
+     * "Düzenle" go to C4.
+     */
+    @GoTo(PaymentRoute::class)
+    data object AddressRoute : CheckoutGraph
+
+    /**
+     * C4 - Ödeme (design/screens/C4). `POST /v1/orders` 2xx replaces this screen with C5 (back
+     * must not return to the payment form); `409 window_closed` replaces it with [WindowClosedRoute].
+     *
+     * Still missing: "Sepete Dön ve Ürün Ekle" is designed as `@BackTo(B3 / cart)`, and the cart
+     * route does not exist yet - the implicit `back()` stands in for it.
+     */
+    @ReplaceTo(target = OrderConfirmationRoute::class, clearUpTo = PaymentRoute::class, inclusive = true)
+    @ReplaceTo(target = WindowClosedRoute::class, clearUpTo = PaymentRoute::class, inclusive = true)
+    data object PaymentRoute : CheckoutGraph
+
+    /**
+     * C5 - Sipariş Onay (design/screens/C5). No back (`noBack`); "Pazar'a Dön" clears the whole
+     * stack onto Home (Pazar), anchoring on the start destination like the auth routes do.
+     */
+    @NoBack
+    @ReplaceTo(
+        target = MainGraph.HomeRoute::class,
+        clearUpTo = OnboardingGraph.OnboardingWelcomeRoute::class,
+        inclusive = true,
+    )
+    data class OrderConfirmationRoute(val orderId: String) : CheckoutGraph
+
+    /**
+     * Pencere Kapandı (design/screens/WindowClosed), reached from C2 (cart merge) or C4 (order).
+     * No back; "Pazar'a Dön" clears the stack onto Home exactly like C5.
+     */
+    @NoBack
+    @ReplaceTo(
+        target = MainGraph.HomeRoute::class,
+        clearUpTo = OnboardingGraph.OnboardingWelcomeRoute::class,
+        inclusive = true,
+    )
+    data object WindowClosedRoute : CheckoutGraph
 }

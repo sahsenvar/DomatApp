@@ -1,0 +1,603 @@
+{
+ "screen": "C3",
+ "note": "Figma use_figma ile dışa aktarıldı; \"manifest\" alanı design/components.yaml anahtarıdır. Katman adı \"<Bileşen> · <bölge-id>\" biçimindedir; bölge-id ekran kartındaki regions[].id ile eşleşir. \"texts\" = örnekte görünen metinler (metin tutarlılık kontrolü bunları kullanır).",
+ "states": {
+  "default-first-order": {
+   "figmaNodeId": "30:691",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/default-first-order.png",
+   "componentsUsed": [
+    "DomatDropdown",
+    "DomatTextField",
+    "InfoRow",
+    "InlineNote",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "C3@default-first-order",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Teslimat Adresi"
+      },
+      "texts": [
+       "Teslimat Adresi"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "InfoRow · site",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Dalyan Sitesi",
+         "label": "Site",
+         "trailingAction": "false"
+        },
+        "texts": [
+         "Site",
+         "Dalyan Sitesi"
+        ]
+       },
+       {
+        "layer": "FormSection · address-form",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Adres bilgileri",
+          "style": "title-large"
+         },
+         {
+          "layer": "DomatDropdown · block",
+          "component": "Input/Dropdown",
+          "manifest": "DomatDropdown",
+          "props": {
+           "state": "empty"
+          },
+          "texts": [
+           "Blok"
+          ]
+         },
+         {
+          "layer": "TextField · apartment",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "showSupporting": false,
+           "showPrefix": false,
+           "value": " ",
+           "label": "Daire no",
+           "state": "empty"
+          },
+          "texts": [
+           "Daire no"
+          ]
+         },
+         {
+          "layer": "TextField · note",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "supportingText": "Dağıtıcımız bu notu teslimat listesinde görür.",
+           "showSupporting": true,
+           "showPrefix": false,
+           "value": " ",
+           "label": "Teslimat notu (isteğe bağlı)",
+           "state": "empty"
+          },
+          "texts": [
+           "Teslimat notu (isteğe bağlı)",
+           "Dağıtıcımız bu notu teslimat listesinde görür."
+          ]
+         }
+        ]
+       },
+       {
+        "layer": "InlineNote · invoice",
+        "component": "Feedback/InlineNote",
+        "manifest": "InlineNote",
+        "props": {
+         "text": "Fatura bilgin bir sonraki adımda alınacak.",
+         "tone": "neutral"
+        },
+        "texts": [
+         "Fatura bilgin bir sonraki adımda alınacak."
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Devam Et",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Devam Et"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "dropdown-open": {
+   "figmaNodeId": "30:748",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/dropdown-open.png",
+   "componentsUsed": [
+    "DomatDropdown",
+    "DomatTextField",
+    "InfoRow",
+    "InlineNote",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "C3@dropdown-open",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Teslimat Adresi"
+      },
+      "texts": [
+       "Teslimat Adresi"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "InfoRow · site",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Dalyan Sitesi",
+         "label": "Site",
+         "trailingAction": "false"
+        },
+        "texts": [
+         "Site",
+         "Dalyan Sitesi"
+        ]
+       },
+       {
+        "layer": "FormSection · address-form",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Adres bilgileri",
+          "style": "title-large"
+         },
+         {
+          "layer": "DomatDropdown · block",
+          "component": "Input/Dropdown",
+          "manifest": "DomatDropdown",
+          "props": {
+           "state": "open"
+          },
+          "texts": [
+           "A Blok",
+           "Blok",
+           "B Blok",
+           "C Blok",
+           "Listede bulamadım"
+          ]
+         },
+         {
+          "layer": "TextField · apartment",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "showSupporting": false,
+           "showPrefix": false,
+           "value": " ",
+           "label": "Daire no",
+           "state": "empty"
+          },
+          "texts": [
+           "Daire no"
+          ]
+         },
+         {
+          "layer": "TextField · note",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "supportingText": "Dağıtıcımız bu notu teslimat listesinde görür.",
+           "showSupporting": true,
+           "showPrefix": false,
+           "value": " ",
+           "label": "Teslimat notu (isteğe bağlı)",
+           "state": "empty"
+          },
+          "texts": [
+           "Teslimat notu (isteğe bağlı)",
+           "Dağıtıcımız bu notu teslimat listesinde görür."
+          ]
+         }
+        ]
+       },
+       {
+        "layer": "InlineNote · invoice",
+        "component": "Feedback/InlineNote",
+        "manifest": "InlineNote",
+        "props": {
+         "text": "Fatura bilgin bir sonraki adımda alınacak.",
+         "tone": "neutral"
+        },
+        "texts": [
+         "Fatura bilgin bir sonraki adımda alınacak."
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Devam Et",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Devam Et"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "block-not-found": {
+   "figmaNodeId": "30:806",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/block-not-found.png",
+   "componentsUsed": [
+    "DomatDropdown",
+    "DomatTextField",
+    "InfoRow",
+    "InlineNote",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "C3@block-not-found",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Teslimat Adresi"
+      },
+      "texts": [
+       "Teslimat Adresi"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "InfoRow · site",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Dalyan Sitesi",
+         "label": "Site",
+         "trailingAction": "false"
+        },
+        "texts": [
+         "Site",
+         "Dalyan Sitesi"
+        ]
+       },
+       {
+        "layer": "FormSection · address-form",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Adres bilgileri",
+          "style": "title-large"
+         },
+         {
+          "layer": "DomatDropdown · block",
+          "component": "Input/Dropdown",
+          "manifest": "DomatDropdown",
+          "props": {
+           "state": "closed"
+          },
+          "texts": [
+           "Listede bulamadım",
+           "Blok"
+          ]
+         },
+         {
+          "layer": "TextField · block-free",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "showSupporting": false,
+           "showPrefix": false,
+           "value": " ",
+           "label": "Blok adı",
+           "state": "empty"
+          },
+          "texts": [
+           "Blok adı"
+          ]
+         },
+         {
+          "layer": "InlineNote · block-manual-review",
+          "component": "Feedback/InlineNote",
+          "manifest": "InlineNote",
+          "props": {
+           "text": "Bu bilgiyi elle kontrol edeceğiz, teslimat gününe kadar seninle iletişime geçebiliriz.",
+           "tone": "warning"
+          },
+          "texts": [
+           "Bu bilgiyi elle kontrol edeceğiz, teslimat gününe kadar seninle iletişime geçebiliriz."
+          ]
+         },
+         {
+          "layer": "TextField · apartment",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "showSupporting": false,
+           "showPrefix": false,
+           "value": " ",
+           "label": "Daire no",
+           "state": "empty"
+          },
+          "texts": [
+           "Daire no"
+          ]
+         },
+         {
+          "layer": "TextField · note",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "supportingText": "Dağıtıcımız bu notu teslimat listesinde görür.",
+           "showSupporting": true,
+           "showPrefix": false,
+           "value": " ",
+           "label": "Teslimat notu (isteğe bağlı)",
+           "state": "empty"
+          },
+          "texts": [
+           "Teslimat notu (isteğe bağlı)",
+           "Dağıtıcımız bu notu teslimat listesinde görür."
+          ]
+         }
+        ]
+       },
+       {
+        "layer": "InlineNote · invoice",
+        "component": "Feedback/InlineNote",
+        "manifest": "InlineNote",
+        "props": {
+         "text": "Fatura bilgin bir sonraki adımda alınacak.",
+         "tone": "neutral"
+        },
+        "texts": [
+         "Fatura bilgin bir sonraki adımda alınacak."
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Devam Et",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Devam Et"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "filled-returning": {
+   "figmaNodeId": "30:853",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/filled-returning.png",
+   "componentsUsed": [
+    "DomatDropdown",
+    "DomatTextField",
+    "InfoRow",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "C3@filled-returning",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Teslimat Adresi"
+      },
+      "texts": [
+       "Teslimat Adresi"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "InfoRow · site",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Dalyan Sitesi",
+         "label": "Site",
+         "trailingAction": "false"
+        },
+        "texts": [
+         "Site",
+         "Dalyan Sitesi"
+        ]
+       },
+       {
+        "layer": "FormSection · address-form",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Adres bilgileri",
+          "style": "title-large"
+         },
+         {
+          "layer": "DomatDropdown · block",
+          "component": "Input/Dropdown",
+          "manifest": "DomatDropdown",
+          "props": {
+           "state": "closed"
+          },
+          "texts": [
+           "B Blok",
+           "Blok"
+          ]
+         },
+         {
+          "layer": "TextField · apartment",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "showPrefix": false,
+           "label": "Daire no",
+           "value": "12",
+           "showSupporting": false,
+           "state": "default"
+          },
+          "texts": [
+           "12",
+           "Daire no"
+          ]
+         },
+         {
+          "layer": "TextField · note",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "supportingText": "Dağıtıcımız bu notu teslimat listesinde görür.",
+           "showPrefix": false,
+           "label": "Teslimat notu (isteğe bağlı)",
+           "value": "Kapı zili çalışmıyor, lütfen arayın.",
+           "showSupporting": true,
+           "state": "default"
+          },
+          "texts": [
+           "Kapı zili çalışmıyor, lütfen arayın.",
+           "Teslimat notu (isteğe bağlı)",
+           "Dağıtıcımız bu notu teslimat listesinde görür."
+          ]
+         }
+        ]
+       },
+       {
+        "layer": "InfoRow · invoice",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Elif Yılmaz",
+         "label": "Fatura",
+         "trailingAction": "true"
+        },
+        "texts": [
+         "Fatura",
+         "Elif Yılmaz",
+         "Düzenle"
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Devam Et",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "texts": [
+         "Devam Et"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

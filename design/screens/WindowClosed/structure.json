@@ -1,0 +1,64 @@
+{
+ "screen": "WindowClosed",
+ "note": "Figma use_figma ile dışa aktarıldı; \"manifest\" alanı design/components.yaml anahtarıdır. Katman adı \"<Bileşen> · <bölge-id>\" biçimindedir; bölge-id ekran kartındaki regions[].id ile eşleşir. \"texts\" = örnekte görünen metinler (metin tutarlılık kontrolü bunları kullanır).",
+ "states": {
+  "default": {
+   "figmaNodeId": "30:952",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/default.png",
+   "componentsUsed": [
+    "PrimaryButton",
+    "StatusHero"
+   ],
+   "tree": {
+    "layer": "WindowClosed@default",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "StatusHero · hero",
+        "component": "Feedback/StatusHero",
+        "manifest": "StatusHero",
+        "props": {
+         "subtitle": "Sepetin cihazında duruyor, gelecek hafta pencere açılınca güncel fiyatlarla devam edebilirsin.",
+         "title": "Bu haftanın siparişleri az önce kapandı.",
+         "tone": "neutral"
+        },
+        "texts": [
+         "Bu haftanın siparişleri az önce kapandı.",
+         "Sepetin cihazında duruyor, gelecek hafta pencere açılınca güncel fiyatlarla devam edebilirsin."
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Pazar'a Dön",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "texts": [
+         "Pazar'a Dön"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

@@ -5,6 +5,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
+// Values mirror design/tokens/DESIGN.md (colors / colorsDark). Change the token file first.
+
 // Green brand colors
 private val Malachite = Color(0xFF13EC49)
 private val MidnightGreen = Color(0xFF102215)
@@ -26,6 +28,7 @@ private val Slate900 = Color(0xFF0F172A)
 
 // Neutrals
 private val White = Color(0xFFFFFFFF)
+private val MintWhite = Color(0xFFF6F8F6)
 
 // Red scale
 private val Red100 = Color(0xFFFEE2E2)
@@ -50,7 +53,7 @@ internal fun domatLightColorScheme(): ColorScheme = lightColorScheme(
     onTertiary = White,
     tertiaryContainer = Blue100,
     onTertiaryContainer = Blue900,
-    background = White,
+    background = MintWhite,
     onBackground = Slate900,
     surface = White,
     onSurface = Slate900,
@@ -62,6 +65,8 @@ internal fun domatLightColorScheme(): ColorScheme = lightColorScheme(
     onErrorContainer = Red800,
     outline = Slate300,
     outlineVariant = Slate200,
+    inverseSurface = Slate900,
+    inverseOnSurface = White,
 )
 
 internal fun domatDarkColorScheme(): ColorScheme = darkColorScheme(
@@ -89,4 +94,6 @@ internal fun domatDarkColorScheme(): ColorScheme = darkColorScheme(
     onErrorContainer = Red100,
     outline = Slate400,
     outlineVariant = Slate700,
+    inverseSurface = Slate100,
+    inverseOnSurface = Slate900,
 )

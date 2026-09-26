@@ -1,6 +1,7 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
-import androidx.compose.foundation.Image
+import com.domatapp.core.design.theme.spacing
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,16 +23,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
-import com.domatapp.core.resource.generated.resources.ic_pricing_producer
+import com.domatapp.core.resource.generated.resources.ic_potted_plant
 import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_subtitle
 import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_title
 import org.jetbrains.compose.resources.DrawableResource
@@ -53,23 +52,18 @@ internal fun SupplyChainRow(uiModel: SupplyChainRowUiModel) {
     val isInactive = uiModel.variant == SupplyChainRowVariant.Inactive
     val isConsumer = uiModel.variant == SupplyChainRowVariant.Consumer
 
-    val iconSize = when (uiModel.variant) {
-        SupplyChainRowVariant.Producer -> 22.5f
-        SupplyChainRowVariant.Inactive -> 25f
-        SupplyChainRowVariant.Consumer -> 20f
-    }
     val iconBgColor = when (uiModel.variant) {
-        SupplyChainRowVariant.Producer -> colorResource(R.color.malachite_20)
-        SupplyChainRowVariant.Inactive -> colorResource(R.color.slate_200)
-        SupplyChainRowVariant.Consumer -> colorResource(R.color.malachite)
+        SupplyChainRowVariant.Producer -> MaterialTheme.colorScheme.primaryContainer
+        SupplyChainRowVariant.Inactive -> MaterialTheme.colorScheme.outlineVariant
+        SupplyChainRowVariant.Consumer -> MaterialTheme.colorScheme.primary
     }
-    val titleColor = if (isInactive) colorResource(R.color.slate_500) else colorResource(R.color.slate_900)
+    val titleColor = if (isInactive) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
     val titleFontWeight = if (isInactive) FontWeight.Medium else FontWeight.Bold
-    val subtitleColor = if (isInactive) colorResource(R.color.slate_400) else colorResource(R.color.malachite)
+    val subtitleColor = if (isInactive) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
     val subtitleFontWeight = if (isConsumer) FontWeight.SemiBold else FontWeight.Normal
     val dividerColor = when (uiModel.variant) {
-        SupplyChainRowVariant.Producer -> colorResource(R.color.malachite_30)
-        SupplyChainRowVariant.Inactive -> colorResource(R.color.slate_200)
+        SupplyChainRowVariant.Producer -> MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+        SupplyChainRowVariant.Inactive -> MaterialTheme.colorScheme.outlineVariant
         SupplyChainRowVariant.Consumer -> Color.Transparent
     }
 
@@ -91,23 +85,29 @@ internal fun SupplyChainRow(uiModel: SupplyChainRowUiModel) {
                         .then(
                             if (isConsumer) Modifier.shadow(
                                 10.dp, CircleShape,
-                                ambientColor = colorResource(R.color.malachite_30),
-                                spotColor = colorResource(R.color.malachite_30),
+                                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                             ) else Modifier,
                         )
                         .clip(CircleShape)
                         .background(iconBgColor),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Image(
+                    Icon(
                         painter = painterResource(uiModel.icon),
                         contentDescription = null,
-                        modifier = Modifier.size(iconSize.dp),
+                        tint = when (uiModel.variant) {
+                            SupplyChainRowVariant.Producer -> MaterialTheme.colorScheme.primary
+                            SupplyChainRowVariant.Inactive -> MaterialTheme.colorScheme.onSurfaceVariant
+                            // Dolu yeşil zemin → onPrimary (beyaz ≈1,4:1 kontrast veriyordu).
+                            SupplyChainRowVariant.Consumer -> MaterialTheme.colorScheme.onPrimary
+                        },
+                        modifier = Modifier.size(24.dp),
                     )
                     if (isInactive) {
                         Text(
                             text = "✕",
-                            color = colorResource(R.color.red_500),
+                            color = MaterialTheme.colorScheme.error,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                         )
@@ -115,7 +115,7 @@ internal fun SupplyChainRow(uiModel: SupplyChainRowUiModel) {
                 }
                 Column(
                     modifier = Modifier
-                        .padding(start = 12.dp)
+                        .padding(start = MaterialTheme.spacing.sp3)
                         .weight(1f)
                         .fillMaxWidth()
                         .align(Alignment.CenterVertically)
@@ -153,8 +153,8 @@ internal fun SupplyChainRow(uiModel: SupplyChainRowUiModel) {
 
     if (uiModel.showConnector) {
         HorizontalDivider(
-            modifier = Modifier.padding(start = 64.dp),
-            color = colorResource(R.color.slate_100),
+            modifier = Modifier.padding(start = MaterialTheme.spacing.sp16),
+            color = MaterialTheme.colorScheme.outlineVariant,
             thickness = 1.dp,
         )
     }
@@ -166,7 +166,7 @@ private fun SupplyChainRowPreview() {
     DomatTheme {
         SupplyChainRow(
             uiModel = SupplyChainRowUiModel(
-                icon = Res.drawable.ic_pricing_producer,
+                icon = Res.drawable.ic_potted_plant,
                 variant = SupplyChainRowVariant.Producer,
                 title = stringResource(Res.string.onboarding_pricing_producer_title),
                 subtitle = stringResource(Res.string.onboarding_pricing_producer_subtitle),

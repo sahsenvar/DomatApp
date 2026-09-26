@@ -1,5 +1,7 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
+import com.domatapp.core.design.theme.spacing
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,10 +31,10 @@ internal fun OnboardingBottomBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 20.dp, bottom = 40.dp),
+            .padding(horizontal = MaterialTheme.spacing.sp6)
+            .padding(top = MaterialTheme.spacing.sp5, bottom = MaterialTheme.spacing.sp10),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp5),
     ) {
         ProgressDots(
             totalDots = uiModel.totalDots,

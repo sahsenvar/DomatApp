@@ -1,6 +1,8 @@
 package com.domatapp.feature.onboarding.presentation.screen.trust
 
+import com.domatapp.core.design.theme.spacing
 import androidx.compose.foundation.Image
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,17 +24,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
-import com.domatapp.core.resource.generated.resources.ic_feature_location
-import com.domatapp.core.resource.generated.resources.ic_feature_origin
-import com.domatapp.core.resource.generated.resources.ic_feature_producer
-import com.domatapp.core.resource.generated.resources.ic_shield_large
+import com.domatapp.core.resource.generated.resources.ic_location_on
+import com.domatapp.core.resource.generated.resources.ic_eco
+import com.domatapp.core.resource.generated.resources.ic_person_search
+import com.domatapp.core.resource.generated.resources.ic_verified_user
 import com.domatapp.core.resource.generated.resources.ic_trust_wallet_badge
 import com.domatapp.core.resource.generated.resources.onboarding_trust_body
 import com.domatapp.core.resource.generated.resources.onboarding_trust_feature_guarantee
@@ -53,15 +53,15 @@ data class TrustFeatureUiModel(
 internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
     val features = listOf(
         TrustFeatureUiModel(
-            icon = Res.drawable.ic_feature_producer,
+            icon = Res.drawable.ic_person_search,
             text = stringResource(Res.string.onboarding_trust_feature_producer),
         ),
         TrustFeatureUiModel(
-            icon = Res.drawable.ic_feature_location,
+            icon = Res.drawable.ic_location_on,
             text = stringResource(Res.string.onboarding_trust_feature_location),
         ),
         TrustFeatureUiModel(
-            icon = Res.drawable.ic_feature_origin,
+            icon = Res.drawable.ic_eco,
             text = stringResource(Res.string.onboarding_trust_feature_guarantee),
         ),
     )
@@ -69,18 +69,18 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(colorResource(R.color.white))
-            .padding(horizontal = 16.dp),
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = MaterialTheme.spacing.sp4),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.sp12))
 
-        val dottedBorderColor = colorResource(R.color.malachite_20)
+        val dottedBorderColor = MaterialTheme.colorScheme.primaryContainer
         Box(
             modifier = Modifier
                 .size(280.dp)
                 .clip(CircleShape)
-                .background(colorResource(R.color.malachite_10))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                 .drawBehind {
                     val insetPx = 16.dp.toPx()
                     val strokeWidthPx = 2.dp.toPx()
@@ -100,10 +100,11 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Image(
-                    painter = painterResource(Res.drawable.ic_shield_large),
+                Icon(
+                    painter = painterResource(Res.drawable.ic_verified_user),
                     contentDescription = null,
-                    modifier = Modifier.size(width = 70.dp, height = 90.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(108.dp),
                 )
                 Image(
                     painter = painterResource(Res.drawable.ic_trust_wallet_badge),
@@ -116,36 +117,36 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.sp8))
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = MaterialTheme.spacing.sp4),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(11.dp),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp3),
         ) {
             Text(
                 text = stringResource(Res.string.onboarding_trust_title),
                 style = MaterialTheme.typography.headlineLarge,
-                color = colorResource(R.color.slate_900),
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
             )
             Text(
                 text = stringResource(Res.string.onboarding_trust_body),
                 style = MaterialTheme.typography.bodyMedium,
-                color = colorResource(R.color.slate_600),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.sp6))
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = MaterialTheme.spacing.sp4),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp3),
         ) {
             features.forEach { feature ->
                 FeatureListItem(

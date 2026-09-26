@@ -1,0 +1,36 @@
+{
+ "screen": "C4",
+ "tokens": [
+  "color/background",
+  "color/error-container",
+  "color/inverse-surface",
+  "color/on-surface",
+  "color/outline-variant",
+  "color/primary",
+  "color/secondary-container",
+  "color/surface",
+  "color/surface-variant",
+  "color/tertiary-container",
+  "color/warning-container",
+  "radius/md",
+  "spacing/sp1",
+  "spacing/sp2",
+  "spacing/sp3",
+  "spacing/sp4",
+  "spacing/sp6",
+  "typography/title-large"
+ ],
+ "componentsUsed": [
+  "ConsentCheckbox",
+  "DomatTextField",
+  "InfoBanner",
+  "InlineNote",
+  "PaymentCardOption",
+  "PrimaryButton",
+  "ScreenHeader",
+  "SecondaryButton",
+  "SummaryRow",
+  "TextLink"
+ ],
+ "note": "Ekran seviyesindeki bağlı token'lar. Bileşen içi token'lar bileşenin kendi Compose kodundadır."
+}

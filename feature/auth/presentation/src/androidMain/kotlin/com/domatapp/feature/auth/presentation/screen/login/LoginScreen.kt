@@ -1,6 +1,8 @@
 package com.domatapp.feature.auth.presentation.screen.login
 
+import com.domatapp.core.design.theme.spacing
 import androidx.compose.foundation.Image
+import com.domatapp.core.resource.generated.resources.ic_eco
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,7 +26,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -35,12 +36,10 @@ import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.navigation.AuthGraph
 import dev.gezgin.core.annotation.Screen
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.app_name
 import com.domatapp.core.resource.generated.resources.google_sign_in_button_text
 import com.domatapp.core.resource.generated.resources.ic_google
-import com.domatapp.core.resource.generated.resources.ic_leaf_badge
 import com.domatapp.core.resource.generated.resources.img_hero_login
 import com.domatapp.core.resource.generated.resources.onboarding_login_hero_badge
 import com.domatapp.core.resource.generated.resources.onboarding_login_subtitle
@@ -62,12 +61,12 @@ fun ColumnScope.LoginScreen(
     uiState: LoginUiState,
     onIntent: (LoginIntent) -> Unit,
 ) {
-    val heroShape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+    val heroShape = MaterialTheme.shapes.extraLarge.copy(topStart = CornerSize(0), topEnd = CornerSize(0))
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.white))
+            .background(MaterialTheme.colorScheme.surface)
             .verticalScroll(rememberScrollState()),
     ) {
         Box(
@@ -104,11 +103,11 @@ fun ColumnScope.LoginScreen(
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                    .padding(start = MaterialTheme.spacing.sp6, end = MaterialTheme.spacing.sp6, bottom = MaterialTheme.spacing.sp8),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp4),
             ) {
                 IconBadge(
-                    iconPainter = painterResource(Res.drawable.ic_leaf_badge),
+                    iconPainter = painterResource(Res.drawable.ic_eco),
                     text = stringResource(Res.string.onboarding_login_hero_badge),
                 )
                 Text(
@@ -122,14 +121,14 @@ fun ColumnScope.LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(top = 32.dp, bottom = 16.dp),
+                .padding(horizontal = MaterialTheme.spacing.sp6)
+                .padding(top = MaterialTheme.spacing.sp8, bottom = MaterialTheme.spacing.sp4),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text = stringResource(Res.string.onboarding_login_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
-                color = colorResource(R.color.slate_600),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
 
@@ -145,8 +144,8 @@ fun ColumnScope.LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(top = 32.dp, bottom = 24.dp),
+                .padding(horizontal = MaterialTheme.spacing.sp4)
+                .padding(top = MaterialTheme.spacing.sp8, bottom = MaterialTheme.spacing.sp6),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -154,7 +153,7 @@ fun ColumnScope.LoginScreen(
                     append(stringResource(Res.string.onboarding_login_tos_prefix))
                     withStyle(
                         SpanStyle(
-                            color = colorResource(R.color.malachite),
+                            color = MaterialTheme.colorScheme.primary,
                             textDecoration = TextDecoration.Underline,
                         ),
                     ) {
@@ -163,7 +162,7 @@ fun ColumnScope.LoginScreen(
                     append(stringResource(Res.string.onboarding_login_tos_connector))
                     withStyle(
                         SpanStyle(
-                            color = colorResource(R.color.malachite),
+                            color = MaterialTheme.colorScheme.primary,
                             textDecoration = TextDecoration.Underline,
                         ),
                     ) {
@@ -172,7 +171,7 @@ fun ColumnScope.LoginScreen(
                     append(stringResource(Res.string.onboarding_login_tos_suffix))
                 },
                 style = MaterialTheme.typography.labelMedium,
-                color = colorResource(R.color.slate_400),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
         }

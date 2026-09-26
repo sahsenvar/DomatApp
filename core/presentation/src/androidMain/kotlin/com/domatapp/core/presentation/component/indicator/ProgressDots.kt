@@ -10,17 +10,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
+import com.domatapp.core.design.theme.spacing
 
 @Composable
 fun ProgressDots(
@@ -28,12 +28,12 @@ fun ProgressDots(
     activeIndex: Int,
     modifier: Modifier = Modifier,
 ) {
-    val primaryColor = colorResource(R.color.malachite)
-    val inactiveColor = colorResource(R.color.slate_100)
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val inactiveColor = MaterialTheme.colorScheme.secondaryContainer
 
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp2, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         repeat(totalDots) { index ->
@@ -54,7 +54,7 @@ fun ProgressDots(
                 modifier = Modifier
                     .width(width)
                     .height(6.dp)
-                    .clip(RoundedCornerShape(9999.dp))
+                    .clip(CircleShape)
                     .background(color),
             )
         }
