@@ -4,7 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DomatApp is a **Kotlin Multiplatform (KMP)** application targeting Android and iOS with strict **Feature-Based Modularization** and **Clean Architecture**. The project uses **Jetpack Compose for Android** and **100% Native SwiftUI for iOS** - UI code is NOT shared between platforms.
+DomatApp is a **Kotlin Multiplatform (KMP)** application targeting Android and iOS with strict **Feature-Based Modularization** and **Clean Architecture**. UI decision (26 Sep 2026): the **target** is shared **Compose Multiplatform** UI for Android and iOS, splitting to **SwiftUI on iOS only where CMP is insufficient** (e.g. charts). **Current state:** Compose UI lives in `androidMain` and `:composeApp` is Android-only; `iosApp/` holds native SwiftUI scaffolding. Until the CMP iOS host is wired, write new UI in `androidMain` but keep it free of Android-only APIs so it can move to `commonMain`.
+
+## Design → Code (read before building any screen)
+
+UI work starts from the design contract in `design/` — see `design/README.md`. In short:
+
+- `design/tokens/DESIGN.md` is the **single source of truth** for colors, typography, spacing and radii.
+  `:core:design` (Compose theme) and the Figma variables are derived from it; change the token file first.
+- `design/components.yaml` maps every Figma component to its Compose symbol and parameters. It stands in
+  for Figma Code Connect. **If a design uses a component listed there, call that composable — never
+  re-implement it inside a screen.** Components with `status: new|change|promote` are written/changed in
+  `:core:presentation/component/` first, then used.
+- `design/screens/<ID>/` is the approved design package for a screen (`annotations.md`, `card.yaml`,
+  `structure.json`, `states/*.png`). Read it in that order; use the PNGs for visual verification.
+  The live Figma file (`source.json`) is only for details the package does not cover.
+- Screen code must not contain `Color(0x…)`, `colorResource(...)`, `RoundedCornerShape(<n>.dp)` or raw
+  spacing `dp`. Use `MaterialTheme.colorScheme / domatColors / spacing / shapes / typography`.
+  Component-internal *sizes* (button height, icon size, border width) may stay inside component files.
+- Strings come from the card's `strings:` keys into `core/resource/src/commonMain/composeResources/values/strings.xml`.
+- Workflow and validation: `ai/design/skills/figma-to-compose/SKILL.md`.
+
+Note: shared UI components live in `:core:presentation` (`component/`), the theme in `:core:design`.
 
 ## Build Commands
 
