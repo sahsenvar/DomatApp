@@ -4,11 +4,17 @@ import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.typography.DomatTypographyScale
 import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.nunito_sans_bold
+import com.domatapp.core.resource.generated.resources.nunito_sans_extrabold
+import com.domatapp.core.resource.generated.resources.nunito_sans_italic
+import com.domatapp.core.resource.generated.resources.nunito_sans_medium
 import com.domatapp.core.resource.generated.resources.nunito_sans_regular
+import com.domatapp.core.resource.generated.resources.nunito_sans_semibold
 import org.jetbrains.compose.resources.Font
 
 // @Composable because Compose Resources' Font() loads the font through the resource reader
@@ -16,7 +22,18 @@ import org.jetbrains.compose.resources.Font
 // composable, so this costs nothing at the call site.
 @Composable
 internal fun domatTypography(): Typography {
-    val nunito = FontFamily(Font(Res.font.nunito_sans_regular))
+    // One static file per weight (instanced from the Google Fonts variable font at wdth=100,
+    // opsz=12, YTLC=500). Static files instead of the variable font: a variable file loaded
+    // without variation settings renders its default instance (wght=200) and the heavier
+    // weights end up synthesized, which does not match Figma. Source of truth: design/tokens/DESIGN.md.
+    val nunito = FontFamily(
+        Font(Res.font.nunito_sans_regular, FontWeight.Normal),
+        Font(Res.font.nunito_sans_medium, FontWeight.Medium),
+        Font(Res.font.nunito_sans_semibold, FontWeight.SemiBold),
+        Font(Res.font.nunito_sans_bold, FontWeight.Bold),
+        Font(Res.font.nunito_sans_extrabold, FontWeight.ExtraBold),
+        Font(Res.font.nunito_sans_italic, FontWeight.Normal, FontStyle.Italic),
+    )
 
     return Typography(
         displayLarge = TextStyle(

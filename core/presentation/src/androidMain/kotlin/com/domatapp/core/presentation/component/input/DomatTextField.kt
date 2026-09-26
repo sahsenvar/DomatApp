@@ -1,6 +1,5 @@
 package com.domatapp.core.presentation.component.input
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -8,11 +7,8 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 
 @Composable
 fun DomatTextField(
@@ -33,7 +29,13 @@ fun DomatTextField(
         onValueChange = onValueChange,
         modifier = modifier,
         placeholder = if (placeholder.isNotEmpty()) {
-            { Text(placeholder, style = MaterialTheme.typography.bodyMedium, color = colorResource(R.color.slate_400)) }
+            {
+                Text(
+                    text = placeholder,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         } else null,
         label = if (label.isNotEmpty()) {
             { Text(label, style = MaterialTheme.typography.bodyMedium) }
@@ -42,18 +44,18 @@ fun DomatTextField(
         isError = isError,
         trailingIcon = trailingIcon,
         leadingIcon = leadingIcon,
-        shape = RoundedCornerShape(10.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = colorResource(R.color.malachite),
-            unfocusedBorderColor = colorResource(R.color.slate_200),
-            errorBorderColor = colorResource(R.color.red_500),
-            disabledBorderColor = colorResource(R.color.slate_100),
-            focusedTextColor = colorResource(R.color.slate_900),
-            unfocusedTextColor = colorResource(R.color.slate_900),
-            disabledTextColor = colorResource(R.color.cool_gray_400),
-            errorTextColor = colorResource(R.color.slate_900),
-            cursorColor = colorResource(R.color.malachite),
-            errorCursorColor = colorResource(R.color.red_500),
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            errorBorderColor = MaterialTheme.colorScheme.error,
+            disabledBorderColor = MaterialTheme.colorScheme.secondaryContainer,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            errorTextColor = MaterialTheme.colorScheme.onSurface,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            errorCursorColor = MaterialTheme.colorScheme.error,
         ),
         textStyle = MaterialTheme.typography.bodyMedium,
         keyboardOptions = keyboardOptions,

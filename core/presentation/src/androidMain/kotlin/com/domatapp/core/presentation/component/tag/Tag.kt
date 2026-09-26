@@ -1,17 +1,15 @@
 package com.domatapp.core.presentation.component.tag
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
+import com.domatapp.core.design.theme.domatColors
+import com.domatapp.core.design.theme.spacing
 
 enum class TagVariant { New, Sale, Discount, Limited }
 
@@ -21,23 +19,25 @@ fun Tag(
     variant: TagVariant,
     modifier: Modifier = Modifier,
 ) {
+    val colors = MaterialTheme.colorScheme
+    val extended = MaterialTheme.domatColors
     val (containerColor, contentColor) = when (variant) {
-        TagVariant.New -> colorResource(R.color.malachite) to colorResource(R.color.slate_900)
-        TagVariant.Sale -> colorResource(R.color.orange_400) to colorResource(R.color.white)
-        TagVariant.Discount -> colorResource(R.color.red_500) to colorResource(R.color.white)
-        TagVariant.Limited -> colorResource(R.color.slate_900) to colorResource(R.color.white)
+        TagVariant.New -> colors.primary to colors.onPrimary
+        TagVariant.Sale -> extended.warningContainer to extended.onWarningContainer
+        TagVariant.Discount -> colors.error to colors.onError
+        TagVariant.Limited -> colors.inverseSurface to colors.inverseOnSurface
     }
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(4.dp),
+        shape = MaterialTheme.shapes.extraSmall,
         color = containerColor,
     ) {
         Text(
             text = text,
             color = contentColor,
             style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = MaterialTheme.spacing.sp2, vertical = MaterialTheme.spacing.sp1),
         )
     }
 }

@@ -8,12 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
+import com.domatapp.core.design.theme.domatColors
+import com.domatapp.core.design.theme.spacing
 
 enum class BadgeVariant { Primary, Warning, Error, Dark, Info, Success }
 
@@ -23,13 +21,15 @@ fun DomatBadge(
     variant: BadgeVariant = BadgeVariant.Primary,
     modifier: Modifier = Modifier,
 ) {
+    val colors = MaterialTheme.colorScheme
+    val extended = MaterialTheme.domatColors
     val (containerColor, contentColor) = when (variant) {
-        BadgeVariant.Primary -> colorResource(R.color.malachite) to colorResource(R.color.slate_900)
-        BadgeVariant.Warning -> colorResource(R.color.orange_400) to colorResource(R.color.white)
-        BadgeVariant.Error -> colorResource(R.color.red_500) to colorResource(R.color.white)
-        BadgeVariant.Dark -> colorResource(R.color.slate_900) to colorResource(R.color.white)
-        BadgeVariant.Info -> colorResource(R.color.blue_100) to colorResource(R.color.blue_900)
-        BadgeVariant.Success -> colorResource(R.color.emerald_100) to colorResource(R.color.emerald_600)
+        BadgeVariant.Primary -> colors.primary to colors.onPrimary
+        BadgeVariant.Warning -> extended.warningContainer to extended.onWarningContainer
+        BadgeVariant.Error -> colors.error to colors.onError
+        BadgeVariant.Dark -> colors.inverseSurface to colors.inverseOnSurface
+        BadgeVariant.Info -> colors.tertiaryContainer to colors.onTertiaryContainer
+        BadgeVariant.Success -> extended.successContainer to extended.onSuccessContainer
     }
 
     Text(
@@ -39,7 +39,7 @@ fun DomatBadge(
         modifier = modifier
             .clip(CircleShape)
             .background(containerColor)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = MaterialTheme.spacing.sp2, vertical = MaterialTheme.spacing.sp1),
     )
 }
 

@@ -27,6 +27,7 @@ fun DomatTheme(
     CompositionLocalProvider(
         LocalSpacing provides Spacing(),
         LocalElevation provides Elevation(),
+        LocalExtendedColors provides if (darkTheme) domatDarkExtendedColors() else domatLightExtendedColors(),
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

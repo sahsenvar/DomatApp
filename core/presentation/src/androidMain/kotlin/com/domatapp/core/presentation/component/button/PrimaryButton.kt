@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -14,11 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
+import com.domatapp.core.design.theme.spacing
 
 enum class ButtonSize {
     Large,
@@ -41,16 +39,16 @@ fun PrimaryButton(
         ButtonSize.Medium -> 56.dp
         ButtonSize.Small -> 36.dp
     }
-    val cornerRadius = when (size) {
-        ButtonSize.Large, ButtonSize.Medium -> 12.dp
-        ButtonSize.Small -> 8.dp
+    val shape = when (size) {
+        ButtonSize.Large, ButtonSize.Medium -> MaterialTheme.shapes.medium
+        ButtonSize.Small -> MaterialTheme.shapes.small
     }
     val textStyle = when (size) {
         ButtonSize.Large, ButtonSize.Medium -> MaterialTheme.typography.titleLarge
         ButtonSize.Small -> MaterialTheme.typography.labelLarge
     }
     val contentPadding = when (size) {
-        ButtonSize.Small -> PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+        ButtonSize.Small -> PaddingValues(horizontal = MaterialTheme.spacing.sp4, vertical = 0.dp)
         else -> ButtonDefaults.ContentPadding
     }
 
@@ -58,13 +56,13 @@ fun PrimaryButton(
         onClick = onClick,
         modifier = modifier.height(height),
         enabled = enabled,
-        shape = RoundedCornerShape(cornerRadius),
+        shape = shape,
         contentPadding = contentPadding,
         colors = ButtonDefaults.buttonColors(
-            containerColor = colorResource(R.color.malachite),
-            contentColor = colorResource(R.color.slate_900),
-            disabledContainerColor = colorResource(R.color.slate_100),
-            disabledContentColor = colorResource(R.color.cool_gray_400),
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
         ),
     ) {
         if (leadingIcon != null) {
@@ -73,11 +71,11 @@ fun PrimaryButton(
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.sp2))
         }
         Text(text = text, style = textStyle)
         if (trailingContent != null) {
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.sp2))
             trailingContent()
         }
     }
