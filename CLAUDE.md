@@ -23,7 +23,15 @@ UI work starts from the design contract in `design/` — see `design/README.md`.
   spacing `dp`. Use `MaterialTheme.colorScheme / domatColors / spacing / shapes / typography`.
   Component-internal *sizes* (button height, icon size, border width) may stay inside component files.
 - Strings come from the card's `strings:` keys into `core/resource/src/commonMain/composeResources/values/strings.xml`.
-- Workflow and validation: `ai/design/skills/figma-to-compose/SKILL.md`.
+- Contract rules (numbered, each linked to the learning that produced it): `design/README.md`.
+- Skills (`.claude/skills/`, auto-discovered): `figma-screens` (card → Figma → package),
+  `figma-to-compose` (package → Compose), `design-verify` (Roborazzi + diff + text check + visual review),
+  `design-system-change` (component/icon/token changes: spec → Figma → code → affected screens),
+  `design-chain-retro` (review the learning log and propose skill/contract/check updates).
+- **Learning loop:** every design skill ends by logging the failures it hit in `ai/design/learnings.yaml`
+  (English fields, Turkish content; validate with `python3 ai/design/scripts/learnings.py check`) and, for
+  screens, first-pass numbers in `ai/design/screen-metrics.yaml`. Skills are not edited ad hoc — changes go
+  through `design-chain-retro` and Sahan's approval.
 
 Note: shared UI components live in `:core:presentation` (`component/`), the theme in `:core:design`.
 

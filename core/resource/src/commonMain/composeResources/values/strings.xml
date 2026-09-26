@@ -130,7 +130,6 @@
     <string name="c1_phone_label">Telefon numarası</string>
     <string name="c1_phone_error">Geçerli bir cep telefonu numarası gir (5XX XXX XX XX).</string>
     <string name="c1_kvkk_label">KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.</string>
-    <string name="c1_kvkk_read_more">Metni oku</string>
     <string name="c1_kvkk_legal_text">&lt;KVKK aydınlatma metni — hukuk tarafından sağlanacak; telefon, ad-soyad, e-posta, adres ve ödeme/fatura bilgisini kapsar&gt;</string>
     <string name="c1_cta">Kod Gönder</string>
 

@@ -29,7 +29,7 @@ claude mcp add --transport http figma-desktop http://127.0.0.1:3845/mcp
 MCP `get_screenshot` inline image döner, dosyaya kaydetmez.
 Diske kaydetmek için JSON-RPC session kullan:
 ```python
-# Detaylı script: ai/design/skills/figma-to-compose/SKILL.md → AŞAMA 0
+# Detaylı script: .claude/skills/figma-to-compose/SKILL.md
 ```
 
 ### Diğer MCP Seçenekleri

@@ -28,3 +28,6 @@ strings:
   window_closed_title: "Bu haftanın siparişleri az önce kapandı."
   window_closed_body: "Sepetin cihazında duruyor, gelecek hafta pencere açılınca güncel fiyatlarla devam edebilirsin."
   window_closed_cta: "Pazar'a Dön"
+
+# Bu ekranda dinamik veri yok.
+sampleData: {}

@@ -19,7 +19,7 @@ regions:
     text: str.c1_rationale
   - id: phone
     component: PhoneNumberField
-    props: { value: "", state: default }
+    props: { label: str.c1_phone_label, value: "", state: default }
   - id: kvkk
     component: ConsentCheckbox
     props: { label: str.c1_kvkk_label, checked: false, expandable: true, expanded: false }
@@ -56,7 +56,6 @@ strings:
   c1_phone_label: "Telefon numarası"
   c1_phone_error: "Geçerli bir cep telefonu numarası gir (5XX XXX XX XX)."
   c1_kvkk_label: "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum."
-  c1_kvkk_read_more: "Metni oku"
   c1_kvkk_legal_text: "<KVKK aydınlatma metni — hukuk tarafından sağlanacak; telefon, ad-soyad, e-posta, adres ve ödeme/fatura bilgisini kapsar>"
   c1_cta: "Kod Gönder"
 
