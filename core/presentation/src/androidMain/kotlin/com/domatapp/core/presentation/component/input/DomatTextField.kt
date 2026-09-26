@@ -1,5 +1,6 @@
 package com.domatapp.core.presentation.component.input
 
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -7,6 +8,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import com.domatapp.core.design.theme.DomatTheme
 
@@ -23,6 +25,10 @@ fun DomatTextField(
     leadingIcon: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     singleLine: Boolean = true,
+    supportingText: String? = null,
+    prefix: String? = null,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     OutlinedTextField(
         value = value,
@@ -44,6 +50,12 @@ fun DomatTextField(
         isError = isError,
         trailingIcon = trailingIcon,
         leadingIcon = leadingIcon,
+        prefix = prefix?.let {
+            { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        },
+        supportingText = supportingText?.let {
+            { Text(it, style = MaterialTheme.typography.bodySmall) }
+        },
         shape = MaterialTheme.shapes.medium,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -56,9 +68,19 @@ fun DomatTextField(
             errorTextColor = MaterialTheme.colorScheme.onSurface,
             cursorColor = MaterialTheme.colorScheme.primary,
             errorCursorColor = MaterialTheme.colorScheme.error,
+            focusedLabelColor = MaterialTheme.colorScheme.tertiary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            errorContainerColor = MaterialTheme.colorScheme.surface,
+            focusedSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            unfocusedSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            errorSupportingTextColor = MaterialTheme.colorScheme.onErrorContainer,
         ),
         textStyle = MaterialTheme.typography.bodyMedium,
         keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        visualTransformation = visualTransformation,
         singleLine = singleLine,
     )
 }
@@ -72,6 +94,32 @@ private fun DomatTextFieldPreview() {
             onValueChange = {},
             placeholder = "Giriniz",
             label = "Ad",
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatTextFieldSupportingPreview() {
+    DomatTheme {
+        DomatTextField(
+            value = "elif.yilmaz@ornek.com",
+            onValueChange = {},
+            label = "E-posta (isteğe bağlı)",
+            supportingText = "Sipariş özetini e-postayla da almak istersen.",
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DomatTextFieldPrefixPreview() {
+    DomatTheme {
+        DomatTextField(
+            value = "532 123 45 67",
+            onValueChange = {},
+            label = "Telefon",
+            prefix = "+90 ",
         )
     }
 }

@@ -68,6 +68,7 @@ dependencies {
     implementation(projects.feature.auth.presentation)
     implementation(projects.feature.onboarding.presentation)
     implementation(projects.feature.home.presentation)
+    implementation(projects.feature.checkout.presentation)
 
     // UI & Compose
     implementation(libs.ui.compose.runtime)

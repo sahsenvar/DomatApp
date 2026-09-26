@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
@@ -31,6 +34,7 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     size: ButtonSize = ButtonSize.Large,
     enabled: Boolean = true,
+    loading: Boolean = false,
     leadingIcon: ImageVector? = null,
     trailingContent: @Composable (() -> Unit)? = null,
 ) {
@@ -53,7 +57,9 @@ fun PrimaryButton(
     }
 
     Button(
-        onClick = onClick,
+        // While loading the button keeps its enabled look but swallows clicks, so a payment/OTP
+        // request cannot be fired twice.
+        onClick = { if (!loading) onClick() },
         modifier = modifier.height(height),
         enabled = enabled,
         shape = shape,
@@ -65,6 +71,16 @@ fun PrimaryButton(
             disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
         ),
     ) {
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(24.dp)
+                    .semantics { contentDescription = text },
+                color = MaterialTheme.colorScheme.onPrimary,
+                strokeWidth = 2.dp,
+            )
+            return@Button
+        }
         if (leadingIcon != null) {
             Icon(
                 imageVector = leadingIcon,
@@ -102,5 +118,13 @@ private fun PrimaryButtonMediumPreview() {
 private fun PrimaryButtonSmallPreview() {
     DomatTheme {
         PrimaryButton(text = "Detay", onClick = {}, size = ButtonSize.Small)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PrimaryButtonLoadingPreview() {
+    DomatTheme {
+        PrimaryButton(text = "Öde", onClick = {}, loading = true)
     }
 }

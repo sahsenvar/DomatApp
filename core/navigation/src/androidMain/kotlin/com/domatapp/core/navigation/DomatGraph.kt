@@ -75,3 +75,19 @@ sealed interface MainGraph : Route {
      */
     data object HomeRoute : MainGraph
 }
+
+@NavGraph
+sealed interface CheckoutGraph : Route {
+
+    /**
+     * C4 - Ödeme (design/screens/C4). Only the implicit `back()` exists for now: the edges its
+     * card declares target routes that are not in the graph yet, so they cannot be written:
+     *
+     * - `POST /v1/orders` 2xx → `@ReplaceTo(C5)` with `orderId`, back must not return here;
+     * - `409 window_closed` → `@ReplaceTo(WindowClosed)`;
+     * - "Sepete Dön ve Ürün Ekle" → `@BackTo(B3 / cart)`.
+     *
+     * Nothing navigates *to* this route yet either (B3 does not exist).
+     */
+    data object PaymentRoute : CheckoutGraph
+}

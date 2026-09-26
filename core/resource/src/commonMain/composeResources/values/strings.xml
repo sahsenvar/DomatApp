@@ -89,6 +89,40 @@
     <string name="location_mock_building">Dumankaya Adres Lobi.</string>
 
     <!-- Plurals -->
+    <!-- Shared components -->
+    <string name="consent_read_text">Metni oku</string>
+
+    <!-- C4 - Ödeme (design/screens/C4/card.yaml → strings) -->
+    <string name="c4_title">Ödeme</string>
+    <string name="c4_personal_title">Kişisel Bilgiler</string>
+    <string name="c4_first_name">Ad</string>
+    <string name="c4_last_name">Soyad</string>
+    <string name="c4_email">E-posta (isteğe bağlı)</string>
+    <string name="c4_email_helper">Sipariş özetini e-postayla da almak istersen.</string>
+    <string name="c4_marketing_consent">Kampanya ve duyurulardan e-postayla haberdar olmak istiyorum.</string>
+    <string name="c4_kvkk_reminder">Bu bilgiler, kayıt olurken onayladığın KVKK aydınlatma metni kapsamında işlenir.</string>
+    <string name="c4_second_order_title">Bu, bu haftaki %1$d. siparişin.</string>
+    <string name="c4_second_order_body">%1$s ayrıca bloke edilecek. İlk siparişinle birlikte %2$s altında tek teslimatta buluşacaklar.</string>
+    <string name="c4_cancellation_passed">Bu ekleme, iptal hakkı kapanmış bir teslimata eklenecek — bu siparişi daha sonra iptal edemezsin.</string>
+    <string name="c4_summary_title">Sipariş Özeti</string>
+    <string name="c4_summary_total">Toplam (en fazla)</string>
+    <string name="c4_provision_explainer">Şimdi %1$s kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak.</string>
+    <string name="c4_payment_title">Ödeme Yöntemi</string>
+    <string name="c4_use_other_card">Farklı kart kullan</string>
+    <string name="c4_card_number">Kart numarası</string>
+    <string name="c4_card_expiry">Son kullanma</string>
+    <string name="c4_card_expiry_placeholder">AA/YY</string>
+    <string name="c4_cvv">CVV</string>
+    <string name="c4_save_card">Kartımı sakla, sonraki siparişlerde tekrar girmeyeyim.</string>
+    <string name="c4_card_declined_title">Ödeme alınamadı</string>
+    <string name="c4_card_declined_3x_body">Farklı bir kart dener misin?</string>
+    <string name="c4_retry">Tekrar Dene</string>
+    <string name="c4_contract_label">Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum.</string>
+    <string name="c4_contract_legal_text">&lt;Mesafeli satış sözleşmesi + ön bilgilendirme formu — hukuk tarafından sağlanacak&gt;</string>
+    <string name="c4_cta_pay">Öde ve Siparişi Tamamla · %1$s</string>
+    <string name="c4_below_minimum">Bu sepet biraz küçük kaldı. En az %1$s'lik bir sipariş verebilirsin — her siparişin işlem maliyeti sabit olduğu için küçük tutarlarda zarar ediyoruz.</string>
+    <string name="c4_back_to_cart">Sepete Dön ve Ürün Ekle</string>
+
     <plurals name="items_count">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>

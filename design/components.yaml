@@ -33,8 +33,8 @@ components:
 
   # ── Butonlar ──────────────────────────────────────────────────────────────
   PrimaryButton:
-    status: change
-    change: "`loading: Boolean = false` parametresi eklenecek (ödeme/OTP isteği sürerken spinner, tıklama kapalı)."
+    status: existing
+    note: "`loading` eklendi (C4): spinner gösterir, tıklamayı yutar, etkin görünümü korur."
     compose: button.PrimaryButton
     figma: { name: "Button/Primary", nodeId: "4:24", key: null }
     tokens: button-primary
@@ -66,7 +66,7 @@ components:
     usedIn: [C5]
 
   TextLink:
-    status: new
+    status: existing
     purpose: "Satır içi metin bağlantısı: 'Kodu Tekrar Gönder', 'Numarayı Değiştir', 'Farklı kart kullan', 'Metni oku'."
     compose: button.TextLink
     figma: { name: "Button/TextLink", nodeId: "4:39", key: null }
@@ -87,9 +87,8 @@ components:
 
   # ── Yapı / çerçeve ────────────────────────────────────────────────────────
   ScreenHeader:
-    status: promote
-    from: feature.auth.presentation.screen.component.ScreenHeader
-    change: "backIconPainter parametresi kaldırılıp ikon bileşen içinde çözülecek (her ekranda aynı geri ikonu)."
+    status: existing
+    note: "C4 ile :core:presentation'a taşındı; geri ikonu bileşen içinde. Başlık Figma'daki gibi sola hizalı, zemin `background`, altta outline-variant çizgi."
     compose: bar.ScreenHeader
     figma: { name: "Bar/ScreenHeader", nodeId: "6:79", key: null }
     props:
@@ -106,7 +105,7 @@ components:
     usedIn: [C1, C3, C4, C5, WindowClosed]
 
   FormSection:
-    status: new
+    status: existing
     purpose: "Başlıklı içerik grubu (örn. C4 'Kişisel Bilgiler', 'Ödeme Yöntemi'). Başlık + isteğe bağlı açıklama + içerik."
     compose: layout.FormSection
     figma: { name: "FormSection", kind: frame, note: "Figma'da bileşen değil; frame adı 'FormSection · <bölge-id>', ilk çocuk başlık metni (title-large)" }
@@ -119,8 +118,8 @@ components:
 
   # ── Girdiler ──────────────────────────────────────────────────────────────
   DomatTextField:
-    status: change
-    change: "`supportingText: String?` (alan altı yardım/hata metni) ve `prefix: String?` parametreleri eklenecek."
+    status: existing
+    note: "C4 ile `supportingText`, `prefix` eklendi; ayrıca `keyboardActions` ve `visualTransformation` (kart no 4-4-4-4, SKT AA/YY, CVV maskesi) — Figma karşılığı yok, davranış parametresi."
     compose: input.DomatTextField
     figma: { name: "Input/TextField", nodeId: "6:34", key: null }
     tokens: text-field
@@ -171,7 +170,7 @@ components:
     usedIn: [C3]
 
   ConsentCheckbox:
-    status: new
+    status: existing
     purpose: "Onay kutusu + etiket. Yasal metin varsa 'Metni oku' ile genişler (KVKK, Mesafeli Satış). Varsayılan İŞARETSİZ."
     compose: input.ConsentCheckbox
     figma: { name: "Input/ConsentCheckbox", nodeId: "6:67", key: null }
@@ -184,7 +183,7 @@ components:
     usedIn: [C1, C4]
 
   PaymentCardOption:
-    status: new
+    status: existing
     purpose: "Saklı kart satırı (radyo seçimli): marka logosu + •••• 1234. Seçiliyse altında CVV alanı açılır."
     compose: payment.PaymentCardOption
     figma: { name: "Payment/CardOption", nodeId: "6:78", key: null }
@@ -196,7 +195,7 @@ components:
 
   # ── Bilgilendirme ─────────────────────────────────────────────────────────
   InfoBanner:
-    status: new
+    status: existing
     purpose: "Kapatılamayan bilgi şeridi: ikon + başlık + gövde + isteğe bağlı aksiyonlar."
     compose: feedback.InfoBanner
     figma: { name: "Feedback/InfoBanner", nodeId: "5:58", key: null }
@@ -206,6 +205,7 @@ components:
       title: { figma: "title (TEXT, boş olabilir)", kotlin: "title: String?" }
       body: { figma: "body (TEXT)", kotlin: "body: String" }
       actions: { figma: "actions (BOOLEAN) + slot", kotlin: "actions: @Composable (RowScope.() -> Unit)?" }
+      icon: { figma: "icon (INSTANCE_SWAP) — C4 provision-explainer'da lock", kotlin: "icon: Painter?  // null = tone varsayılanı" }
     toneTokens:
       info:    { bg: tertiary-container, fg: on-tertiary-container }
       warning: { bg: warning-container, fg: on-warning-container }
@@ -215,7 +215,7 @@ components:
     usedIn: [C2, C4, C5]
 
   InlineNote:
-    status: new
+    status: existing
     purpose: "Küçük ikonlu yardımcı not (body-small). Örn. KVKK hatırlatması, 'Fatura bilgin bir sonraki adımda alınacak'."
     compose: feedback.InlineNote
     figma: { name: "Feedback/InlineNote", nodeId: "5:67", key: null }
@@ -247,7 +247,7 @@ components:
     usedIn: [C3, C5]
 
   SummaryRow:
-    status: new
+    status: existing
     purpose: "Sipariş özeti satırı: ürün adı × adet ... tutar. `emphasis` ile toplam satırı."
     compose: data.SummaryRow
     figma: { name: "Data/SummaryRow", nodeId: "5:78", key: null }
