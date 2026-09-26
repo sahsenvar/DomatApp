@@ -1,0 +1,79 @@
+id: C3
+title: Adres Ekleme
+source: DomatApp_Akis_C_Giris_Odeme_v1.4.md#C3
+route: { name: CheckoutGraph.AddressRoute, status: proposed }
+purpose: Site zaten bilindiği için yalnızca blok, daire ve teslimat notunu almak. Blok kapalı listeden seçilir.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.c3_title, showBack: true }
+  - id: site
+    component: InfoRow
+    props: { label: str.c3_site_label, value: "{siteName}" }
+  - id: address-form
+    component: FormSection
+    props: { title: str.c3_form_title }
+    content:
+      - component: DomatDropdown
+        props: { label: str.c3_block_label, value: null, footerOption: str.c3_block_not_found }
+        itemsFrom: "GET /v1/sites/{siteId}/blocks (sortOrder'a göre)"
+      - component: DomatTextField
+        visibleWhen: "blockNotFoundSelected"
+        props: { label: str.c3_block_free_label }
+      - component: InlineNote
+        visibleWhen: "blockNotFoundSelected"
+        props: { tone: warning, text: str.c3_block_manual_review }
+      - component: DomatTextField
+        props: { label: str.c3_apartment_label, keyboard: number }
+      - component: DomatTextField
+        props: { label: str.c3_note_label, placeholder: str.c3_note_placeholder, multiline: true, supportingText: str.c3_note_helper }
+  - id: invoice
+    component: InlineNote
+    visibleWhen: "firstOrder (firstName/lastName yok)"
+    props: { tone: neutral, text: str.c3_invoice_pending }
+    alternative:
+      visibleWhen: "!firstOrder"
+      component: InfoRow
+      props: { label: str.c3_invoice_label, value: "{fullName}", trailingAction: str.c3_invoice_edit }
+  - id: cta
+    component: BottomActionBar
+    content:
+      - component: PrimaryButton
+        props: { text: str.c3_cta, size: Large, enabled: "blockSelected && apartmentFilled", loading: "saving" }
+
+states:
+  - id: default-first-order
+    description: Boş form, fatura satırı yerine "Fatura bilgin bir sonraki adımda alınacak" notu.
+  - id: dropdown-open
+    description: Blok listesi açık, en altta "Listede bulamadım".
+  - id: block-not-found
+    description: Serbest metin blok alanı + manuel kontrol uyarısı görünür.
+  - id: filled-returning
+    description: Tekrar sipariş veren kullanıcı; fatura satırı ad-soyadı gösterir (InfoRow + Düzenle).
+
+data:
+  uiState: ["siteName: String", "blocks: List<Block>", "selectedBlockId: String?", "blockFreeText: String", "isBlockNotFound: Boolean", "apartmentNo: String", "deliveryNote: String", "isFirstOrder: Boolean", "fullName: String?", "isSaving: Boolean"]
+actions: [BlockSelected(id), BlockNotFoundSelected, BlockFreeTextChanged, ApartmentChanged, NoteChanged, ContinueClicked, EditInvoiceClicked, BackClicked]
+navigation:
+  - { on: saved, goTo: C4 }
+  - { on: EditInvoiceClicked, goTo: C4, note: "Kişisel Bilgiler bloğuna odaklanır" }
+api: ["GET /v1/sites/{siteId}/blocks", "POST /v1/addresses"]
+
+strings:
+  c3_title: "Teslimat Adresi"
+  c3_site_label: "Site"
+  c3_form_title: "Adres bilgileri"
+  c3_block_label: "Blok"
+  c3_block_not_found: "Listede bulamadım"
+  c3_block_free_label: "Blok adı"
+  c3_block_manual_review: "Bu bilgiyi elle kontrol edeceğiz, teslimat gününe kadar seninle iletişime geçebiliriz."
+  c3_apartment_label: "Daire no"
+  c3_note_label: "Teslimat notu (isteğe bağlı)"
+  c3_note_placeholder: "Örn. 3. kat, soldaki daire"
+  c3_note_helper: "Dağıtıcımız bu notu teslimat listesinde görür."
+  c3_invoice_pending: "Fatura bilgin bir sonraki adımda alınacak."
+  c3_invoice_label: "Fatura"
+  c3_invoice_edit: "Düzenle"
+  c3_cta: "Devam Et"

@@ -1,0 +1,320 @@
+# DomatApp — Bileşen Manifesti
+# ─────────────────────────────────────────────────────────────────────────────
+# Figma bileşenlerini Compose bileşenlerine eşleyen TEK dosya. Figma Education/Pro planında
+# Code Connect olmadığı için onun yerini tutar. Token'lar için bkz. design/tokens/DESIGN.md.
+#
+# KOD AI İÇİN KURAL:
+#   1. Tasarım paketinde (design/screens/<ID>/structure.json) bir Figma örneğinin adı burada
+#      `figma.name` olarak geçiyorsa, `compose` sembolünü ÇAĞIR. Yeniden yazma, kopyalama.
+#   2. Figma variant/property değerleri `props` eşlemesine göre Kotlin parametresine çevrilir.
+#   3. Burada olmayan bir görsel parça görürsen: önce bu dosyaya ekleme ÖNER, ekrana gömme.
+#
+# TASARIM AI İÇİN KURAL:
+#   1. Ekran yalnızca burada listelenen bileşenlerin Figma örnekleriyle kurulur.
+#   2. Figma variant property adları Kotlin parametre adlarıyla BİREBİR aynıdır (camelCase).
+#   3. `status: new` bileşen önce Figma kütüphanesine ve bu dosyaya eklenir, sonra kullanılır.
+#
+# status:
+#   existing  → kodda var, olduğu gibi kullanılır
+#   change    → kodda var, belirtilen değişiklik gerekir
+#   promote   → bir feature modülünde var, :core:presentation'a taşınmalı
+#   new       → kodda yok, yazılacak
+#
+# swiftui: CMP'nin yetmediği yerde iOS'ta ayrı karşılık gerekirse doldurulur; şimdilik hepsi null.
+# figma.key: Figma kütüphanesi yayınlandığında component key ile doldurulur.
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: 1.0
+updated: 2026-09-26
+package: com.domatapp.core.presentation.component
+
+components:
+
+  # ── Butonlar ──────────────────────────────────────────────────────────────
+  PrimaryButton:
+    status: change
+    change: "`loading: Boolean = false` parametresi eklenecek (ödeme/OTP isteği sürerken spinner, tıklama kapalı)."
+    compose: button.PrimaryButton
+    figma: { name: "Button/Primary", key: null }
+    tokens: button-primary
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      size: { figma: "size (VARIANT: Large|Medium|Small)", kotlin: "size: ButtonSize" }
+      enabled: { figma: "enabled (VARIANT: true|false)", kotlin: "enabled: Boolean" }
+      loading: { figma: "loading (VARIANT: true|false)", kotlin: "loading: Boolean" }
+      leadingIcon: { figma: "leadingIcon (INSTANCE_SWAP, boş olabilir)", kotlin: "leadingIcon: ImageVector?" }
+    usedIn: [C1, C2, C3, C4, C5, WindowClosed]
+
+  SecondaryButton:
+    status: existing
+    compose: button.SecondaryButton
+    figma: { name: "Button/Secondary", key: null }
+    tokens: button-secondary
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      enabled: { figma: "enabled (VARIANT)", kotlin: "enabled: Boolean" }
+    usedIn: [C4, C5]
+
+  GhostButton:
+    status: existing
+    compose: button.GhostButton
+    figma: { name: "Button/Ghost", key: null }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      enabled: { figma: "enabled (VARIANT)", kotlin: "enabled: Boolean" }
+    usedIn: [C5]
+
+  TextLink:
+    status: new
+    purpose: "Satır içi metin bağlantısı: 'Kodu Tekrar Gönder', 'Numarayı Değiştir', 'Farklı kart kullan', 'Metni oku'."
+    compose: button.TextLink
+    figma: { name: "Button/TextLink", key: null }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      enabled: { figma: "enabled (VARIANT)", kotlin: "enabled: Boolean" }
+    style: "label-large, renk tertiary (mavi) — primary yeşil metin YASAK (kontrast)."
+    usedIn: [C1, C2, C4]
+
+  DomatIconButton:
+    status: existing
+    compose: button.DomatIconButton
+    figma: { name: "Button/Icon", key: null }
+    props:
+      icon: { figma: "icon (INSTANCE_SWAP)", kotlin: "icon: ImageVector" }
+      size: { figma: "size (VARIANT: Large|Medium)", kotlin: "size: DomatIconButtonSize" }
+    usedIn: []
+
+  # ── Yapı / çerçeve ────────────────────────────────────────────────────────
+  ScreenHeader:
+    status: promote
+    from: feature.auth.presentation.screen.component.ScreenHeader
+    change: "backIconPainter parametresi kaldırılıp ikon bileşen içinde çözülecek (her ekranda aynı geri ikonu)."
+    compose: bar.ScreenHeader
+    figma: { name: "Bar/ScreenHeader", key: null }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      showBack: { figma: "showBack (BOOLEAN)", kotlin: "onBackClick: (() -> Unit)?  // null = geri butonu yok" }
+    usedIn: [C1, C2, C3, C4]
+
+  BottomActionBar:
+    status: existing
+    compose: bar.BottomActionBar
+    figma: { name: "Bar/BottomAction", key: null }
+    props:
+      content: { figma: "slot (bir veya iki buton)", kotlin: "content: @Composable () -> Unit" }
+    usedIn: [C1, C3, C4, C5, WindowClosed]
+
+  FormSection:
+    status: new
+    purpose: "Başlıklı içerik grubu (örn. C4 'Kişisel Bilgiler', 'Ödeme Yöntemi'). Başlık + isteğe bağlı açıklama + içerik."
+    compose: layout.FormSection
+    figma: { name: "Layout/FormSection", key: null }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      description: { figma: "description (TEXT, boş olabilir)", kotlin: "description: String?" }
+      content: { figma: "slot", kotlin: "content: @Composable ColumnScope.() -> Unit" }
+    style: "title: title-large; description: body-small on-surface-variant; öğeler arası sp3; surface zemin + card kenarlığı."
+    usedIn: [C3, C4]
+
+  # ── Girdiler ──────────────────────────────────────────────────────────────
+  DomatTextField:
+    status: change
+    change: "`supportingText: String?` (alan altı yardım/hata metni) ve `prefix: String?` parametreleri eklenecek."
+    compose: input.DomatTextField
+    figma: { name: "Input/TextField", key: null }
+    tokens: text-field
+    props:
+      label: { figma: "label (TEXT)", kotlin: "label: String" }
+      value: { figma: "value (TEXT)", kotlin: "value: String" }
+      placeholder: { figma: "placeholder (TEXT)", kotlin: "placeholder: String" }
+      state: { figma: "state (VARIANT: default|focused|error|disabled)", kotlin: "isError / enabled + focus sistemden" }
+      supportingText: { figma: "supportingText (TEXT, boş olabilir)", kotlin: "supportingText: String?" }
+      prefix: { figma: "prefix (TEXT, boş olabilir)", kotlin: "prefix: String?" }
+      singleLine: { figma: "multiline (BOOLEAN)", kotlin: "singleLine: Boolean  // figma multiline=true → singleLine=false" }
+    usedIn: [C3, C4]
+
+  PhoneNumberField:
+    status: new
+    purpose: "Sabit +90 önekli, 10 haneli TR telefon girişi; canlı format (5XX XXX XX XX)."
+    compose: input.PhoneNumberField
+    composedOf: [DomatTextField]
+    figma: { name: "Input/PhoneNumber", key: null }
+    props:
+      value: { figma: "value (TEXT)", kotlin: "value: String  // yalnızca rakamlar" }
+      state: { figma: "state (VARIANT: default|focused|error)", kotlin: "isError: Boolean" }
+    usedIn: [C1]
+
+  OtpCodeField:
+    status: new
+    purpose: "6 hücreli kod girişi; SMS otomatik doldurma (Android SMS Retriever, iOS oneTimeCode)."
+    compose: input.OtpCodeField
+    figma: { name: "Input/OtpCode", key: null }
+    props:
+      length: { figma: "sabit 6", kotlin: "length: Int = 6" }
+      value: { figma: "value (TEXT)", kotlin: "value: String" }
+      state: { figma: "state (VARIANT: default|filled|error)", kotlin: "isError: Boolean" }
+    style: "Hücre 48×56, rounded md, outline-variant kenarlık; odak primary 2px; hata error kenarlık."
+    usedIn: [C2]
+
+  DomatDropdown:
+    status: promote
+    from: feature.auth.presentation.screen.component.InputDropdown
+    change: "Painter parametreleri kaldırılacak (ikonlar bileşen içinde); `footerOption: String?` eklenecek ('Listede bulamadım')."
+    compose: input.DomatDropdown
+    figma: { name: "Input/Dropdown", key: null }
+    props:
+      label: { figma: "label (TEXT)", kotlin: "label: String" }
+      value: { figma: "value (TEXT)", kotlin: "selectedItem: String?" }
+      state: { figma: "state (VARIANT: closed|open)", kotlin: "sistemden" }
+      footerOption: { figma: "footerOption (TEXT, boş olabilir)", kotlin: "footerOption: String?" }
+    usedIn: [C3]
+
+  ConsentCheckbox:
+    status: new
+    purpose: "Onay kutusu + etiket. Yasal metin varsa 'Metni oku' ile genişler (KVKK, Mesafeli Satış). Varsayılan İŞARETSİZ."
+    compose: input.ConsentCheckbox
+    figma: { name: "Input/ConsentCheckbox", key: null }
+    props:
+      label: { figma: "label (TEXT)", kotlin: "label: String" }
+      checked: { figma: "checked (VARIANT: true|false)", kotlin: "checked: Boolean" }
+      expandable: { figma: "expandable (BOOLEAN)", kotlin: "legalText: String?  // null = genişlemez" }
+      expanded: { figma: "expanded (VARIANT: true|false)", kotlin: "expanded: Boolean" }
+      required: { figma: "required (BOOLEAN)", kotlin: "isError: Boolean  // zorunlu ama işaretsizken submit" }
+    usedIn: [C1, C4]
+
+  PaymentCardOption:
+    status: new
+    purpose: "Saklı kart satırı (radyo seçimli): marka logosu + •••• 1234. Seçiliyse altında CVV alanı açılır."
+    compose: payment.PaymentCardOption
+    figma: { name: "Payment/CardOption", key: null }
+    props:
+      brand: { figma: "brand (VARIANT: visa|mastercard|troy|amex)", kotlin: "brand: CardBrand" }
+      last4: { figma: "last4 (TEXT)", kotlin: "last4: String" }
+      selected: { figma: "selected (VARIANT: true|false)", kotlin: "selected: Boolean" }
+    usedIn: [C4]
+
+  # ── Bilgilendirme ─────────────────────────────────────────────────────────
+  InfoBanner:
+    status: new
+    purpose: "Kapatılamayan bilgi şeridi: ikon + başlık + gövde + isteğe bağlı aksiyonlar."
+    compose: feedback.InfoBanner
+    figma: { name: "Feedback/InfoBanner", key: null }
+    tokens: "banner-info | banner-warning (tone'a göre)"
+    props:
+      tone: { figma: "tone (VARIANT: info|warning|error|success|neutral)", kotlin: "tone: BannerTone" }
+      title: { figma: "title (TEXT, boş olabilir)", kotlin: "title: String?" }
+      body: { figma: "body (TEXT)", kotlin: "body: String" }
+      actions: { figma: "actions (BOOLEAN) + slot", kotlin: "actions: @Composable (RowScope.() -> Unit)?" }
+    toneTokens:
+      info:    { bg: tertiary-container, fg: on-tertiary-container }
+      warning: { bg: warning-container, fg: on-warning-container }
+      error:   { bg: error-container, fg: on-error-container }
+      success: { bg: success-container, fg: on-success-container }
+      neutral: { bg: surface-variant, fg: on-surface-variant }
+    usedIn: [C2, C4, C5]
+
+  InlineNote:
+    status: new
+    purpose: "Küçük ikonlu yardımcı not (body-small). Örn. KVKK hatırlatması, 'Fatura bilgin bir sonraki adımda alınacak'."
+    compose: feedback.InlineNote
+    figma: { name: "Feedback/InlineNote", key: null }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      tone: { figma: "tone (VARIANT: neutral|warning)", kotlin: "tone: NoteTone" }
+    usedIn: [C3, C4]
+
+  StatusHero:
+    status: new
+    purpose: "Büyük durum ikonu + başlık + alt metin. Sipariş onayı (success), pencere kapandı (neutral)."
+    compose: feedback.StatusHero
+    figma: { name: "Feedback/StatusHero", key: null }
+    props:
+      tone: { figma: "tone (VARIANT: success|neutral|error)", kotlin: "tone: StatusTone" }
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      subtitle: { figma: "subtitle (TEXT)", kotlin: "subtitle: String?" }
+    usedIn: [C5, WindowClosed]
+
+  InfoRow:
+    status: new
+    purpose: "Etiket + değer salt-okunur satır (site adı, fatura adı, teslimat kodu)."
+    compose: data.InfoRow
+    figma: { name: "Data/InfoRow", key: null }
+    props:
+      label: { figma: "label (TEXT)", kotlin: "label: String" }
+      value: { figma: "value (TEXT)", kotlin: "value: String" }
+      trailingAction: { figma: "trailingAction (TEXT, boş olabilir)", kotlin: "trailingAction: String?  // örn. 'Düzenle'" }
+    usedIn: [C3, C5]
+
+  SummaryRow:
+    status: new
+    purpose: "Sipariş özeti satırı: ürün adı × adet ... tutar. `emphasis` ile toplam satırı."
+    compose: data.SummaryRow
+    figma: { name: "Data/SummaryRow", key: null }
+    props:
+      label: { figma: "label (TEXT)", kotlin: "label: String" }
+      detail: { figma: "detail (TEXT, boş olabilir)", kotlin: "detail: String?  // '2 kg'" }
+      amount: { figma: "amount (TEXT)", kotlin: "amount: String  // biçimlendirilmiş ₺" }
+      emphasis: { figma: "emphasis (VARIANT: false|true)", kotlin: "emphasis: Boolean" }
+    usedIn: [C4, C5]
+
+  CommunityProgressCard:
+    status: new
+    purpose: "Siparişin topluluk kademesine (tier) etkisi: mevcut kademe, sonraki kademeye kalan, ilerleme çubuğu."
+    compose: community.CommunityProgressCard
+    figma: { name: "Community/ProgressCard", key: null }
+    note: "Akış B'deki topluluk göstergesiyle aynı bileşen olmalı — Akış B kartları yazılırken kesinleşecek."
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      progress: { figma: "progress (VARIANT: 0|25|50|75|100 — önizleme için)", kotlin: "progress: Float" }
+      caption: { figma: "caption (TEXT)", kotlin: "caption: String" }
+    usedIn: [C5]
+
+  # ── Etiket / rozet / ilerleme (C akışında kullanılmıyor, katalog bütünlüğü için) ──
+  DomatBadge:
+    status: existing
+    compose: badge.DomatBadge
+    figma: { name: "Badge/Badge", key: null }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      variant: { figma: "variant (VARIANT: Primary|Warning|Error|Dark|Info|Success)", kotlin: "variant: BadgeVariant" }
+    usedIn: []
+
+  Tag:
+    status: existing
+    compose: tag.Tag
+    figma: { name: "Badge/Tag", key: null }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      variant: { figma: "variant (VARIANT: New|Sale|Discount|Limited)", kotlin: "variant: TagVariant" }
+    usedIn: []
+
+  ProductCard:
+    status: existing
+    compose: card.ProductCard
+    figma: { name: "Card/Product", key: null }
+    usedIn: []
+
+  SelectionCard:
+    status: existing
+    compose: card.SelectionCard
+    figma: { name: "Card/Selection", key: null }
+    usedIn: []
+
+  ProgressDots:
+    status: existing
+    compose: indicator.ProgressDots
+    figma: { name: "Indicator/ProgressDots", key: null }
+    usedIn: []
+
+  ProgressSteps:
+    status: existing
+    compose: indicator.ProgressSteps
+    figma: { name: "Indicator/ProgressSteps", key: null }
+    usedIn: []
+
+# İkonlar: Figma'da "Icon/<ad>" bileşenleri; kodda composeResources/drawable/ic_<ad>.xml (XML Vector Drawable).
+# Akış C'nin ihtiyacı: arrow_back, chevron_down, check, info, warning, error, lock, phone, card, whatsapp, success_circle, clock.
+icons:
+  source: "Material Symbols Rounded (Apache 2.0) — tutarlılık için tek set"
+  figmaPrefix: "Icon/"
+  composePath: "core/resource/src/commonMain/composeResources/drawable/ic_<name>.xml"

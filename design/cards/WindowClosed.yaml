@@ -1,0 +1,30 @@
+id: WindowClosed
+title: Pencere Kapandı
+source: DomatApp_Akis_C_Giris_Odeme_v1.4.md#C2 (Edge case — "Pencere kapandı" reddi) ve #C4 (Edge Case 7)
+route: { name: CheckoutGraph.WindowClosedRoute, status: proposed, noBack: true }
+purpose: >
+  Sipariş penceresi akış sırasında kapandığında kullanıcıyı bilgilendirmek. Kayıt geri alınmaz;
+  kullanıcı giriş yapmış kalır. Akış B'nin B3 Edge Case 2 diliyle birebir tutarlı.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: hero
+    component: StatusHero
+    props: { tone: neutral, title: str.window_closed_title, subtitle: str.window_closed_body }
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.window_closed_cta, size: Large } }
+
+states:
+  - id: default
+
+data: { uiState: [] }
+actions: [BackToMarketClicked]
+navigation:
+  - { on: BackToMarketClicked, replaceTo: "MainGraph.HomeRoute (Pazar)" }
+
+strings:
+  window_closed_title: "Bu haftanın siparişleri az önce kapandı."
+  window_closed_body: "Sepetin cihazında duruyor, gelecek hafta pencere açılınca güncel fiyatlarla devam edebilirsin."
+  window_closed_cta: "Pazar'a Dön"
