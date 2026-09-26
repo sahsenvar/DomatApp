@@ -56,8 +56,8 @@ fun ScreenHeader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
-                .padding(horizontal = MaterialTheme.spacing.sp2),
+                .height(56.dp)
+                .padding(horizontal = MaterialTheme.spacing.sp1),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (onBackClick != null) {
@@ -72,7 +72,7 @@ fun ScreenHeader(
                         painter = painterResource(Res.drawable.ic_arrow_back),
                         contentDescription = stringResource(Res.string.cd_back_button),
                         tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.size(24.dp),
                     )
                 }
             }
@@ -82,7 +82,7 @@ fun ScreenHeader(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = MaterialTheme.spacing.sp2)
+                    .padding(horizontal = MaterialTheme.spacing.sp1)
                     .semantics { heading() },
             )
         }

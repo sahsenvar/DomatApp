@@ -28,7 +28,7 @@ import com.domatapp.core.resource.generated.resources.consent_read_text
 import org.jetbrains.compose.resources.stringResource
 
 /** Visual width of the Material 3 checkbox box without its interactive padding. */
-private val CheckboxBoxSize = 24.dp
+private val CheckboxBoxSize = 20.dp
 
 /**
  * Checkbox + label for consents (marketing, KVKK, distance-sales contract). Legal consents are

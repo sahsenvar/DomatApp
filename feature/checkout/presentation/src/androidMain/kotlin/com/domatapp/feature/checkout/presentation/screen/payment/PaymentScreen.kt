@@ -456,40 +456,40 @@ private fun C4Preview(state: PaymentUiState) {
     }
 }
 
-@Preview(name = "C4@first-order", widthDp = 390, heightDp = 1336)
+@Preview(name = "C4@first-order", widthDp = 390, heightDp = 1416)
 @Composable
 private fun C4FirstOrderPreview() = C4Preview(C4PreviewStates.firstOrder)
 
-@Preview(name = "C4@returning", widthDp = 390, heightDp = 930)
+@Preview(name = "C4@returning", widthDp = 390, heightDp = 982)
 @Composable
 private fun C4ReturningPreview() = C4Preview(C4PreviewStates.returning)
 
-@Preview(name = "C4@second-order", widthDp = 390, heightDp = 1062)
+@Preview(name = "C4@second-order", widthDp = 390, heightDp = 1114)
 @Composable
 private fun C4SecondOrderPreview() = C4Preview(C4PreviewStates.secondOrder)
 
-@Preview(name = "C4@cancellation-passed", widthDp = 390, heightDp = 1170)
+@Preview(name = "C4@cancellation-passed", widthDp = 390, heightDp = 1222)
 @Composable
 private fun C4CancellationPassedPreview() = C4Preview(C4PreviewStates.cancellationPassed)
 
-@Preview(name = "C4@below-minimum", widthDp = 390, heightDp = 986)
+@Preview(name = "C4@below-minimum", widthDp = 390, heightDp = 1038)
 @Composable
 private fun C4BelowMinimumPreview() = C4Preview(C4PreviewStates.belowMinimum)
 
-@Preview(name = "C4@card-declined", widthDp = 390, heightDp = 1074)
+@Preview(name = "C4@card-declined", widthDp = 390, heightDp = 1146)
 @Composable
 private fun C4CardDeclinedPreview() = C4Preview(C4PreviewStates.cardDeclined)
 
-@Preview(name = "C4@card-declined-3x", widthDp = 390, heightDp = 1074)
+@Preview(name = "C4@card-declined-3x", widthDp = 390, heightDp = 1126)
 @Composable
 private fun C4CardDeclined3xPreview() = C4Preview(C4PreviewStates.cardDeclined3x)
 
 /** Not a separate Figma frame: `isPaying` → PrimaryButton loading, inputs disabled. */
-@Preview(name = "C4@paying", widthDp = 390, heightDp = 930)
+@Preview(name = "C4@paying", widthDp = 390, heightDp = 982)
 @Composable
 private fun C4PayingPreview() = C4Preview(C4PreviewStates.paying)
 
-@Preview(name = "C4@first-order · dark", widthDp = 390, heightDp = 1336)
+@Preview(name = "C4@first-order · dark", widthDp = 390, heightDp = 1416)
 @Composable
 private fun C4FirstOrderDarkPreview() {
     DomatTheme(darkTheme = true) {

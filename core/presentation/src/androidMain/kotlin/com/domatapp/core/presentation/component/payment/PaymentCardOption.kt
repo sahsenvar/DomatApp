@@ -76,7 +76,7 @@ fun PaymentCardOption(
             // null: the row is the selectable element.
             onClick = null,
             enabled = enabled,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(20.dp),
             colors = RadioButtonDefaults.colors(
                 selectedColor = MaterialTheme.colorScheme.primary,
                 unselectedColor = MaterialTheme.colorScheme.outline,
@@ -86,18 +86,18 @@ fun PaymentCardOption(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.extraSmall)
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.extraSmall)
-                .padding(horizontal = MaterialTheme.spacing.sp3, vertical = MaterialTheme.spacing.sp1),
+                .size(width = 44.dp, height = 28.dp),
             contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = brand.badgeText,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
         Text(
             text = "•••• $last4",
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
         )

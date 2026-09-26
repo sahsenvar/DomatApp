@@ -75,7 +75,7 @@ fun InfoBanner(
             painter = icon ?: painterResource(tone.defaultIcon()),
             contentDescription = null,
             tint = colors.icon,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(20.dp),
         )
         Column(
             modifier = Modifier.weight(1f),
@@ -95,7 +95,7 @@ fun InfoBanner(
             )
             if (actions != null) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp6),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp4),
                     verticalAlignment = Alignment.CenterVertically,
                     content = actions,
                 )

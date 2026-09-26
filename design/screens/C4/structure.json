@@ -6,7 +6,7 @@
    "figmaNodeId": "7:16",
    "size": [
     390,
-    1336
+    1416
    ],
    "image": "states/first-order.png",
    "componentsUsed": [
@@ -89,7 +89,7 @@
            "showSupporting": true,
            "value": "elif.yilmaz@ornek.com",
            "label": "E-posta (isteğe bağlı)",
-           "state": "focused"
+           "state": "default"
           },
           "manifest": "DomatTextField"
          },
@@ -286,7 +286,7 @@
    "figmaNodeId": "7:125",
    "size": [
     390,
-    930
+    982
    ],
    "image": "states/returning.png",
    "componentsUsed": [
@@ -430,7 +430,7 @@
            "showSupporting": false,
            "value": "•••",
            "label": "CVV",
-           "state": "focused"
+           "state": "default"
           },
           "manifest": "DomatTextField"
          },
@@ -482,7 +482,7 @@
    "figmaNodeId": "7:192",
    "size": [
     390,
-    1062
+    1114
    ],
    "image": "states/second-order.png",
    "componentsUsed": [
@@ -639,7 +639,7 @@
            "showSupporting": false,
            "value": "•••",
            "label": "CVV",
-           "state": "focused"
+           "state": "default"
           },
           "manifest": "DomatTextField"
          },
@@ -691,7 +691,7 @@
    "figmaNodeId": "7:272",
    "size": [
     390,
-    1170
+    1222
    ],
    "image": "states/cancellation-passed.png",
    "componentsUsed": [
@@ -860,7 +860,7 @@
            "showSupporting": false,
            "value": "•••",
            "label": "CVV",
-           "state": "focused"
+           "state": "default"
           },
           "manifest": "DomatTextField"
          },
@@ -912,7 +912,7 @@
    "figmaNodeId": "8:231",
    "size": [
     390,
-    986
+    1038
    ],
    "image": "states/below-minimum.png",
    "componentsUsed": [
@@ -1106,7 +1106,7 @@
    "figmaNodeId": "8:306",
    "size": [
     390,
-    1074
+    1146
    ],
    "image": "states/card-declined.png",
    "componentsUsed": [
@@ -1315,7 +1315,7 @@
    "figmaNodeId": "8:386",
    "size": [
     390,
-    1074
+    1126
    ],
    "image": "states/card-declined-3x.png",
    "componentsUsed": [
@@ -1481,7 +1481,7 @@
         "props": {
          "showActions": true,
          "showTitle": true,
-         "body": "Farklı bir kart dener misin? Bu kartla 3 deneme başarısız oldu. Kartından para çekilmedi.",
+         "body": "Farklı bir kart dener misin?",
          "title": "Ödeme alınamadı",
          "tone": "error"
         },
@@ -1520,5 +1520,6 @@
     ]
    }
   }
- }
+ },
+ "exportedAt": "2026-09-26T19:10Z"
 }

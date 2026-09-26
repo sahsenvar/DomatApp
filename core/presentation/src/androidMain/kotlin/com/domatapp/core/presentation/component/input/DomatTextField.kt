@@ -44,7 +44,9 @@ fun DomatTextField(
             }
         } else null,
         label = if (label.isNotEmpty()) {
-            { Text(label, style = MaterialTheme.typography.bodyMedium) }
+            // No explicit style: M3 animates the label between bodyLarge (resting) and bodySmall
+            // (floated on the border). A fixed style freezes it at one size.
+            { Text(label) }
         } else null,
         enabled = enabled,
         isError = isError,

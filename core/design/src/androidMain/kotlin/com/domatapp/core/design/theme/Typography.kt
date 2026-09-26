@@ -6,6 +6,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.typography.DomatTypographyScale
 import com.domatapp.core.resource.generated.resources.Res
@@ -40,91 +41,114 @@ internal fun domatTypography(): Typography {
             fontFamily = nunito,
             fontSize = DomatTypographyScale.DisplayLargeSize.sp,
             lineHeight = DomatTypographyScale.DisplayLargeLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.ExtraBold,
         ),
         displayMedium = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.DisplayMediumSize.sp,
             lineHeight = DomatTypographyScale.DisplayMediumLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.ExtraBold,
         ),
         displaySmall = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.DisplaySmallSize.sp,
             lineHeight = DomatTypographyScale.DisplaySmallLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Bold,
         ),
         headlineLarge = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.HeadlineLargeSize.sp,
             lineHeight = DomatTypographyScale.HeadlineLargeLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.ExtraBold,
         ),
         headlineMedium = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.HeadlineMediumSize.sp,
             lineHeight = DomatTypographyScale.HeadlineMediumLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Bold,
         ),
         headlineSmall = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.HeadlineSmallSize.sp,
             lineHeight = DomatTypographyScale.HeadlineSmallLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Bold,
         ),
         titleLarge = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.TitleLargeSize.sp,
             lineHeight = DomatTypographyScale.TitleLargeLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Bold,
         ),
         titleMedium = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.TitleMediumSize.sp,
             lineHeight = DomatTypographyScale.TitleMediumLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Medium,
         ),
         titleSmall = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.TitleSmallSize.sp,
             lineHeight = DomatTypographyScale.TitleSmallLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Medium,
         ),
         bodyLarge = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.BodyLargeSize.sp,
             lineHeight = DomatTypographyScale.BodyLargeLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Normal,
         ),
         bodyMedium = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.BodyMediumSize.sp,
             lineHeight = DomatTypographyScale.BodyMediumLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Normal,
         ),
         bodySmall = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.BodySmallSize.sp,
             lineHeight = DomatTypographyScale.BodySmallLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Normal,
         ),
         labelLarge = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.LabelLargeSize.sp,
             lineHeight = DomatTypographyScale.LabelLargeLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Bold,
         ),
         labelMedium = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.LabelMediumSize.sp,
             lineHeight = DomatTypographyScale.LabelMediumLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Bold,
         ),
         labelSmall = TextStyle(
             fontFamily = nunito,
             fontSize = DomatTypographyScale.LabelSmallSize.sp,
             lineHeight = DomatTypographyScale.LabelSmallLineHeight.sp,
+            lineHeightStyle = FigmaLineHeight,
             fontWeight = FontWeight.Bold,
         ),
     )
 }
+
+// Figma places a line box of `lineHeight` around each line and centers the glyphs in it; it never
+// trims the first/last line. Compose's default trims, which made every text block 1-4 dp shorter
+// than its Figma counterpart and accumulated into visible vertical drift down a screen.
+private val FigmaLineHeight = LineHeightStyle(
+    alignment = LineHeightStyle.Alignment.Center,
+    trim = LineHeightStyle.Trim.None,
+)

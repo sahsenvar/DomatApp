@@ -39,7 +39,18 @@ Note: shared UI components live in `:core:presentation` (`component/`), the them
 
 # Check dependencies
 ./gradlew :composeApp:dependencies
+
+# Render every @Preview with Roborazzi (Robolectric, JVM — no emulator) and diff a screen against its design package
+./gradlew :composeApp:recordRoborazziDebug
+python3 ai/design/scripts/compare_design_package.py C4
 ```
+
+Roborazzi setup (`composeApp/build.gradle.kts`): ComposablePreviewScanner generates one Robolectric test per
+`@Preview` in `com.domatapp` (private previews included), `sdk = 36`, device `w390dp-h844dp-xhdpi` (2x — same
+scale as the design PNGs). Two settings are load-bearing: `application = android.app.Application` (the real
+`DomatApplication` would start Koin once per test → `KoinApplicationAlreadyStartedException`) and the JDK 21
+`--add-opens/--add-exports` jvmArgs (Robolectric's `FileDescriptor` access). Behind a Maven Central mirror, pass
+`-Probolectric.dependency.repo.url=<mirror>` so Robolectric can fetch its android-all jar.
 
 ### iOS
 Open `/iosApp` directory in Xcode or use the IDE's run configuration. The iOS app consumes the `Shared.framework` built from the `:shared` module.
@@ -938,6 +949,9 @@ All dependencies are managed in `gradle/libs.versions.toml`:
 ## Testing
 
 Test source sets are currently disabled across core and feature modules. Do not automatically add test dependencies or generate test files unless explicitly requested.
+
+Exception: `:composeApp` has Roborazzi screenshot tests, **generated** from `@Preview`s — no hand-written test
+files. A screen preview named `<ID>@<state>` is what the design comparison script matches.
 
 ## CI (`.github/workflows/ci.yml`)
 

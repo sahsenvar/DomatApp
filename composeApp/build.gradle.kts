@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.roborazzi)
 }
 
 composeCompiler {
@@ -49,6 +50,47 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    // Screenshot tests: Robolectric renders every @Preview in the app's classpath (all feature and
+    // core modules) and Roborazzi records it as a PNG. The only unit tests in the repo.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
+                // Robolectric downloads its android-all jars at runtime; honour a mirror if given.
+                (project.findProperty("robolectric.dependency.repo.url") as String?)?.let { url ->
+                    it.systemProperty("robolectric.dependency.repo.url", url)
+                }
+                it.maxHeapSize = "2g"
+                // Robolectric (SDK 36 android-all) reaches into JDK internals on JDK 21.
+                it.jvmArgs(
+                    "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
+                    "--add-opens=java.base/java.io=ALL-UNNAMED",
+                    "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                )
+            }
+        }
+    }
+}
+
+// Generates one Robolectric test per @Preview (private ones included) under com.domatapp.
+//   record:  ./gradlew :composeApp:recordRoborazziDebug   -> composeApp/build/outputs/roborazzi/*.png
+//   verify:  ./gradlew :composeApp:verifyRoborazziDebug   (compares against recorded images)
+// The images of a screen are compared with design/screens/<ID>/states/*.png by
+// ai/design/scripts/compare_design_package.py.
+roborazzi {
+    generateComposePreviewRobolectricTests {
+        enable = true
+        packages = listOf("com.domatapp")
+        includePrivatePreviews = true
+        robolectricConfig = mapOf(
+            "sdk" to "[36]",
+            // Plain Application: DomatApplication starts Koin, and previews must not need DI.
+            "application" to "android.app.Application::class",
+            "qualifiers" to "\"w390dp-h844dp-xhdpi\"",
+        )
     }
 }
 
@@ -110,4 +152,13 @@ dependencies {
     implementation(libs.navigation.gezgin.core)
 
     api(libs.ui.compose.uiTooling)
+
+    // Screenshot tests (see roborazzi { } above)
+    testImplementation(libs.test.junit4)
+    testImplementation(libs.test.robolectric)
+    testImplementation(libs.test.roborazzi)
+    testImplementation(libs.test.roborazzi.compose)
+    testImplementation(libs.test.roborazzi.previewScannerSupport)
+    testImplementation(libs.test.composablePreviewScanner)
+    testImplementation(libs.test.compose.uiTestJunit4)
 }

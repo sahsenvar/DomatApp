@@ -32,7 +32,8 @@ Canlı Figma (`source.json` → fileKey) yalnızca paketin kapsamadığı bir ay
   - `existing` → doğrudan çağır.
   - `change` → önce bileşende belirtilen değişikliği yap (ör. `PrimaryButton(loading)`), sonra çağır.
   - `promote` → feature modülündeki bileşeni `:core:presentation/component/`'a taşı, sonra çağır.
-  - `new` → `:core:presentation/component/<paket>/` altında yaz; Figma property'leri = Kotlin parametreleri.
+  - `new` → `:core:presentation/component/<paket>/` altında yaz; Figma property'leri = Kotlin parametreleri;
+    iç ölçüler (dolgu, aralık, ikon boyutu, yazı stili) **`spec` bloğundan** — tahmin etme.
 - **Ekran dosyasında yeni görsel bileşen tanımlama.** Tekrar eden her görsel parça ya kataloğa girer ya da
   ekran-özel olduğu `components.yaml`'a not düşülerek gerekçelendirilir.
 - `FormSection` ve `BottomActionBar` Figma'da frame'dir (`kind: frame`); kodda bileşendir.
@@ -69,7 +70,16 @@ Yasak: `Color(0x…)`, `colorResource(...)`, `RoundedCornerShape(<n>.dp)`, çıp
 1. `./gradlew :composeApp:assembleDebug` (uyarılar hata sayılır).
 2. Tarama (0 sonuç beklenir, bileşen dosyaları hariç):
    `grep -rnE "Color\(0x|colorResource\(|RoundedCornerShape\([0-9]" <ekran paketi>`
-3. Her durum için preview render → `ai/design/scripts/pixel_diff.py states/<durum>.png <render>.png` (hedef ≤ %5)
+3. Her `states[]` durumu için `@Preview(name = "<ID>@<durum>", widthDp = 390, heightDp = <structure.json size[1]>)`
+   yaz, sonra görsel karşılaştırmayı çalıştır:
+   ```bash
+   ./gradlew :composeApp:recordRoborazziDebug          # tüm @Preview'lar → composeApp/build/outputs/roborazzi/
+   python3 ai/design/scripts/compare_design_package.py <ID>   # hedef: her durum OK (varsayılan eşik %3,5)
+   ```
+   `build/design-diff/<ID>/<durum>.png` = [tasarım | compose | fark]. Boyutlar farklıysa önizleme yüksekliği
+   yanlıştır. Eşik kalibrasyonu: tüm ekran 2 dp kayarsa ≈ %3, 4 dp ≈ %4,2 — kalan %2–3 font rasterleştirme farkıdır.
+   Fark ısısında bir **blok** (metin satırı, bileşen) kırmızıysa gerçek farktır: önce `components.yaml → spec` ile
+   bileşeni, sonra `card.yaml → strings` ile metni karşılaştır. Tasarım karttan saparsa kart kazanır; farkı raporla.
    ve aşağıdaki tabloyu doldur:
 
 | Özellik | Tasarım | Compose | ✅/❌ |
