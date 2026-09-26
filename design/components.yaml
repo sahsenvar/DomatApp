@@ -21,6 +21,7 @@
 #   new       → kodda yok, yazılacak
 #
 # swiftui: CMP'nin yetmediği yerde iOS'ta ayrı karşılık gerekirse doldurulur; şimdilik hepsi null.
+# figma.nodeId: "DomatApp — Design System" dosyasındaki (5hpUTmJJ1ie3E9boGSPXje) bileşen seti düğümü.
 # figma.key: Figma kütüphanesi yayınlandığında component key ile doldurulur.
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -35,7 +36,7 @@ components:
     status: change
     change: "`loading: Boolean = false` parametresi eklenecek (ödeme/OTP isteği sürerken spinner, tıklama kapalı)."
     compose: button.PrimaryButton
-    figma: { name: "Button/Primary", key: null }
+    figma: { name: "Button/Primary", nodeId: "4:24", key: null }
     tokens: button-primary
     props:
       text: { figma: "text (TEXT)", kotlin: "text: String" }
@@ -48,7 +49,7 @@ components:
   SecondaryButton:
     status: existing
     compose: button.SecondaryButton
-    figma: { name: "Button/Secondary", key: null }
+    figma: { name: "Button/Secondary", nodeId: "4:29", key: null }
     tokens: button-secondary
     props:
       text: { figma: "text (TEXT)", kotlin: "text: String" }
@@ -58,7 +59,7 @@ components:
   GhostButton:
     status: existing
     compose: button.GhostButton
-    figma: { name: "Button/Ghost", key: null }
+    figma: { name: "Button/Ghost", nodeId: "4:34", key: null }
     props:
       text: { figma: "text (TEXT)", kotlin: "text: String" }
       enabled: { figma: "enabled (VARIANT)", kotlin: "enabled: Boolean" }
@@ -68,7 +69,7 @@ components:
     status: new
     purpose: "Satır içi metin bağlantısı: 'Kodu Tekrar Gönder', 'Numarayı Değiştir', 'Farklı kart kullan', 'Metni oku'."
     compose: button.TextLink
-    figma: { name: "Button/TextLink", key: null }
+    figma: { name: "Button/TextLink", nodeId: "4:39", key: null }
     props:
       text: { figma: "text (TEXT)", kotlin: "text: String" }
       enabled: { figma: "enabled (VARIANT)", kotlin: "enabled: Boolean" }
@@ -90,7 +91,7 @@ components:
     from: feature.auth.presentation.screen.component.ScreenHeader
     change: "backIconPainter parametresi kaldırılıp ikon bileşen içinde çözülecek (her ekranda aynı geri ikonu)."
     compose: bar.ScreenHeader
-    figma: { name: "Bar/ScreenHeader", key: null }
+    figma: { name: "Bar/ScreenHeader", nodeId: "6:79", key: null }
     props:
       title: { figma: "title (TEXT)", kotlin: "title: String" }
       showBack: { figma: "showBack (BOOLEAN)", kotlin: "onBackClick: (() -> Unit)?  // null = geri butonu yok" }
@@ -99,7 +100,7 @@ components:
   BottomActionBar:
     status: existing
     compose: bar.BottomActionBar
-    figma: { name: "Bar/BottomAction", key: null }
+    figma: { name: "BottomActionBar", kind: frame, note: "Figma'da bileşen değil; frame adı 'BottomActionBar · <bölge-id>'" }
     props:
       content: { figma: "slot (bir veya iki buton)", kotlin: "content: @Composable () -> Unit" }
     usedIn: [C1, C3, C4, C5, WindowClosed]
@@ -108,7 +109,7 @@ components:
     status: new
     purpose: "Başlıklı içerik grubu (örn. C4 'Kişisel Bilgiler', 'Ödeme Yöntemi'). Başlık + isteğe bağlı açıklama + içerik."
     compose: layout.FormSection
-    figma: { name: "Layout/FormSection", key: null }
+    figma: { name: "FormSection", kind: frame, note: "Figma'da bileşen değil; frame adı 'FormSection · <bölge-id>', ilk çocuk başlık metni (title-large)" }
     props:
       title: { figma: "title (TEXT)", kotlin: "title: String" }
       description: { figma: "description (TEXT, boş olabilir)", kotlin: "description: String?" }
@@ -121,7 +122,7 @@ components:
     status: change
     change: "`supportingText: String?` (alan altı yardım/hata metni) ve `prefix: String?` parametreleri eklenecek."
     compose: input.DomatTextField
-    figma: { name: "Input/TextField", key: null }
+    figma: { name: "Input/TextField", nodeId: "6:34", key: null }
     tokens: text-field
     props:
       label: { figma: "label (TEXT)", kotlin: "label: String" }
@@ -173,7 +174,7 @@ components:
     status: new
     purpose: "Onay kutusu + etiket. Yasal metin varsa 'Metni oku' ile genişler (KVKK, Mesafeli Satış). Varsayılan İŞARETSİZ."
     compose: input.ConsentCheckbox
-    figma: { name: "Input/ConsentCheckbox", key: null }
+    figma: { name: "Input/ConsentCheckbox", nodeId: "6:67", key: null }
     props:
       label: { figma: "label (TEXT)", kotlin: "label: String" }
       checked: { figma: "checked (VARIANT: true|false)", kotlin: "checked: Boolean" }
@@ -186,9 +187,9 @@ components:
     status: new
     purpose: "Saklı kart satırı (radyo seçimli): marka logosu + •••• 1234. Seçiliyse altında CVV alanı açılır."
     compose: payment.PaymentCardOption
-    figma: { name: "Payment/CardOption", key: null }
+    figma: { name: "Payment/CardOption", nodeId: "6:78", key: null }
     props:
-      brand: { figma: "brand (VARIANT: visa|mastercard|troy|amex)", kotlin: "brand: CardBrand" }
+      brand: { figma: "brand (TEXT — pilotta geçici kısaltma: MC/VISA/TROY)", kotlin: "brand: CardBrand" }
       last4: { figma: "last4 (TEXT)", kotlin: "last4: String" }
       selected: { figma: "selected (VARIANT: true|false)", kotlin: "selected: Boolean" }
     usedIn: [C4]
@@ -198,7 +199,7 @@ components:
     status: new
     purpose: "Kapatılamayan bilgi şeridi: ikon + başlık + gövde + isteğe bağlı aksiyonlar."
     compose: feedback.InfoBanner
-    figma: { name: "Feedback/InfoBanner", key: null }
+    figma: { name: "Feedback/InfoBanner", nodeId: "5:58", key: null }
     tokens: "banner-info | banner-warning (tone'a göre)"
     props:
       tone: { figma: "tone (VARIANT: info|warning|error|success|neutral)", kotlin: "tone: BannerTone" }
@@ -217,7 +218,7 @@ components:
     status: new
     purpose: "Küçük ikonlu yardımcı not (body-small). Örn. KVKK hatırlatması, 'Fatura bilgin bir sonraki adımda alınacak'."
     compose: feedback.InlineNote
-    figma: { name: "Feedback/InlineNote", key: null }
+    figma: { name: "Feedback/InlineNote", nodeId: "5:67", key: null }
     props:
       text: { figma: "text (TEXT)", kotlin: "text: String" }
       tone: { figma: "tone (VARIANT: neutral|warning)", kotlin: "tone: NoteTone" }
@@ -249,7 +250,7 @@ components:
     status: new
     purpose: "Sipariş özeti satırı: ürün adı × adet ... tutar. `emphasis` ile toplam satırı."
     compose: data.SummaryRow
-    figma: { name: "Data/SummaryRow", key: null }
+    figma: { name: "Data/SummaryRow", nodeId: "5:78", key: null }
     props:
       label: { figma: "label (TEXT)", kotlin: "label: String" }
       detail: { figma: "detail (TEXT, boş olabilir)", kotlin: "detail: String?  // '2 kg'" }
@@ -316,5 +317,7 @@ components:
 # Akış C'nin ihtiyacı: arrow_back, chevron_down, check, info, warning, error, lock, phone, card, whatsapp, success_circle, clock.
 icons:
   source: "Material Symbols Rounded (Apache 2.0) — tutarlılık için tek set"
+  figmaNodes: { arrow_back: "3:5", chat: "3:10", check: "3:15", check_circle: "3:20", credit_card: "3:25", error: "3:30", expand_more: "3:35", info: "3:40", lock: "3:45", schedule: "3:50", warning: "3:55" }
+  existingInRepo: "ic_arrow_back ve ic_lock repoda eski özel çizim olarak var ve kullanılmaya devam eder; ikon seti birleştirme ayrı karar."
   figmaPrefix: "Icon/"
   composePath: "core/resource/src/commonMain/composeResources/drawable/ic_<name>.xml"

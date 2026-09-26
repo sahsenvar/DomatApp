@@ -1,0 +1,193 @@
+id: C4
+title: Ödeme (Provizyon) + Kişisel Bilgiler
+source: DomatApp_Akis_C_Giris_Odeme_v1.4.md#C4
+route: { name: CheckoutGraph.PaymentRoute, status: proposed }
+purpose: >
+  Provizyon mekanizmasını net bir dille sunmak, mesafeli satış onayını almak, kartı işleyip siparişi
+  oluşturmak. Yalnızca ilk siparişte ad-soyad (zorunlu) ve e-posta (opsiyonel) burada toplanır.
+  Mantıksal sıra: kimsin → ne alıyorsun → nasıl ödüyorsun.
+frame: { width: 390, height: "hug (kaydırılabilir)" }
+
+regions:   # yukarıdan aşağı, sıra BAĞLAYICIDIR
+  - id: header
+    component: ScreenHeader
+    props: { title: str.c4_title, showBack: true }
+
+  - id: personal-info
+    component: FormSection
+    visibleWhen: "isFirstOrder (backend'de firstName/lastName yok)"
+    props: { title: str.c4_personal_title }
+    content:
+      - { component: DomatTextField, props: { label: str.c4_first_name, required: true } }
+      - { component: DomatTextField, props: { label: str.c4_last_name, required: true } }
+      - { component: DomatTextField, props: { label: str.c4_email, supportingText: str.c4_email_helper, keyboard: email } }
+      - component: ConsentCheckbox
+        visibleWhen: "email.isNotBlank()"
+        props: { label: str.c4_marketing_consent, checked: false, expandable: false }
+      - { component: InlineNote, props: { tone: neutral, text: str.c4_kvkk_reminder } }
+
+  - id: second-order-banner
+    component: InfoBanner
+    visibleWhen: "orderSequenceInWindow >= 2"
+    props: { tone: info, title: str.c4_second_order_title, body: str.c4_second_order_body }
+    rule: "'Ek ödeme' / 'ikinci ücret' dili YASAK — birleşme vurgusu."
+
+  - id: cancellation-warning
+    component: InfoBanner
+    visibleWhen: "deliveryCancellationDeadlinePassed == true"
+    props: { tone: warning, body: str.c4_cancellation_passed }
+    rule: "Mesafeli satış onay kutusunun ÜSTÜNDE olmalı."
+
+  - id: order-summary
+    component: FormSection
+    props: { title: str.c4_summary_title }
+    content:
+      - { component: SummaryRow, repeat: "items", props: { label: "{productName}", detail: "{quantity}", amount: "{lineTotal}" } }
+      - { component: SummaryRow, props: { label: str.c4_summary_total, amount: "{total}", emphasis: true } }
+
+  - id: provision-explainer
+    component: InfoBanner
+    props: { tone: neutral, body: str.c4_provision_explainer }
+    rule: "Her zaman görünür, kapatılamaz."
+
+  - id: payment-method
+    component: FormSection
+    props: { title: str.c4_payment_title }
+    content:
+      - component: PaymentCardOption
+        repeat: "savedCards"
+        visibleWhen: "savedCardEnabled && savedCards.isNotEmpty()"
+        props: { brand: "{brand}", last4: "{last4}", selected: "{id == selectedCardId}" }
+        whenSelected: { component: DomatTextField, props: { label: str.c4_cvv, keyboard: number } }
+      - component: TextLink
+        visibleWhen: "savedCards.isNotEmpty()"
+        props: { text: str.c4_use_other_card }
+      - group: new-card-form
+        visibleWhen: "savedCards.isEmpty() || useNewCard"
+        content:
+          - { component: DomatTextField, props: { label: str.c4_card_number, keyboard: number } }
+          - { component: DomatTextField, layout: "yan yana 1/2", props: { label: str.c4_card_expiry, placeholder: "AA/YY" } }
+          - { component: DomatTextField, layout: "yan yana 1/2", props: { label: str.c4_cvv } }
+          - component: ConsentCheckbox
+            visibleWhen: "savedCardEnabled"
+            props: { label: str.c4_save_card, checked: false, expandable: false }
+
+  - id: card-error
+    component: InfoBanner
+    visibleWhen: "paymentError != null"
+    props: { tone: error, title: str.c4_card_declined_title, body: "{paymentError.userMessage}" }
+    actions: [{ component: TextLink, text: str.c4_retry }, { component: TextLink, text: str.c4_use_other_card }]
+    variantAfter3: { body: str.c4_card_declined_3x_body, note: "Farklı kart öne çıkar; aynı kartla denemek engellenmez." }
+
+  - id: distance-contract
+    component: ConsentCheckbox
+    props: { label: str.c4_contract_label, checked: false, expandable: true, required: true }
+    legalText: str.c4_contract_legal_text
+
+  - id: cta
+    component: BottomActionBar
+    content:
+      - component: PrimaryButton
+        visibleWhen: "!belowMinimum"
+        props: { text: str.c4_cta_pay, size: Large, enabled: "formValid && contractChecked", loading: "isPaying" }
+        note: "Buton metni tutarı içerir: 'Öde ve Siparişi Tamamla · ₺X'"
+      - group: below-minimum
+        visibleWhen: "belowMinimum"
+        content:
+          - { component: InfoBanner, props: { tone: warning, body: str.c4_below_minimum } }
+          - { component: SecondaryButton, props: { text: str.c4_back_to_cart } }
+
+states:   # her biri ayrı Figma frame'i: "C4@<state-id>"
+  - id: first-order
+    description: "Yeni kullanıcı: Kişisel Bilgiler bloğu açık, saklı kart yok → yeni kart formu, 'Kartımı sakla' görünür."
+  - id: returning
+    description: "Tekrar sipariş: Kişisel Bilgiler yok; saklı kart seçili, CVV alanı açık; 'Farklı kart kullan' linki."
+  - id: second-order
+    description: "returning + ikinci sipariş bilgi şeridi (info)."
+  - id: cancellation-passed
+    description: "second-order + iptal hakkı uyarısı (warning), mesafeli satış kutusunun üstünde."
+  - id: below-minimum
+    description: "Ödeme butonu yerine minimum tutar uyarısı + 'Sepete Dön ve Ürün Ekle'."
+  - id: card-declined
+    description: "returning + kart reddi şeridi (error) + 'Tekrar Dene' / 'Farklı kart kullan'; form korunur."
+  - id: card-declined-3x
+    description: "card-declined, 3. ardışık retten sonra: gövde 'Farklı bir kart dener misin?'."
+  # Ek görünüm (ayrı frame değil): isPaying → PrimaryButton loading=true, form pasif.
+
+data:
+  uiState:
+    - isFirstOrder: Boolean
+    - firstName: String
+    - lastName: String
+    - email: String
+    - marketingConsent: Boolean
+    - orderSequenceInWindow: Int
+    - deliveryCancellationDeadlinePassed: Boolean
+    - items: List<SummaryLine>
+    - total: Money
+    - savedCardEnabled: Boolean
+    - savedCards: List<SavedCard>
+    - selectedCardId: String?
+    - useNewCard: Boolean
+    - cardNumber / cardExpiry / cvv: String
+    - saveCard: Boolean
+    - contractChecked: Boolean
+    - contractExpanded: Boolean
+    - belowMinimum: Boolean
+    - minimumAmount: Money
+    - isPaying: Boolean
+    - paymentError: PaymentErrorUi?   # userMessage (sade dil), consecutiveFailures
+actions: [FirstNameChanged, LastNameChanged, EmailChanged, MarketingToggled, SavedCardSelected(id), CvvChanged, UseOtherCardClicked, CardNumberChanged, ExpiryChanged, SaveCardToggled, ContractToggled, ContractExpandToggled, PayClicked, RetryClicked, BackToCartClicked, BackClicked]
+navigation:
+  - { on: "POST /v1/orders 2xx", replaceTo: C5, args: [orderId], note: "Geri tuşuyla ödeme ekranına dönülmez" }
+  - { on: "409 window_closed", replaceTo: WindowClosed }
+  - { on: BackToCartClicked, backTo: "B3 (Sepet)" }
+api: ["GET /v1/deliveries/current", "GET /v1/payments/cards", "GET /v1/app-config", "PATCH /v1/users/me (ilk sipariş)", "POST /v1/payments/cards (opt-in)", "POST /v1/orders"]
+
+strings:
+  c4_title: "Ödeme"
+  c4_personal_title: "Kişisel Bilgiler"
+  c4_first_name: "Ad"
+  c4_last_name: "Soyad"
+  c4_email: "E-posta (isteğe bağlı)"
+  c4_email_helper: "Sipariş özetini e-postayla da almak istersen."
+  c4_marketing_consent: "Kampanya ve duyurulardan e-postayla haberdar olmak istiyorum."
+  c4_kvkk_reminder: "Bu bilgiler, kayıt olurken onayladığın KVKK aydınlatma metni kapsamında işlenir."
+  c4_second_order_title: "Bu, bu haftaki %1$d. siparişin."
+  c4_second_order_body: "%1$s ayrıca bloke edilecek. İlk siparişinle birlikte %2$s altında tek teslimatta buluşacaklar."
+  c4_cancellation_passed: "Bu ekleme, iptal hakkı kapanmış bir teslimata eklenecek — bu siparişi daha sonra iptal edemezsin."
+  c4_summary_title: "Sipariş Özeti"
+  c4_summary_total: "Toplam (en fazla)"
+  c4_provision_explainer: "Şimdi %1$s kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak."
+  c4_payment_title: "Ödeme Yöntemi"
+  c4_use_other_card: "Farklı kart kullan"
+  c4_card_number: "Kart numarası"
+  c4_card_expiry: "Son kullanma"
+  c4_cvv: "CVV"
+  c4_save_card: "Kartımı sakla, sonraki siparişlerde tekrar girmeyeyim."
+  c4_card_declined_title: "Ödeme alınamadı"
+  c4_card_declined_3x_body: "Farklı bir kart dener misin?"
+  c4_retry: "Tekrar Dene"
+  c4_contract_label: "Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum."
+  c4_contract_legal_text: "<Mesafeli satış sözleşmesi + ön bilgilendirme formu — hukuk tarafından sağlanacak>"
+  c4_cta_pay: "Öde ve Siparişi Tamamla · %1$s"
+  c4_below_minimum: "Bu sepet biraz küçük kaldı. En az %1$s'lik bir sipariş verebilirsin — her siparişin işlem maliyeti sabit olduğu için küçük tutarlarda zarar ediyoruz."
+  c4_back_to_cart: "Sepete Dön ve Ürün Ekle"
+
+sampleData:   # tasarımda kullanılacak örnek veri (gerçekçi, tutarlı)
+  items:
+    - { productName: "Domates", quantity: "3 kg", lineTotal: "₺96,00" }
+    - { productName: "Salatalık", quantity: "2 kg", lineTotal: "₺54,00" }
+    - { productName: "Kuru Soğan", quantity: "2 kg", lineTotal: "₺38,00" }
+  total: "₺188,00"
+  savedCard: { brand: mastercard, last4: "4821" }
+  deliveryCode: "#DAL1"
+  minimumAmount: "₺60,00"
+  belowMinimumTotal: "₺42,00"
+  firstName: "Elif"
+  lastName: "Yılmaz"
+
+open:
+  - "c4_email_helper, c4_marketing_consent, c4_card_declined_title akışta birebir yok; öneri."
+  - "c4_cta_pay'deki tutar gösterimi öneri (akış yalnızca 'Öde ve Siparişi Tamamla' diyor)."
+  - "sampleData fiyatları Birim Ekonomisi/Hal verisinden değil, görsel amaçlı."
