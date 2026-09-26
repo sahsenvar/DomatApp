@@ -1,0 +1,419 @@
+{
+ "screen": "C2",
+ "note": "Figma use_figma ile dışa aktarıldı; \"manifest\" alanı design/components.yaml anahtarıdır. Katman adı \"<Bileşen> · <bölge-id>\" biçimindedir; bölge-id ekran kartındaki regions[].id ile eşleşir. \"texts\" = örnekte görünen metinler (metin tutarlılık kontrolü bunları kullanır).",
+ "states": {
+  "default": {
+   "figmaNodeId": "29:620",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/default.png",
+   "componentsUsed": [
+    "OtpCodeField",
+    "ScreenHeader",
+    "TextLink"
+   ],
+   "tree": {
+    "layer": "C2@default",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Kodu Gir"
+      },
+      "texts": [
+       "Kodu Gir"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · description",
+        "text": "+90 532 *** ** 67 numarasına bir kod gönderdik.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "TextLink · change-number",
+        "component": "Button/TextLink",
+        "manifest": "TextLink",
+        "props": {
+         "text": "Numarayı Değiştir",
+         "enabled": "true"
+        },
+        "texts": [
+         "Numarayı Değiştir"
+        ]
+       },
+       {
+        "layer": "OtpCodeField · code",
+        "component": "Input/OtpCode",
+        "manifest": "OtpCodeField",
+        "props": {
+         "state": "default"
+        },
+        "texts": []
+       },
+       {
+        "layer": "TextLink · resend",
+        "component": "Button/TextLink",
+        "manifest": "TextLink",
+        "props": {
+         "text": "Kodu Tekrar Gönder",
+         "enabled": "false"
+        },
+        "texts": [
+         "Kodu Tekrar Gönder"
+        ]
+       },
+       {
+        "layer": "text · resend-countdown",
+        "text": "45 sn sonra tekrar gönderebilirsin",
+        "style": "body-small"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "verifying": {
+   "figmaNodeId": "29:645",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/verifying.png",
+   "componentsUsed": [
+    "OtpCodeField",
+    "ScreenHeader",
+    "TextLink"
+   ],
+   "tree": {
+    "layer": "C2@verifying",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Kodu Gir"
+      },
+      "texts": [
+       "Kodu Gir"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · description",
+        "text": "+90 532 *** ** 67 numarasına bir kod gönderdik.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "TextLink · change-number",
+        "component": "Button/TextLink",
+        "manifest": "TextLink",
+        "props": {
+         "text": "Numarayı Değiştir",
+         "enabled": "true"
+        },
+        "texts": [
+         "Numarayı Değiştir"
+        ]
+       },
+       {
+        "layer": "OtpCodeField · code",
+        "component": "Input/OtpCode",
+        "manifest": "OtpCodeField",
+        "props": {
+         "state": "disabled"
+        },
+        "texts": [
+         "4",
+         "8",
+         "2",
+         "9",
+         "1",
+         "5"
+        ]
+       },
+       {
+        "layer": "LoadingIndicator · verifying",
+        "layout": "HORIZONTAL",
+        "children": [
+         {
+          "layer": "spinner",
+          "type": "ELLIPSE"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "error": {
+   "figmaNodeId": "29:672",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/error.png",
+   "componentsUsed": [
+    "OtpCodeField",
+    "ScreenHeader",
+    "TextLink"
+   ],
+   "tree": {
+    "layer": "C2@error",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Kodu Gir"
+      },
+      "texts": [
+       "Kodu Gir"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · description",
+        "text": "+90 532 *** ** 67 numarasına bir kod gönderdik.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "TextLink · change-number",
+        "component": "Button/TextLink",
+        "manifest": "TextLink",
+        "props": {
+         "text": "Numarayı Değiştir",
+         "enabled": "true"
+        },
+        "texts": [
+         "Numarayı Değiştir"
+        ]
+       },
+       {
+        "layer": "OtpCodeField · code",
+        "component": "Input/OtpCode",
+        "manifest": "OtpCodeField",
+        "props": {
+         "state": "error"
+        },
+        "texts": [
+         "4",
+         "8",
+         "2",
+         "9",
+         "1",
+         "5"
+        ]
+       },
+       {
+        "layer": "text · code-error",
+        "text": "Kod hatalı. Tekrar dener misin?",
+        "style": "body-small"
+       },
+       {
+        "layer": "TextLink · resend",
+        "component": "Button/TextLink",
+        "manifest": "TextLink",
+        "props": {
+         "text": "Kodu Tekrar Gönder",
+         "enabled": "false"
+        },
+        "texts": [
+         "Kodu Tekrar Gönder"
+        ]
+       },
+       {
+        "layer": "text · resend-countdown",
+        "text": "45 sn sonra tekrar gönderebilirsin",
+        "style": "body-small"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "resend-available": {
+   "figmaNodeId": "29:697",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/resend-available.png",
+   "componentsUsed": [
+    "OtpCodeField",
+    "ScreenHeader",
+    "TextLink"
+   ],
+   "tree": {
+    "layer": "C2@resend-available",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Kodu Gir"
+      },
+      "texts": [
+       "Kodu Gir"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · description",
+        "text": "+90 532 *** ** 67 numarasına bir kod gönderdik.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "TextLink · change-number",
+        "component": "Button/TextLink",
+        "manifest": "TextLink",
+        "props": {
+         "text": "Numarayı Değiştir",
+         "enabled": "true"
+        },
+        "texts": [
+         "Numarayı Değiştir"
+        ]
+       },
+       {
+        "layer": "OtpCodeField · code",
+        "component": "Input/OtpCode",
+        "manifest": "OtpCodeField",
+        "props": {
+         "state": "default"
+        },
+        "texts": []
+       },
+       {
+        "layer": "TextLink · resend",
+        "component": "Button/TextLink",
+        "manifest": "TextLink",
+        "props": {
+         "text": "Kodu Tekrar Gönder",
+         "enabled": "true"
+        },
+        "texts": [
+         "Kodu Tekrar Gönder"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "linked-account": {
+   "figmaNodeId": "29:733",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/linked-account.png",
+   "componentsUsed": [
+    "InfoBanner",
+    "OtpCodeField",
+    "ScreenHeader",
+    "TextLink"
+   ],
+   "tree": {
+    "layer": "C2@linked-account",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Kodu Gir"
+      },
+      "texts": [
+       "Kodu Gir"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · description",
+        "text": "+90 532 *** ** 67 numarasına bir kod gönderdik.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "TextLink · change-number",
+        "component": "Button/TextLink",
+        "manifest": "TextLink",
+        "props": {
+         "text": "Numarayı Değiştir",
+         "enabled": "true"
+        },
+        "texts": [
+         "Numarayı Değiştir"
+        ]
+       },
+       {
+        "layer": "OtpCodeField · code",
+        "component": "Input/OtpCode",
+        "manifest": "OtpCodeField",
+        "props": {
+         "state": "disabled"
+        },
+        "texts": [
+         "4",
+         "8",
+         "2",
+         "9",
+         "1",
+         "5"
+        ]
+       },
+       {
+        "layer": "InfoBanner · linked-account",
+        "component": "Feedback/InfoBanner",
+        "manifest": "InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Bu numarayla daha önce bir hesap açmışsın, ona bağlandık.",
+         "title": "Bu, bu haftaki 2. siparişin.",
+         "tone": "info"
+        },
+        "texts": [
+         "Bu numarayla daha önce bir hesap açmışsın, ona bağlandık."
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

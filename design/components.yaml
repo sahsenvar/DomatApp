@@ -29,7 +29,7 @@
 # figma.key: Figma kütüphanesi yayınlandığında component key ile doldurulur.
 # ─────────────────────────────────────────────────────────────────────────────
 
-version: 1.1
+version: 1.2
 updated: 2026-09-26
 package: com.domatapp.core.presentation.component
 
@@ -53,13 +53,15 @@ components:
 
   SecondaryButton:
     status: existing
+    note: "Akış C ile `leadingIcon` eklendi (C5 WhatsApp paylaş). Marka logosu çizilmez; genel `share` ikonu kullanılır."
     compose: button.SecondaryButton
     figma: { name: "Button/Secondary", nodeId: "4:29", key: null }
-    spec: { height: 48, padding: "0 sp6", radius: md, label: title-large inverse-on-surface, fill: inverse-surface }
+    spec: { height: 48, padding: "0 sp6", radius: md, label: title-large inverse-on-surface, fill: inverse-surface, icon: "20, label ile arası sp2, inverse-on-surface" }
     tokens: button-secondary
     props:
       text: { figma: "text (TEXT)", kotlin: "text: String" }
       enabled: { figma: "enabled (VARIANT)", kotlin: "enabled: Boolean" }
+      icon: { figma: "showIcon (BOOLEAN) + icon (INSTANCE_SWAP)", kotlin: "leadingIcon: Painter?  // showIcon=false → null" }
     usedIn: [C4, C5]
 
   GhostButton:
@@ -142,42 +144,48 @@ components:
       supportingText: { figma: "supportingText (TEXT, boş olabilir)", kotlin: "supportingText: String?" }
       prefix: { figma: "prefix (TEXT, boş olabilir)", kotlin: "prefix: String?" }
       singleLine: { figma: "multiline (BOOLEAN)", kotlin: "singleLine: Boolean  // figma multiline=true → singleLine=false" }
+      showPrefix: { figma: "showPrefix (BOOLEAN) + prefix (TEXT)", kotlin: "prefix: String?  // showPrefix=false → null" }
+    states: "state=empty → değer boş + odaksız: M3 etiketi alanın içinde body-large gösterir (yüzen değil). Boş alanı `default` ile değil `empty` ile çiz."
     usedIn: [C3, C4]
 
   PhoneNumberField:
-    status: new
+    status: existing
     purpose: "Sabit +90 önekli, 10 haneli TR telefon girişi; canlı format (5XX XXX XX XX)."
     compose: input.PhoneNumberField
     composedOf: [DomatTextField]
-    figma: { name: "Input/PhoneNumber", key: null }
+    figma: { name: "Input/PhoneNumber", nodeId: "25:464", key: null, note: "İçinde showPrefix=true bir Input/TextField örneği" }
+    spec: { base: DomatTextField, prefix: "+90 body-medium on-surface-variant (M3: yalnızca etiket yüzerken görünür)", format: "3-3-2-2 boşluklu, yalnızca görüntü (VisualTransformation)", keyboard: Phone }
     props:
-      value: { figma: "value (TEXT)", kotlin: "value: String  // yalnızca rakamlar" }
-      state: { figma: "state (VARIANT: default|focused|error)", kotlin: "isError: Boolean" }
+      value: { figma: "TextField.value", kotlin: "value: String  // yalnızca rakamlar, en fazla 10" }
+      label: { figma: "TextField.label", kotlin: "label: String" }
+      state: { figma: "state (VARIANT: empty|default|error)", kotlin: "isError: Boolean + errorText: String?" }
     usedIn: [C1]
 
   OtpCodeField:
-    status: new
-    purpose: "6 hücreli kod girişi; SMS otomatik doldurma (Android SMS Retriever, iOS oneTimeCode)."
+    status: existing
+    purpose: "6 hücreli kod girişi; SMS otomatik doldurma (ContentType.SmsOtpCode → Android autofill / iOS oneTimeCode)."
     compose: input.OtpCodeField
-    figma: { name: "Input/OtpCode", key: null }
+    figma: { name: "Input/OtpCode", nodeId: "25:521", key: null }
+    spec: { cell: "48×56, radius md", gap: sp2, border: "1 outline-variant | sıradaki hücre 2 primary | hata 2 error", disabled: "surface-variant zemin, rakam on-surface-variant", digit: headline-small on-surface, next: "vurgu value.length'e göre (odağa değil) — tasarım durumu tekrarlanabilir" }
     props:
-      length: { figma: "sabit 6", kotlin: "length: Int = 6" }
-      value: { figma: "value (TEXT)", kotlin: "value: String" }
-      state: { figma: "state (VARIANT: default|filled|error)", kotlin: "isError: Boolean" }
-    style: "Hücre 48×56, rounded md, outline-variant kenarlık; odak primary 2px; hata error kenarlık."
+      length: { figma: "sabit 6 hücre", kotlin: "length: Int = 6" }
+      value: { figma: "hücrelerdeki digit metinleri", kotlin: "value: String" }
+      state: { figma: "state (VARIANT: default|filled|error|disabled)", kotlin: "isError: Boolean, enabled: Boolean  // disabled = doğrulanıyor" }
     usedIn: [C2]
 
   DomatDropdown:
-    status: promote
+    status: existing
     from: feature.auth.presentation.screen.component.InputDropdown
-    change: "Painter parametreleri kaldırılacak (ikonlar bileşen içinde); `footerOption: String?` eklenecek ('Listede bulamadım')."
+    note: "Core'da yeniden yazıldı (token'lı, M3 ExposedDropdownMenu). Eski InputDropdown LocationSelection'da duruyor — taşınması görünümü değiştirir, ayrı karar."
     compose: input.DomatDropdown
-    figma: { name: "Input/Dropdown", key: null }
+    figma: { name: "Input/Dropdown", nodeId: "25:558", key: null }
+    spec: { anchor: "salt-okunur DomatTextField (aynı spec) + sağda expand_more 24 on-surface-variant (açıkken 180°)", menu: "surface, radius md, gölge, dikey sp2, bağlantı ile arası 4", item: "48 yükseklik, yatay sp4, body-medium; seçili: primary-container zemin + check 20 primary", footer: "divider outline-variant + 48 satır, label-large tertiary" }
+    preview: "Popup Robolectric ekran görüntüsüne girmez → açık durum için DomatDropdownOpenPreviewLayout kullanılır."
     props:
-      label: { figma: "label (TEXT)", kotlin: "label: String" }
-      value: { figma: "value (TEXT)", kotlin: "selectedItem: String?" }
-      state: { figma: "state (VARIANT: closed|open)", kotlin: "sistemden" }
-      footerOption: { figma: "footerOption (TEXT, boş olabilir)", kotlin: "footerOption: String?" }
+      label: { figma: "label", kotlin: "label: String" }
+      value: { figma: "value", kotlin: "selectedItem: String?" }
+      state: { figma: "state (VARIANT: empty|closed|open)", kotlin: "sistemden (açık/kapalı iç durum)" }
+      footerOption: { figma: "menu › footerOption", kotlin: "footerOption: String? + onFooterOptionSelected" }
     usedIn: [C3]
 
   ConsentCheckbox:
@@ -240,10 +248,11 @@ components:
     usedIn: [C3, C4]
 
   StatusHero:
-    status: new
+    status: existing
     purpose: "Büyük durum ikonu + başlık + alt metin. Sipariş onayı (success), pencere kapandı (neutral)."
     compose: feedback.StatusHero
-    figma: { name: "Feedback/StatusHero", key: null }
+    figma: { name: "Feedback/StatusHero", nodeId: "25:583", key: null }
+    spec: { padding: "sp8 sp4", gap: sp4, circle: "80, tam yuvarlak", icon: 40, title: headline-small on-surface ortalı, subtitle: body-medium on-surface-variant ortalı, textGap: sp2, tones: "success: success-container/success/check_circle · neutral: surface-variant/on-surface-variant/schedule · error: error-container/error/error" }
     props:
       tone: { figma: "tone (VARIANT: success|neutral|error)", kotlin: "tone: StatusTone" }
       title: { figma: "title (TEXT)", kotlin: "title: String" }
@@ -251,14 +260,15 @@ components:
     usedIn: [C5, WindowClosed]
 
   InfoRow:
-    status: new
+    status: existing
     purpose: "Etiket + değer salt-okunur satır (site adı, fatura adı, teslimat kodu)."
     compose: data.InfoRow
-    figma: { name: "Data/InfoRow", key: null }
+    figma: { name: "Data/InfoRow", nodeId: "25:596", key: null }
+    spec: { minHeight: 48, padding: "sp2 0", gap: sp3, align: center, label: body-small on-surface-variant, value: body-large on-surface, trailingAction: TextLink }
     props:
       label: { figma: "label (TEXT)", kotlin: "label: String" }
       value: { figma: "value (TEXT)", kotlin: "value: String" }
-      trailingAction: { figma: "trailingAction (TEXT, boş olabilir)", kotlin: "trailingAction: String?  // örn. 'Düzenle'" }
+      trailingAction: { figma: "trailingAction (VARIANT: false|true) + TextLink metni", kotlin: "trailingAction: String?  // örn. 'Düzenle'" }
     usedIn: [C3, C5]
 
   SummaryRow:
@@ -275,14 +285,15 @@ components:
     usedIn: [C4, C5]
 
   CommunityProgressCard:
-    status: new
+    status: existing
     purpose: "Siparişin topluluk kademesine (tier) etkisi: mevcut kademe, sonraki kademeye kalan, ilerleme çubuğu."
     compose: community.CommunityProgressCard
-    figma: { name: "Community/ProgressCard", key: null }
+    figma: { name: "Community/ProgressCard", nodeId: "25:626", key: null }
     note: "Akış B'deki topluluk göstergesiyle aynı bileşen olmalı — Akış B kartları yazılırken kesinleşecek."
+    spec: { card: "surface, 1 outline-variant, radius md, padding sp4, gap sp3", title: title-medium on-surface, track: "8 yükseklik, tam yuvarlak, surface-variant", indicator: primary, caption: body-small on-surface-variant }
     props:
       title: { figma: "title (TEXT)", kotlin: "title: String" }
-      progress: { figma: "progress (VARIANT: 0|25|50|75|100 — önizleme için)", kotlin: "progress: Float" }
+      progress: { figma: "progress (VARIANT: 0|25|50|75|100 — önizleme için)", kotlin: "progress: Float  // 0f..1f" }
       caption: { figma: "caption (TEXT)", kotlin: "caption: String" }
     usedIn: [C5]
 
@@ -333,7 +344,7 @@ components:
 # Akış C'nin ihtiyacı: arrow_back, chevron_down, check, info, warning, error, lock, phone, card, whatsapp, success_circle, clock.
 icons:
   source: "Material Symbols Rounded (Apache 2.0) — tutarlılık için tek set"
-  figmaNodes: { arrow_back: "3:5", chat: "3:10", check: "3:15", check_circle: "3:20", credit_card: "3:25", error: "3:30", expand_more: "3:35", info: "3:40", lock: "3:45", schedule: "3:50", warning: "3:55" }
+  figmaNodes: { arrow_back: "3:5", chat: "3:10", check: "3:15", check_circle: "3:20", credit_card: "3:25", error: "3:30", expand_more: "3:35", info: "3:40", lock: "3:45", schedule: "3:50", warning: "3:55", share: "Icon/share (Material Icons, C5)" }
   existingInRepo: "ic_arrow_back ve ic_lock repoda eski özel çizim olarak var ve kullanılmaya devam eder; ikon seti birleştirme ayrı karar."
   figmaPrefix: "Icon/"
   composePath: "core/resource/src/commonMain/composeResources/drawable/ic_<name>.xml"

@@ -24,6 +24,7 @@ import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.design.theme.spacing
 import com.domatapp.core.presentation.component.button.TextLink
 import com.domatapp.core.resource.generated.resources.Res
+import com.domatapp.core.resource.generated.resources.consent_hide_text
 import com.domatapp.core.resource.generated.resources.consent_read_text
 import org.jetbrains.compose.resources.stringResource
 
@@ -97,7 +98,7 @@ fun ConsentCheckbox(
         if (legalText != null) {
             val indent = Modifier.padding(start = CheckboxBoxSize + MaterialTheme.spacing.sp3)
             TextLink(
-                text = stringResource(Res.string.consent_read_text),
+                text = stringResource(if (expanded) Res.string.consent_hide_text else Res.string.consent_read_text),
                 onClick = onExpandToggle,
                 enabled = enabled,
                 modifier = indent,

@@ -91,6 +91,7 @@
     <!-- Plurals -->
     <!-- Shared components -->
     <string name="consent_read_text">Metni oku</string>
+    <string name="consent_hide_text">Metni gizle</string>
 
     <!-- C4 - Ödeme (design/screens/C4/card.yaml → strings) -->
     <string name="c4_title">Ödeme</string>

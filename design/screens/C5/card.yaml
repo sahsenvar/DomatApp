@@ -1,0 +1,65 @@
+id: C5
+title: Sipariş Onay
+source: DomatApp_Akis_C_Giris_Odeme_v1.4.md#C5
+route: { name: CheckoutGraph.OrderConfirmationRoute, args: [orderId: String], status: proposed, noBack: true }
+purpose: Provizyonun alındığını teyit etmek, teslimat beklentisini yönetmek, topluluk katkısını hissettirmek.
+frame: { width: 390, height: "hug" }
+
+regions:
+  - id: hero
+    component: StatusHero
+    props: { tone: success, title: str.c5_title_first, subtitle: str.c5_subtitle }
+    variant: { when: "orderSequenceInWindow >= 2", title: str.c5_title_addition }
+  - id: delivery
+    component: FormSection
+    props: { title: str.c5_delivery_title }
+    content:
+      - { component: InfoRow, props: { label: str.c5_delivery_code, value: "{deliveryCode}" } }
+      - { component: InfoRow, props: { label: str.c5_delivery_day, value: "{deliveryDay}" } }
+  - id: payment
+    component: FormSection
+    props: { title: str.c5_payment_title }
+    content:
+      - { component: SummaryRow, props: { label: str.c5_blocked_amount, amount: "{blockedAmount}", emphasis: true } }
+      - { component: InlineNote, props: { tone: neutral, text: str.c5_provision_reminder } }
+  - id: community
+    component: CommunityProgressCard
+    props: { title: str.c5_community_title, caption: "{communityCaption}" }
+    note: "İkinci siparişte bu ve önceki siparişin TOPLAM etkisi gösterilir."
+  - id: actions
+    component: BottomActionBar
+    content:
+      - component: SecondaryButton
+        visibleWhen: "orderSequenceInWindow == 1"
+        props: { text: str.c5_share_whatsapp, leadingIcon: whatsapp }
+      - { component: GhostButton, props: { text: str.c5_back_to_market } }
+
+states:
+  - id: first-order
+    description: "'Siparişin alındı!' + WhatsApp paylaş butonu."
+  - id: addition
+    description: "'Eklemen tamamlandı!' + birikmiş katkı; WhatsApp butonu YOK."
+
+data:
+  uiState: ["isAddition: Boolean", "deliveryCode: String", "deliveryDay: String", "blockedAmount: Money", "communityProgress: Float", "communityCaption: String"]
+actions: [ShareWhatsAppClicked, BackToMarketClicked]
+navigation:
+  - { on: BackToMarketClicked, replaceTo: "MainGraph.HomeRoute (Pazar)" }
+  - { on: ShareWhatsAppClicked, effect: "WhatsApp paylaşım intent'i (sonraki akış D/F kapsamı)" }
+api: ["GET /v1/orders/{orderId}", "GET /v1/deliveries/current"]
+
+strings:
+  c5_title_first: "Siparişin alındı!"
+  c5_title_addition: "Eklemen tamamlandı!"
+  c5_subtitle: "Cumartesi, kapının önünde."
+  c5_delivery_title: "Teslimat"
+  c5_delivery_code: "Teslimat kodu"
+  c5_delivery_day: "Tahmini teslimat"
+  c5_payment_title: "Ödeme"
+  c5_blocked_amount: "Bloke edilen tutar"
+  c5_provision_reminder: "Bu tutar Cumartesi öncesi hesabından çekilmeyecek, sadece gerçek tutar çekilecek."
+  c5_community_title: "Topluluğa katkın"
+  c5_share_whatsapp: "WhatsApp'ta Paylaş"
+  c5_back_to_market: "Pazar'a Dön"
+
+sampleData: { deliveryCode: "#DAL1", deliveryDay: "Cumartesi, 3 Ekim", blockedAmount: "₺188,00", communityCaption: "Bir sonraki kademeye 12 sipariş kaldı — kg fiyatı ₺2 daha düşecek." }

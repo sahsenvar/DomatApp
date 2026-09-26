@@ -29,6 +29,8 @@ fun DomatTextField(
     prefix: String? = null,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    readOnly: Boolean = false,
+    minLines: Int = 1,
 ) {
     OutlinedTextField(
         value = value,
@@ -84,6 +86,8 @@ fun DomatTextField(
         keyboardActions = keyboardActions,
         visualTransformation = visualTransformation,
         singleLine = singleLine,
+        readOnly = readOnly,
+        minLines = minLines,
     )
 }
 

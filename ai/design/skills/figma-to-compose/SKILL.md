@@ -68,6 +68,9 @@ Yasak: `Color(0x…)`, `colorResource(...)`, `RoundedCornerShape(<n>.dp)`, çıp
 ## 5. Doğrulama
 
 1. `./gradlew :composeApp:assembleDebug` (uyarılar hata sayılır).
+   Paket önce kendi içinde tutarlı mı: `python3 ai/design/scripts/check_design_texts.py <ID>` — tasarımdaki her
+   metin kartın `strings`'inde, ortak `strings.xml`'de ya da kartın `sampleData`'sında olmalı. ✗ ise koda başlama;
+   farkı raporla (kart kazanır).
 2. Tarama (0 sonuç beklenir, bileşen dosyaları hariç):
    `grep -rnE "Color\(0x|colorResource\(|RoundedCornerShape\([0-9]" <ekran paketi>`
 3. Her `states[]` durumu için `@Preview(name = "<ID>@<durum>", widthDp = 390, heightDp = <structure.json size[1]>)`
