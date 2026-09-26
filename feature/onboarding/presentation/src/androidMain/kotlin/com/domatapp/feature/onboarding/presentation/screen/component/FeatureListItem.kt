@@ -1,7 +1,7 @@
 package com.domatapp.feature.onboarding.presentation.screen.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -40,10 +40,11 @@ fun FeatureListItem(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(
+        Icon(
             painter = iconPainter,
             contentDescription = null,
-            modifier = Modifier.size(17.dp),
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp),
         )
         Text(
             text = text,

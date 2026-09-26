@@ -1,6 +1,8 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
-import androidx.compose.foundation.Image
+import com.domatapp.core.resource.generated.resources.ic_local_shipping
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +32,6 @@ import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
-import com.domatapp.core.resource.generated.resources.ic_delivery_truck_green
 import com.domatapp.core.resource.generated.resources.ic_trending_down
 import org.jetbrains.compose.resources.painterResource
 
@@ -71,9 +72,10 @@ internal fun TruckWithPriceIndicator(
                 .border(1.dp, borderLight, RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center,
         ) {
-            Image(
-                painter = painterResource(Res.drawable.ic_delivery_truck_green),
+            Icon(
+                painter = painterResource(Res.drawable.ic_local_shipping),
                 contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp),
             )
         }
@@ -88,10 +90,11 @@ internal fun TruckWithPriceIndicator(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Image(
+                Icon(
                     painter = painterResource(Res.drawable.ic_trending_down),
                     contentDescription = null,
-                    modifier = Modifier.size(width = 12.dp, height = 7.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp),
                 )
                 Text(
                     text = uiModel.currentPrice,

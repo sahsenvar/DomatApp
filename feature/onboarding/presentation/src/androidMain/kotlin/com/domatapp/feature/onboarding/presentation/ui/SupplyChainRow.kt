@@ -1,6 +1,6 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
-import androidx.compose.foundation.Image
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
-import com.domatapp.core.resource.generated.resources.ic_pricing_producer
+import com.domatapp.core.resource.generated.resources.ic_potted_plant
 import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_subtitle
 import com.domatapp.core.resource.generated.resources.onboarding_pricing_producer_title
 import org.jetbrains.compose.resources.DrawableResource
@@ -53,11 +53,6 @@ internal fun SupplyChainRow(uiModel: SupplyChainRowUiModel) {
     val isInactive = uiModel.variant == SupplyChainRowVariant.Inactive
     val isConsumer = uiModel.variant == SupplyChainRowVariant.Consumer
 
-    val iconSize = when (uiModel.variant) {
-        SupplyChainRowVariant.Producer -> 22.5f
-        SupplyChainRowVariant.Inactive -> 25f
-        SupplyChainRowVariant.Consumer -> 20f
-    }
     val iconBgColor = when (uiModel.variant) {
         SupplyChainRowVariant.Producer -> colorResource(R.color.malachite_20)
         SupplyChainRowVariant.Inactive -> colorResource(R.color.slate_200)
@@ -99,10 +94,16 @@ internal fun SupplyChainRow(uiModel: SupplyChainRowUiModel) {
                         .background(iconBgColor),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Image(
+                    Icon(
                         painter = painterResource(uiModel.icon),
                         contentDescription = null,
-                        modifier = Modifier.size(iconSize.dp),
+                        tint = when (uiModel.variant) {
+                            SupplyChainRowVariant.Producer -> MaterialTheme.colorScheme.primary
+                            SupplyChainRowVariant.Inactive -> MaterialTheme.colorScheme.onSurfaceVariant
+                            // Dolu yeşil zemin → onPrimary (beyaz ≈1,4:1 kontrast veriyordu).
+                            SupplyChainRowVariant.Consumer -> MaterialTheme.colorScheme.onPrimary
+                        },
+                        modifier = Modifier.size(24.dp),
                     )
                     if (isInactive) {
                         Text(
@@ -166,7 +167,7 @@ private fun SupplyChainRowPreview() {
     DomatTheme {
         SupplyChainRow(
             uiModel = SupplyChainRowUiModel(
-                icon = Res.drawable.ic_pricing_producer,
+                icon = Res.drawable.ic_potted_plant,
                 variant = SupplyChainRowVariant.Producer,
                 title = stringResource(Res.string.onboarding_pricing_producer_title),
                 subtitle = stringResource(Res.string.onboarding_pricing_producer_subtitle),

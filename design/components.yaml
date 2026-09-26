@@ -176,7 +176,7 @@ components:
   DomatDropdown:
     status: existing
     from: feature.auth.presentation.screen.component.InputDropdown
-    note: "Core'da yeniden yazıldı (token'lı, M3 ExposedDropdownMenu). Eski InputDropdown LocationSelection'da duruyor — taşınması görünümü değiştirir, ayrı karar."
+    note: "Core'da yeniden yazıldı (token'lı, M3 ExposedDropdownMenu). Eski InputDropdown silindi; LocationSelection 2026-09-26'da taşındı (baş ikonları kaldırıldı — etiket yeterli)."
     compose: input.DomatDropdown
     figma: { name: "Input/Dropdown", nodeId: "25:558", key: null }
     spec: { anchor: "salt-okunur DomatTextField (aynı spec) + sağda expand_more 24 on-surface-variant (açıkken 180°)", menu: "surface, radius md, gölge, dikey sp2, bağlantı ile arası 4", item: "48 yükseklik, yatay sp4, body-medium; seçili: primary-container zemin + check 20 primary", footer: "divider outline-variant + 48 satır, label-large tertiary" }
@@ -186,7 +186,7 @@ components:
       value: { figma: "value", kotlin: "selectedItem: String?" }
       state: { figma: "state (VARIANT: empty|closed|open)", kotlin: "sistemden (açık/kapalı iç durum)" }
       footerOption: { figma: "menu › footerOption", kotlin: "footerOption: String? + onFooterOptionSelected" }
-    usedIn: [C3]
+    usedIn: [C3, LocationSelection]
 
   ConsentCheckbox:
     status: existing
@@ -343,8 +343,16 @@ components:
 # İkonlar: Figma'da "Icon/<ad>" bileşenleri; kodda composeResources/drawable/ic_<ad>.xml (XML Vector Drawable).
 # Akış C'nin ihtiyacı: arrow_back, chevron_down, check, info, warning, error, lock, phone, card, whatsapp, success_circle, clock.
 icons:
-  source: "Material Symbols Rounded (Apache 2.0) — tutarlılık için tek set"
-  figmaNodes: { arrow_back: "3:5", chat: "3:10", check: "3:15", check_circle: "3:20", credit_card: "3:25", error: "3:30", expand_more: "3:35", info: "3:40", lock: "3:45", schedule: "3:50", warning: "3:55", share: "Icon/share (Material Icons, C5)" }
-  existingInRepo: "ic_arrow_back ve ic_lock repoda eski özel çizim olarak var ve kullanılmaya devam eder; ikon seti birleştirme ayrı karar."
+  source: "Material Symbols Rounded (Apache 2.0) — TEK SET (kural 12). Varsayılan FILL 0; verified_user FILL 1."
   figmaPrefix: "Icon/"
-  composePath: "core/resource/src/commonMain/composeResources/drawable/ic_<name>.xml"
+  composePath: "core/resource/src/commonMain/composeResources/drawable/ic_<name>.xml  (siyah dolgu, renk kodda tint ile)"
+  set: [apartment, arrow_back, arrow_forward, chat, check, check_circle, credit_card, door_front, eco, error, expand_more,
+        info, local_shipping, location_on, lock, person, person_search, potted_plant, schedule, share, storefront,
+        trending_down, verified_user, warehouse, warning]
+  exempt:
+    ic_google: "marka logosu (çok renkli, değiştirilemez)"
+    ic_trust_wallet_badge: "iki renkli illüstratif rozet (onboarding)"
+    img_effortless_illustration: "illüstrasyon (onboarding)"
+  rules:
+    - "Renk dosyaya gömülmez; _white/_green gibi renk varyantı dosyası açılmaz. Icon(tint = token) kullanılır."
+    - "Yeni ikon: Figma Icon/<ad> + aynı adlı XML aynı commit'te (design-system-change)."

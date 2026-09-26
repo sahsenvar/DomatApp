@@ -1,6 +1,7 @@
 package com.domatapp.feature.auth.presentation.screen.login
 
 import androidx.compose.foundation.Image
+import com.domatapp.core.resource.generated.resources.ic_eco
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,7 +41,6 @@ import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.app_name
 import com.domatapp.core.resource.generated.resources.google_sign_in_button_text
 import com.domatapp.core.resource.generated.resources.ic_google
-import com.domatapp.core.resource.generated.resources.ic_leaf_badge
 import com.domatapp.core.resource.generated.resources.img_hero_login
 import com.domatapp.core.resource.generated.resources.onboarding_login_hero_badge
 import com.domatapp.core.resource.generated.resources.onboarding_login_subtitle
@@ -108,7 +108,7 @@ fun ColumnScope.LoginScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 IconBadge(
-                    iconPainter = painterResource(Res.drawable.ic_leaf_badge),
+                    iconPainter = painterResource(Res.drawable.ic_eco),
                     text = stringResource(Res.string.onboarding_login_hero_badge),
                 )
                 Text(

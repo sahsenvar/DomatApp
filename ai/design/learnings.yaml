@@ -295,11 +295,11 @@ entries:
     type: contract-gap
     symptom: "ic_arrow_back ve ic_lock eski özel çizim, diğer ikonlar Material Symbols."
     root_cause: "İkon seti kararı yoktu."
-    fix: "Karar verildi: tek set (Material Symbols Rounded). Geçiş bekliyor."
+    fix: "Tek sete geçildi (2026-09-26): 23 özel çizimden 19'u Material Symbols Rounded karşılığıyla değişti (16 kaynak dosya, 4 kopya birleşti); ic_google, ic_trust_wallet_badge ve img_effortless_illustration muaf (marka/illüstrasyon)."
     occurrences: 1
-    seen_in: [C4, ScreenHeader]
-    measure: {kind: contract, ref: "design/README.md#12"}
-    status: open
+    seen_in: [C4, ScreenHeader, LocationSelection, Login, Onboarding]
+    measure: {kind: contract, ref: "design/README.md#12 + components.yaml icons.rules"}
+    status: mitigated
 
   - id: L-022
     date: 2026-09-26
@@ -352,3 +352,68 @@ entries:
     seen_in: [C1]
     measure: {kind: check, ref: "ai/design/scripts/check_card.py"}
     status: mitigated
+
+  - id: L-026
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "Icon/share bileşeninin çizimi değiştirilince SecondaryButton içindeki ikon koyulaştı (inverse-on-surface yerine on-surface)."
+    root_cause: "Bileşenin çocukları silinip yenisi eklenince örneklerdeki dolgu override'ları eski düğümlere bağlı olduğu için kaybolur."
+    fix: "Button/Secondary içindeki ikon yeniden renklendirildi; C5@first-order PNG'si yeniden indirildi."
+    occurrences: 1
+    seen_in: [Icon/share, Button/Secondary, C5]
+    measure: null
+    status: open
+
+  - id: L-027
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: code
+    type: contract-gap
+    symptom: "Drawable'larda renk gömülüydü; aynı ikonun renk varyantları ayrı dosyaydı (_white, _green) ve çağıranlar Image() ile renksiz çiziyordu."
+    root_cause: "İkon kuralı yoktu; Figma'dan dışa aktarılan renkli SVG'ler olduğu gibi eklenmişti."
+    fix: "Tüm ikonlar siyah dolgu + Icon(tint = token); renk varyantı dosyaları silindi."
+    occurrences: 1
+    seen_in: [LocationSelection, Login, Onboarding]
+    measure: {kind: contract, ref: "design/components.yaml icons.rules"}
+    status: mitigated
+
+  - id: L-028
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: code
+    type: contract-gap
+    symptom: "Onboarding'de dolu yeşil (primary) zemin üzerinde beyaz ikon: kontrast ≈1,4:1."
+    root_cause: "Renk token rolü (onPrimary) yerine sabit beyaz kullanılmıştı."
+    fix: "onPrimary (koyu) ile tint; görünür değişiklik raporlandı."
+    occurrences: 1
+    seen_in: [OverlappingAvatars, OnboardingPricing]
+    measure: {kind: code, ref: "SupplyChainRow.kt, OverlappingAvatars.kt"}
+    status: mitigated
+
+  - id: L-029
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: code
+    type: contract-gap
+    symptom: "Onboarding (ve auth'un bir kısmı) hâlâ colorResource(R.color.*) ve sabit dp/RoundedCornerShape kullanıyor; token sistemine taşınmamış."
+    root_cause: "Token sistemi (DESIGN.md) sonradan geldi; eski ekranlar paketleri olmadığı için doğrulamaya girmedi."
+    fix: "Bu işte yalnızca ikonlar ve LocationCard taşındı."
+    occurrences: 1
+    seen_in: [Onboarding, Login]
+    measure: null
+    status: open
+
+  - id: L-030
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: verify
+    type: tool-pitfall
+    symptom: "Material Symbols'e geçen kalkan ikonu aynı dp'de gözle belirgin küçük kaldı."
+    root_cause: "Eski ikonlar sıkı kırpılmış çizimdi; Material Symbols 24'lük kutuda iç boşluk bırakır. Aynı boyut ≠ aynı görünür büyüklük."
+    fix: "88 → 108 dp; öncesi/sonrası görüntüyle doğrulandı."
+    occurrences: 1
+    seen_in: [OnboardingTrust]
+    measure: null
+    status: open

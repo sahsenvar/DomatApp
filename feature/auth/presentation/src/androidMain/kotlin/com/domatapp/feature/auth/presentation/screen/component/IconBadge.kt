@@ -1,7 +1,7 @@
 package com.domatapp.feature.auth.presentation.screen.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -41,10 +41,11 @@ fun IconBadge(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(
+        Icon(
             painter = iconPainter,
             contentDescription = null,
-            modifier = Modifier.size(13.dp),
+            tint = contentColor,
+            modifier = Modifier.size(16.dp),
         )
         Text(
             text = text.uppercase(),

@@ -1,6 +1,7 @@
 package com.domatapp.feature.onboarding.presentation.screen.trust
 
 import androidx.compose.foundation.Image
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
-import com.domatapp.core.resource.generated.resources.ic_feature_location
-import com.domatapp.core.resource.generated.resources.ic_feature_origin
-import com.domatapp.core.resource.generated.resources.ic_feature_producer
-import com.domatapp.core.resource.generated.resources.ic_shield_large
+import com.domatapp.core.resource.generated.resources.ic_location_on
+import com.domatapp.core.resource.generated.resources.ic_eco
+import com.domatapp.core.resource.generated.resources.ic_person_search
+import com.domatapp.core.resource.generated.resources.ic_verified_user
 import com.domatapp.core.resource.generated.resources.ic_trust_wallet_badge
 import com.domatapp.core.resource.generated.resources.onboarding_trust_body
 import com.domatapp.core.resource.generated.resources.onboarding_trust_feature_guarantee
@@ -53,15 +54,15 @@ data class TrustFeatureUiModel(
 internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
     val features = listOf(
         TrustFeatureUiModel(
-            icon = Res.drawable.ic_feature_producer,
+            icon = Res.drawable.ic_person_search,
             text = stringResource(Res.string.onboarding_trust_feature_producer),
         ),
         TrustFeatureUiModel(
-            icon = Res.drawable.ic_feature_location,
+            icon = Res.drawable.ic_location_on,
             text = stringResource(Res.string.onboarding_trust_feature_location),
         ),
         TrustFeatureUiModel(
-            icon = Res.drawable.ic_feature_origin,
+            icon = Res.drawable.ic_eco,
             text = stringResource(Res.string.onboarding_trust_feature_guarantee),
         ),
     )
@@ -100,10 +101,11 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Image(
-                    painter = painterResource(Res.drawable.ic_shield_large),
+                Icon(
+                    painter = painterResource(Res.drawable.ic_verified_user),
                     contentDescription = null,
-                    modifier = Modifier.size(width = 70.dp, height = 90.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(108.dp),
                 )
                 Image(
                     painter = painterResource(Res.drawable.ic_trust_wallet_badge),

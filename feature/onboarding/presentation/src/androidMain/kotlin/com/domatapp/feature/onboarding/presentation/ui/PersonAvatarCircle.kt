@@ -1,7 +1,9 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import com.domatapp.core.resource.generated.resources.ic_person
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
@@ -19,12 +21,16 @@ import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
-import com.domatapp.core.resource.generated.resources.ic_person_community
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-internal fun PersonAvatarCircle(icon: DrawableResource, backgroundColor: Color, offsetX: Dp) {
+internal fun PersonAvatarCircle(
+    icon: DrawableResource,
+    backgroundColor: Color,
+    offsetX: Dp,
+    tint: Color = MaterialTheme.colorScheme.primary,
+) {
     Box(
         modifier = Modifier
             .offset(x = offsetX)
@@ -34,10 +40,11 @@ internal fun PersonAvatarCircle(icon: DrawableResource, backgroundColor: Color, 
             .background(backgroundColor),
         contentAlignment = Alignment.Center,
     ) {
-        Image(
+        Icon(
             painter = painterResource(icon),
             contentDescription = null,
-            modifier = Modifier.size(16.dp),
+            tint = tint,
+            modifier = Modifier.size(20.dp),
         )
     }
 }
@@ -47,7 +54,7 @@ internal fun PersonAvatarCircle(icon: DrawableResource, backgroundColor: Color, 
 private fun PersonAvatarCirclePreview() {
     DomatTheme {
         PersonAvatarCircle(
-            icon = Res.drawable.ic_person_community,
+            icon = Res.drawable.ic_person,
             backgroundColor = colorResource(R.color.malachite_20),
             offsetX = 0.dp,
         )
