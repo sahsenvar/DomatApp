@@ -1,5 +1,6 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
+import com.domatapp.core.design.theme.spacing
 import com.domatapp.core.resource.generated.resources.ic_local_shipping
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,14 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.ic_trending_down
 import org.jetbrains.compose.resources.painterResource
@@ -38,9 +36,8 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 internal fun TruckWithPriceIndicator(
     uiModel: CommunityHeroCardUiModel,
-    primary: Color,
-    borderLight: Color,
 ) {
+    val primary = MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .width(256.dp)
@@ -53,7 +50,7 @@ internal fun TruckWithPriceIndicator(
                 .align(Alignment.BottomCenter)
                 .offset(y = (-16).dp)
                 .clip(CircleShape)
-                .background(borderLight),
+                .background(MaterialTheme.colorScheme.secondaryContainer),
         )
 
         Box(
@@ -63,13 +60,13 @@ internal fun TruckWithPriceIndicator(
                 .offset(y = (-24).dp)
                 .shadow(
                     elevation = 1.dp,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.small,
                     ambientColor = Color.Black.copy(alpha = 0.05f),
                     spotColor = Color.Black.copy(alpha = 0.05f),
                 )
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color.White)
-                .border(1.dp, borderLight, RoundedCornerShape(8.dp)),
+                .clip(MaterialTheme.shapes.small)
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.small),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -88,7 +85,7 @@ internal fun TruckWithPriceIndicator(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp1),
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_trending_down),
@@ -106,7 +103,7 @@ internal fun TruckWithPriceIndicator(
             }
             Text(
                 text = uiModel.originalPrice,
-                color = colorResource(R.color.slate_400),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 textDecoration = TextDecoration.LineThrough,
@@ -125,8 +122,6 @@ private fun TruckWithPriceIndicatorPreview() {
                 currentPrice = "₺45",
                 originalPrice = "₺80",
             ),
-            primary = colorResource(R.color.malachite),
-            borderLight = colorResource(R.color.slate_100),
         )
     }
 }

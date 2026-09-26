@@ -1,5 +1,6 @@
 package com.domatapp.feature.onboarding.presentation.screen.pricing
 
+import com.domatapp.core.design.theme.spacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,11 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.ic_person
 import com.domatapp.core.resource.generated.resources.ic_potted_plant
@@ -69,31 +68,31 @@ internal fun OnboardingPricingPageContent(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(colorResource(R.color.white)),
+            .background(MaterialTheme.colorScheme.surface),
     ) {
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = MaterialTheme.spacing.sp8),
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 48.dp, bottom = 40.dp),
+                    .padding(top = MaterialTheme.spacing.sp12, bottom = MaterialTheme.spacing.sp10),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp4),
             ) {
                 Text(
                     text = stringResource(Res.string.onboarding_pricing_title),
                     style = MaterialTheme.typography.headlineLarge,
-                    color = colorResource(R.color.slate_900),
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 )
                 Text(
                     text = stringResource(Res.string.onboarding_pricing_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colorResource(R.color.slate_600),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 )
             }
@@ -101,7 +100,7 @@ internal fun OnboardingPricingPageContent(modifier: Modifier = Modifier) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 3.dp),
+                    .padding(horizontal = MaterialTheme.spacing.sp1),
             ) {
                 rows.forEach { row -> SupplyChainRow(uiModel = row) }
             }

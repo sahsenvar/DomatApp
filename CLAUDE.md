@@ -80,7 +80,7 @@ The project follows a strict layered architecture:
   :core:remote/           → Network layer (Ktor REST via KtorfitX) + the shared Json
   :core:config/           → Preferences platform bridge (`preferencesContext()`) + DataStore deps
   :core:navigation/       → Gezgin navigation graph (@NavGraph routes + declared edges)
-  :core:resource/         → Shared strings/drawables/fonts (Compose Resources) + colors.xml
+  :core:resource/         → Shared strings/drawables/fonts (Compose Resources)
   :core:localization/     → i18n support
   :core:analytics/        → Provider-agnostic event tracking facade. Deliberately empty - no
                              provider SDK chosen yet. Do not add a dependency here speculatively;
@@ -585,7 +585,6 @@ core/resource/src/commonMain/composeResources/
 ├── values/strings.xml      →  Res.string.*  and  Res.plurals.*
 ├── drawable/*.xml, *.png   →  Res.drawable.*
 └── font/*.ttf              →  Res.font.*
-core/resource/src/androidMain/res/values/colors.xml  →  R.color.*
 ```
 
 ### Gradle setup
@@ -672,13 +671,14 @@ gone.
   Compose UI runs here, so every icon is committed as an Android vector drawable XML, not as `.svg`.
 - **There is no color resource type.** Compose Resources 1.12.0 ships `StringResource`,
   `PluralStringResource`, `StringArrayResource`, `DrawableResource` and `FontResource` — that is the
-  whole list. Colors therefore stay in `core/resource/src/androidMain/res/values/colors.xml` and are
-  still read with `colorResource(R.color.x)`.
+  whole list. Colors are not resources at all: they live in `:core:design` as theme tokens derived from
+  `design/tokens/DESIGN.md` and are read via `MaterialTheme.colorScheme` / `MaterialTheme.domatColors`.
+  The old `colors.xml` palette was removed once the last `colorResource(R.color.x)` call was migrated.
 - **`androidResources.enable = true` is set by `KmpLibraryConventionPlugin`.** Android resource
   processing is off by default under `com.android.kotlin.multiplatform.library`. Moko's plugin used
-  to switch it on as a side effect, which is why `com.domatapp.core.resource.R` resolved at all;
-  with Moko gone the build has to ask for it explicitly, or `colors.xml` is ignored and no R class
-  is generated.
+  to switch it on as a side effect; with Moko gone the build asks for it explicitly. Nothing reads
+  `com.domatapp.core.resource.R` today (colors moved to theme tokens), so it is kept only for future
+  Android-only resources.
 - **Filenames become Kotlin identifiers.** Moko's mandatory `@1x` PNG suffix is illegal here
   (`img_hero_login@1x.png` → `img_hero_login.png`); density variants use a qualifier directory
   (`drawable-xhdpi/`) instead.

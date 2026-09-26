@@ -1,5 +1,6 @@
 package com.domatapp.feature.onboarding.presentation.screen.effortless
 
+import com.domatapp.core.design.theme.spacing
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,12 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.img_effortless_illustration
 import com.domatapp.core.resource.generated.resources.onboarding_effortless_body
@@ -39,7 +38,7 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(colorResource(R.color.white)),
+            .background(MaterialTheme.colorScheme.surface),
     ) {
         Box(
             modifier = Modifier
@@ -48,7 +47,7 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
                 .offset(x = (-96).dp, y = 96.dp)
                 .background(
                     brush = Brush.radialGradient(
-                        colors = listOf(colorResource(R.color.malachite_5), Color.Transparent),
+                        colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f), Color.Transparent),
                     ),
                     shape = CircleShape,
                 ),
@@ -60,7 +59,7 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
                 .offset(x = 96.dp, y = (-96).dp)
                 .background(
                     brush = Brush.radialGradient(
-                        colors = listOf(colorResource(R.color.malachite_10), Color.Transparent),
+                        colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), Color.Transparent),
                     ),
                     shape = CircleShape,
                 ),
@@ -70,13 +69,13 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.sp12))
 
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
+                    .padding(horizontal = MaterialTheme.spacing.sp8),
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
@@ -90,21 +89,21 @@ internal fun OnboardingEffortlessPageContent(modifier: Modifier = Modifier) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
-                    .padding(bottom = 24.dp),
+                    .padding(horizontal = MaterialTheme.spacing.sp8)
+                    .padding(bottom = MaterialTheme.spacing.sp6),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp4),
             ) {
                 Text(
                     text = stringResource(Res.string.onboarding_effortless_title),
                     style = MaterialTheme.typography.headlineLarge,
-                    color = colorResource(R.color.slate_900),
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                 )
                 Text(
                     text = stringResource(Res.string.onboarding_effortless_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colorResource(R.color.slate_600),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
             }

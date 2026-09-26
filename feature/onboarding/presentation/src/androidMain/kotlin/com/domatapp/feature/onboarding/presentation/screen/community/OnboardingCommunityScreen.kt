@@ -1,5 +1,6 @@
 package com.domatapp.feature.onboarding.presentation.screen.community
 
+import com.domatapp.core.design.theme.spacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -22,7 +22,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.onboarding_community_body
 import com.domatapp.core.resource.generated.resources.onboarding_community_price_current
@@ -43,20 +42,20 @@ internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(colorResource(R.color.white)),
+            .background(MaterialTheme.colorScheme.surface),
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.sp12))
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
+                    .padding(horizontal = MaterialTheme.spacing.sp8),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp4),
             ) {
                 CommunityHeroCard(uiModel = heroCard)
 
@@ -64,12 +63,12 @@ internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
                     text = buildAnnotatedString {
                         append(stringResource(Res.string.onboarding_community_title_line1))
                         append("\n")
-                        withStyle(SpanStyle(color = colorResource(R.color.malachite))) {
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                             append(stringResource(Res.string.onboarding_community_title_highlight))
                         }
                     },
                     style = MaterialTheme.typography.headlineLarge,
-                    color = colorResource(R.color.slate_900),
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -77,7 +76,7 @@ internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
                 Text(
                     text = stringResource(Res.string.onboarding_community_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colorResource(R.color.slate_600),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )

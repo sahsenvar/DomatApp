@@ -1,5 +1,6 @@
 package com.domatapp.feature.onboarding.presentation.screen.trust
 
+import com.domatapp.core.design.theme.spacing
 import androidx.compose.foundation.Image
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.background
@@ -23,12 +24,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import com.domatapp.core.resource.generated.resources.ic_location_on
 import com.domatapp.core.resource.generated.resources.ic_eco
@@ -70,18 +69,18 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(colorResource(R.color.white))
-            .padding(horizontal = 16.dp),
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = MaterialTheme.spacing.sp4),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.sp12))
 
-        val dottedBorderColor = colorResource(R.color.malachite_20)
+        val dottedBorderColor = MaterialTheme.colorScheme.primaryContainer
         Box(
             modifier = Modifier
                 .size(280.dp)
                 .clip(CircleShape)
-                .background(colorResource(R.color.malachite_10))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                 .drawBehind {
                     val insetPx = 16.dp.toPx()
                     val strokeWidthPx = 2.dp.toPx()
@@ -118,36 +117,36 @@ internal fun OnboardingTrustPageContent(modifier: Modifier = Modifier) {
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.sp8))
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = MaterialTheme.spacing.sp4),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(11.dp),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp3),
         ) {
             Text(
                 text = stringResource(Res.string.onboarding_trust_title),
                 style = MaterialTheme.typography.headlineLarge,
-                color = colorResource(R.color.slate_900),
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
             )
             Text(
                 text = stringResource(Res.string.onboarding_trust_body),
                 style = MaterialTheme.typography.bodyMedium,
-                color = colorResource(R.color.slate_600),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.sp6))
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = MaterialTheme.spacing.sp4),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp3),
         ) {
             features.forEach { feature ->
                 FeatureListItem(

@@ -7,16 +7,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 
 @Composable
-internal fun OverlappingAvatars(primary20: Color, primary30: Color, primary: Color) {
+internal fun OverlappingAvatars() {
+    val primary20 = MaterialTheme.colorScheme.primaryContainer
+    val primary30 = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+    val primary = MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .width(48.dp + 48.dp + 48.dp + 48.dp - 16.dp - 16.dp - 16.dp)
@@ -34,10 +34,6 @@ internal fun OverlappingAvatars(primary20: Color, primary30: Color, primary: Col
 @Composable
 private fun OverlappingAvatarsPreview() {
     DomatTheme {
-        OverlappingAvatars(
-            primary20 = colorResource(R.color.malachite_20),
-            primary30 = colorResource(R.color.malachite_30),
-            primary = colorResource(R.color.malachite),
-        )
+        OverlappingAvatars()
     }
 }

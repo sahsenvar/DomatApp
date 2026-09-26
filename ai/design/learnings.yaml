@@ -399,11 +399,11 @@ entries:
     type: contract-gap
     symptom: "Onboarding (ve auth'un bir kısmı) hâlâ colorResource(R.color.*) ve sabit dp/RoundedCornerShape kullanıyor; token sistemine taşınmamış."
     root_cause: "Token sistemi (DESIGN.md) sonradan geldi; eski ekranlar paketleri olmadığı için doğrulamaya girmedi."
-    fix: "Bu işte yalnızca ikonlar ve LocationCard taşındı."
+    fix: "Onboarding (5 sayfa + bileşenleri) ve Login/auth bileşenleri token'lara taşındı: renkler colorScheme rollerine (malachite_5/10/30 → primary.copy(alpha)), köşeler shapes'e, boşluklar spacing'e. Ölçek dışı değerler en yakın token'a çekildi (11→12, 3→4 dp); 1 dp kenarlıklı 13 dp dolgu 'sp3 + BorderWidth' ile piksel aynı tutuldu. Token karşılığı olmayan slate_400/500 → onSurfaceVariant, slate_100 kenarlık → outlineVariant. Önce/sonra Roborazzi farkı ≤ %1, hepsi bu kasıtlı değişiklikler. Artık kullanılmayan colors.xml silindi."
     occurrences: 1
     seen_in: [Onboarding, Login]
-    measure: null
-    status: open
+    measure: {kind: check, ref: "design-verify token grep; repo genelinde colorResource/R.color kalmadı, colors.xml silindi"}
+    status: mitigated
 
   - id: L-030
     date: 2026-09-26
@@ -415,5 +415,18 @@ entries:
     fix: "88 → 108 dp; öncesi/sonrası görüntüyle doğrulandı."
     occurrences: 1
     seen_in: [OnboardingTrust]
+    measure: null
+    status: open
+
+  - id: L-031
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: code
+    type: contract-gap
+    symptom: "Onboarding (Welcome, Community başlık vurgusu) ve Login (KVKK/ToS bağlantıları) beyaz zemin üzerinde primary renkli metin kullanıyor; DESIGN.md 'Don't' kuralını ihlal ediyor (kontrast ~1,6:1)."
+    root_cause: "Bu ekranların kartı ve tasarım paketi yok; token sistemi ve kurallardan önce yazıldılar, hiçbir doğrulamadan geçmediler."
+    fix: "Token geçişinde görünüm korundu (primary olarak bırakıldı); düzeltme tasarım kararı gerektiriyor — Akış A kartları çıkarılınca ele alınacak."
+    occurrences: 1
+    seen_in: [Onboarding, Login]
     measure: null
     status: open

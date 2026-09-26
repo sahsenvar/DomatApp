@@ -14,12 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
-import com.domatapp.core.resource.R
 import com.domatapp.core.resource.generated.resources.Res
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -35,7 +33,7 @@ internal fun PersonAvatarCircle(
         modifier = Modifier
             .offset(x = offsetX)
             .size(48.dp)
-            .border(4.dp, Color.White, CircleShape)
+            .border(4.dp, MaterialTheme.colorScheme.surface, CircleShape)
             .clip(CircleShape)
             .background(backgroundColor),
         contentAlignment = Alignment.Center,
@@ -55,7 +53,7 @@ private fun PersonAvatarCirclePreview() {
     DomatTheme {
         PersonAvatarCircle(
             icon = Res.drawable.ic_person,
-            backgroundColor = colorResource(R.color.malachite_20),
+            backgroundColor = MaterialTheme.colorScheme.primaryContainer,
             offsetX = 0.dp,
         )
     }
