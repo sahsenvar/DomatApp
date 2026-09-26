@@ -1,5 +1,6 @@
 package com.domatapp.core.presentation.component.input
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,7 @@ fun DomatTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     readOnly: Boolean = false,
     minLines: Int = 1,
+    interactionSource: MutableInteractionSource? = null,
 ) {
     OutlinedTextField(
         value = value,
@@ -88,6 +90,7 @@ fun DomatTextField(
         singleLine = singleLine,
         readOnly = readOnly,
         minLines = minLines,
+        interactionSource = interactionSource,
     )
 }
 

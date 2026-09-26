@@ -10,10 +10,10 @@ import org.koin.core.annotation.KoinViewModel
  * C4 - Ödeme.
  *
  * **Stub:** there is no checkout data layer yet, so the state starts from [PaymentStubData] and
- * [PaymentIntent.PayClicked] only simulates the request (loading on, then off). The real flow -
+ * [PaymentIntent.PayClicked] only simulates the request (loading on, then on to C5). The real flow -
  * `PATCH /v1/users/me` (first order), `POST /v1/payments/cards` (opt-in), `POST /v1/orders`, then
- * C5 / WindowClosed, or a [PaymentErrorUi] with the CVV cleared on a decline - lands with
- * `:feature:checkout:data` and the missing routes.
+ * C5 ([PaymentEffect.OrderPlaced]) / [PaymentEffect.WindowClosed], or a [PaymentErrorUi] with the
+ * CVV cleared on a decline - lands with `:feature:checkout:data`. The stub always "succeeds".
  */
 @KoinViewModel
 class PaymentViewModel : BaseViewModel<PaymentUiState, PaymentIntent, PaymentEffect>(
@@ -67,6 +67,7 @@ class PaymentViewModel : BaseViewModel<PaymentUiState, PaymentIntent, PaymentEff
             // TODO(C4): replace with the order use case once :feature:checkout:data exists.
             delay(STUB_PAYMENT_LATENCY_MS)
             updateState { copy(isPaying = false) }
+            emitEffect(PaymentEffect.OrderPlaced(PaymentStubData.ORDER_ID))
         }
     }
 

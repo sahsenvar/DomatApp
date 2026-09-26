@@ -17,7 +17,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun paymentViewModel(): PaymentViewModel = koinViewModel()
 
 /**
- * Only the implicit `back()` exists on [PaymentNavigator] for now. "Sepete Dön" is designed as
+ * C5 and Pencere Kapandı replace C4 (see `CheckoutGraph.PaymentRoute`). "Sepete Dön" is designed as
  * `backTo(B3)`; the cart route does not exist yet and the cart is the entry directly under C4 in
  * the designed flow, so a single-step `back()` is the same move today.
  *
@@ -34,5 +34,7 @@ fun handlePaymentEffect(
     when (effect) {
         PaymentEffect.NavigateBack -> nav.back()
         PaymentEffect.NavigateBackToCart -> nav.back()
+        is PaymentEffect.OrderPlaced -> nav.replaceToOrderConfirmation(effect.orderId)
+        PaymentEffect.WindowClosed -> nav.replaceToWindowClosed()
     }
 }

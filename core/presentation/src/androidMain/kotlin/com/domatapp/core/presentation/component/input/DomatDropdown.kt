@@ -1,6 +1,8 @@
 package com.domatapp.core.presentation.component.input
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.FocusInteraction
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -149,6 +152,10 @@ fun DomatDropdownOpenPreviewLayout(
     modifier: Modifier = Modifier,
     footerOption: String? = null,
 ) {
+    // While the menu is open the anchor holds focus (primary border, tertiary label). A preview cannot
+    // focus, so emit the focus interaction instead.
+    val focused = remember { MutableInteractionSource() }
+    LaunchedEffect(focused) { focused.emit(FocusInteraction.Focus()) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         DomatTextField(
             value = selectedItem.orEmpty(),
@@ -157,6 +164,7 @@ fun DomatDropdownOpenPreviewLayout(
             label = label,
             trailingIcon = { ExpandIcon(expanded = true) },
             modifier = Modifier.fillMaxWidth(),
+            interactionSource = focused,
         )
         Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, shadowElevation = 3.dp) {
             Column(Modifier.fillMaxWidth().padding(vertical = MaterialTheme.spacing.sp2)) {

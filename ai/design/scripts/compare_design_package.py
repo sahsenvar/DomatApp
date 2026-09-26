@@ -38,7 +38,10 @@ for st in states:
     if not match:
         rows.append((st, "-", "-", "-", "NO RENDER")); failed = True; continue
     d = Image.open(os.path.join(states_dir, st + ".png")).convert("RGB")
-    c = Image.open(max(match, key=os.path.getmtime)).convert("RGB")
+    # Several renders can match (Gradle's build cache restores old outputs, e.g. after a preview height
+    # change). Prefer the one with the design's size, then the newest.
+    match.sort(key=lambda r: (Image.open(r).size == d.size, os.path.getmtime(r)))
+    c = Image.open(match[-1]).convert("RGB")
     w, h = max(d.width, c.width), max(d.height, c.height)
     dd = Image.new("RGB", (w, h), "white"); dd.paste(d, (0, 0))
     cc = Image.new("RGB", (w, h), "white"); cc.paste(c, (0, 0))

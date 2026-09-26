@@ -10,6 +10,9 @@ import com.domatapp.feature.checkout.domain.model.OrderLine
  */
 internal object PaymentStubData {
 
+    /** What `POST /v1/orders` would return; C5 is opened with it. */
+    const val ORDER_ID = "stub-order"
+
     val items = listOf(
         OrderLine(productName = "Domates", quantityLabel = "3 kg", lineTotal = Money.ofLira(96)),
         OrderLine(productName = "Salatalık", quantityLabel = "2 kg", lineTotal = Money.ofLira(54)),
