@@ -19,9 +19,14 @@ dependencies {
     add("kspCommonMainMetadata", libs.navigation.gezgin.processor)
 }
 
-// The @ScreenWrapper and its @ScreenSlot markers are compiled into :core:presentation, and KSP
-// cannot enumerate annotated declarations on the classpath - so this module names their package.
-// Without it the entries here are generated UNWRAPPED (a KSP warning, not a build failure).
+// DomatScreenRoot is compiled into :core:presentation, and KSP cannot enumerate annotated
+// declarations on the classpath - so this module names it. `wrapperDeclarations` (the wrapper's
+// fully-qualified name) rather than `wrapperPackages` (its package): the latter enumerates the
+// package, which returns nothing when the dependency arrives as Kotlin *metadata*, as it does in a
+// kspCommonMainMetadata round. The @ScreenSlot markers need no naming - Gezgin reaches them through
+// the wrapper's @FilledBy parameters.
+//
+// Without this the entries here are generated UNWRAPPED (a KSP warning, not a build failure).
 ksp {
-    arg("gezgin.wrapperPackages", "com.domatapp.core.presentation.screen")
+    arg("gezgin.wrapperDeclarations", "com.domatapp.core.presentation.screen.DomatScreenRoot")
 }

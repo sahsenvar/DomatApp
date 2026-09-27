@@ -917,7 +917,7 @@ Every `feature:{name}:presentation` that declares screens:
 ```kotlin
 plugins { alias(libs.plugins.ksp) }
 dependencies { add("kspCommonMainMetadata", libs.navigation.gezgin.processor) }
-ksp { arg("gezgin.wrapperPackages", "com.domatapp.core.presentation.screen") }
+ksp { arg("gezgin.wrapperDeclarations", "com.domatapp.core.presentation.screen.DomatScreenRoot") }
 ```
 
 **`kspCommonMainMetadata`, not `kspAndroid`.** What Gezgin generates - the topology, the typed
@@ -929,13 +929,21 @@ directory and the task ordering for that; a module that runs KSP without applyin
 
 ### Things that will bite you
 
-- **`gezgin.wrapperPackages` is mandatory in every feature module.** KSP cannot enumerate annotated
-  declarations on the classpath, so a module that does not name the wrapper's package simply does
+- **`gezgin.wrapperDeclarations` is mandatory in every feature module.** KSP cannot enumerate
+  annotated declarations on the classpath, so a module that does not name the wrapper simply does
   not see `DomatScreenRoot` — and the entries are generated **unwrapped**, with a KSP *warning*, not
   an error. A screen that silently loses its ViewModel and state collection looks like a crash, not
   a build failure. Same class of failure for `[SW6]`: a `@Screen` whose signature does not match the
   content slot (`ColumnScope.(S, (I) -> Unit)`) falls back to unwrapped. **Grep build output for
   `SW6` when a screen misbehaves.**
+- **`wrapperDeclarations` (the wrapper's fully-qualified name), never `wrapperPackages` (its
+  package).** The package option enumerates the package with `getDeclarationsFromPackage`, which
+  works against JVM class files and nothing else. In a `kspCommonMainMetadata` round
+  `:core:presentation` arrives as Kotlin *metadata*, the call returns nothing, and the build fails
+  with `[SW9]` plus an `[SC3]` per screen — a configuration with no working value. Resolution by
+  name does work there. The `@ScreenSlot` markers need no naming of their own: Gezgin reaches them
+  through the wrapper's `@FilledBy` parameters. (This is why `:feature:*:presentation` needs
+  Gezgin ≥ the 2026-09-27 snapshot — `gezgin.wrapperDeclarations` does not exist before it.)
 - **The graph is `commonMain` now** — `gezgin-core` publishes `iosArm64` and `iosSimulatorArm64`
   klibs alongside `android` and `jvm`. There is still **no `iosX64`**, because JetBrains'
   `navigation3-ui` does not publish one, so Intel Mac simulators are unsupported; that is why
