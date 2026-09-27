@@ -64,7 +64,7 @@ actions: [BackClicked, QuantityIncreased, QuantityDecreased, LineDeleted, Checko
 navigation:
   - { on: BackClicked, back: true }
   - { on: BrowseClicked, backTo: "MainGraph.HomeRoute (B1)" }
-  - { on: CheckoutClicked, goTo: "CheckoutGraph (C1 misafirse; girişliyse C3/C4)", note: "Devir sözleşmesi: POST /v1/cart/merge (B3 Edge Case 1)" }
+  - { on: CheckoutClicked, goTo: "misafirse AuthFlowGraph (J1, origin=Checkout) sonuç için; girişliyse adres yoksa J3 checkout modu, varsa C4", note: "Devir sözleşmesi: POST /v1/cart/merge (B3 Edge Case 1)" }
 api: ["POST /v1/cart/preview", "GET /v1/neighborhoods/{id}/window", "POST /v1/events (cart_item_removed, cart_item_quantity_changed)", "POST /v1/cart/merge (Akış C başında)"]
 
 strings:

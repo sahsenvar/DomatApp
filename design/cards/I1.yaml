@@ -124,7 +124,7 @@ navigation:
   - { on: LegalClicked, goTo: I5 }
   - { on: NotificationsClicked, goTo: I7 }
   - { on: DeleteAccountClicked, goTo: I8 }
-  - { on: LoginClicked, goTo: "CheckoutGraph.PhoneEntryRoute (C1)", note: "Giriş sonrası Hesap sekmesine dönülür (öneri — open)." }
+  - { on: LoginClicked, goTo: "AuthFlowGraph.PhoneEntryRoute (J1, origin=Account)", note: "Akış bitince I1 girişli haliyle açılır (Akış J §3)." }
   - { on: SavedCardsClicked, goTo: "Kayıtlı Kartlarım (kapsam dışı ayrı bilet)", note: "Yalnızca saklı kart onaylanırsa." }
   - { on: SupportClicked, effect: "WhatsApp intent, önceden doldurulmuş mesajla" }
   - { on: LogoutConfirmed, replaceTo: "MainGraph.HomeRoute (B1)", note: "POST /v1/auth/logout → token'lar Keystore'dan silinir → yerel sepet temizlenir, yeni boş misafir sepeti; anonymous_device_id korunur → Pazar, misafir modu." }
@@ -172,6 +172,6 @@ open:
   - "Silinme sürecindeki kullanıcının tekrar girişte göreceği 'salt-bilgi ekran' (I8 Edge Case 2) akışta kod/ID almamış; I1 üst bandı olarak modellendi — ayrı tam ekran mı, bant mı? Bu durumda hangi satırlar (örn. Hesabımı Sil, Çıkış Yap) gizlenmeli?"
   - "'Tehlikeli Alan' akışta grup adı; ekranda görünür başlık olarak mı kalsın, yoksa başlıksız ayrık grup mu? (öneri: görünür başlık kaldırılabilir)."
   - "Maskeleme biçimi: akış '+90 5XX XXX XX 34', C2 kartı '+90 532 *** ** 67' — tek biçim seçilmeli."
-  - "Misafir 'Telefon ile giriş yap' → C1 sonrası nereye dönülür (Hesap mı, Pazar mı) ve sepet devri (cart/merge) bu kapıdan da tetiklenir mi — akışta tanımsız; Navigasyon'un 'tek giriş kapısı Siparişi Tamamla' ilkesiyle de gerilimli."
+  - "Çözüldü (Akış J): misafir girişi J1 → J2 (→ J3 yeni kullanıcı) → I1 girişli. Sepet devri bu kapıdan da tetiklenir; 409 yalnızca checkout çağırdıysa ele alınır."
   - "WhatsAppFab bu ekranda da duruyor mu, yoksa 'Destek: WhatsApp' satırı onun yerini mi alıyor — akış belirsiz; kartta FAB çizilmedi."
   - "Kayıtlı Kartlarım satırı Akış I §8 Soru 1'e bağlı (koşullu)."

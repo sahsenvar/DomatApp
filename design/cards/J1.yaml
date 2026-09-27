@@ -1,0 +1,72 @@
+id: J1
+title: Telefon Numarası (Giriş / Kayıt)
+source: DomatApp_Akis_J_Giris_Kayit_v1.0.md#J1
+route: { name: AuthFlowGraph.PhoneEntryRoute, args: [origin: AuthOrigin], status: proposed }
+supersedes: C1
+purpose: >
+  Hem giriş hem kayıt için tek kapı: kullanıcıdan hesabın tek kimliği olan telefon numarasını almak.
+  Hesabın var olup olmadığı OTP doğrulamasından sonra backend'den öğrenilir; ekranda ayrım sorulmaz.
+  KVKK onay kutusu YOK — alanın altında pasif bildirim + J4'e bağlantı (Sahan kararı, 27.09.2026).
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.j1_title, showBack: true }
+    note: "Geri: akış sonuçsuz kapanır, çağırana (Hesap / Sepet) dönülür."
+  - id: rationale
+    component: text
+    style: body-medium / on-surface-variant
+    text: "str.j1_rationale_checkout | str.j1_rationale_account"
+    note: "origin=Checkout → checkout metni; origin=Account → hesap metni."
+  - id: phone
+    component: PhoneNumberField
+    props: { label: str.j1_phone_label, value: "", state: default, supportingText: str.j1_phone_error }
+  - id: kvkk-notice
+    component: text
+    style: body-small / on-surface-variant
+    text: str.j1_kvkk_notice
+    link: { span: str.j1_kvkk_link, style: "label-medium primary-dark (tertiary) altı çizili", goTo: J4 }
+    note: "Onay kutusu değil, pasif bildirim. Bağlantı ≥48 dp dokunma alanı (kural 10)."
+  - id: cta
+    component: BottomActionBar
+    content:
+      - component: PrimaryButton
+        props: { text: str.j1_cta, size: Large, enabled: "phoneValid", loading: "otpRequestInFlight" }
+
+states:
+  - id: default
+    description: "Sepetten gelindi (origin=Checkout): boş numara, buton pasif."
+  - id: default-account
+    description: "Hesap sekmesinden gelindi (origin=Account): gerekçe metni hesap sürümü."
+  - id: ready
+    description: Geçerli numara, buton aktif.
+  - id: phone-invalid
+    description: Hatalı format; PhoneNumberField state=error + j1_phone_error.
+  - id: sending
+    description: OTP isteği sürüyor; buton loading.
+
+data:
+  uiState: ["origin: Checkout | Account", "phoneDigits: String", "isPhoneValid: Boolean", "isSending: Boolean", "errorMessage: String?"]
+actions: [PhoneChanged(digits), KvkkLinkClicked, SendCodeClicked, BackClicked]
+navigation:
+  - { on: BackClicked, back: true, note: "AuthFlow sonuçsuz kapanır (ResultFlow cancelled)." }
+  - { on: KvkkLinkClicked, goTo: "AuthFlowGraph.KvkkNoticeRoute (J4)" }
+  - { on: otpRequested, goTo: "AuthFlowGraph.OtpVerifyRoute (J2)", args: [phoneNumber] }
+api: ["POST /v1/auth/otp/request (kvkkNoticeVersion ile)"]
+
+strings:
+  j1_title: "Giriş yap veya kayıt ol"
+  j1_rationale_checkout: "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli."
+  j1_rationale_account: "Telefon numaranla giriş yap. Hesabın yoksa aynı adımla oluşturulur."
+  j1_phone_label: "Telefon numarası"
+  j1_phone_error: "Geçerli bir cep telefonu numarası gir (5XX XXX XX XX)."
+  j1_kvkk_notice: "Devam ederek KVKK Aydınlatma Metni'ni okuduğunu kabul etmiş olursun."
+  j1_kvkk_link: "KVKK Aydınlatma Metni"
+  j1_cta: "Kod Gönder"
+
+sampleData: { phonePrefix: "+90", phoneValid: "532 123 45 67", phoneInvalid: "532 12" }
+
+open:
+  - "j1_title ve j1_rationale_account akışta öneri (J §7 Soru 1)."
+  - "Pasif KVKK bildiriminin yeterliliği hukuk onayı bekliyor (J §2 hukuki not)."

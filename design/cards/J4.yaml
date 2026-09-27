@@ -1,0 +1,52 @@
+id: J4
+title: KVKK Aydınlatma Metni
+source: DomatApp_Akis_J_Giris_Kayit_v1.0.md#J4
+route: { name: AuthFlowGraph.KvkkNoticeRoute, status: proposed }
+purpose: J1'deki bildirimden açılan salt okunur aydınlatma metni. I6 (Sözleşme Metni) ile aynı düzen.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.j4_title, showBack: true }
+  - id: version
+    component: text
+    style: body-small / on-surface-variant
+    text: "str.j4_version({version}, {publishedAt})"
+  - id: body
+    component: text
+    style: body-medium / on-surface
+    text: "{legalText}"
+    note: "Sunucudan gelir; hukuk metni yer tutucu (karar: yasal metinler şimdilik yer tutucu)."
+  - id: error
+    visibleWhen: "loadFailed"
+    content:
+      - { component: StatusHero, props: { tone: error, title: str.j4_error_title, subtitle: str.j4_error_body } }
+      - { component: SecondaryButton, props: { text: str.j4_retry } }
+
+states:
+  - id: content
+    description: Metin yüklendi, kaydırılabilir.
+  - id: loading
+    description: İskelet satırlar.
+  - id: error
+    description: Yüklenemedi + Tekrar dene.
+
+data:
+  uiState: ["version: String", "publishedAt: String", "legalText: String", "loadState: Loading | Content | Error"]
+actions: [BackClicked, RetryClicked]
+navigation:
+  - { on: BackClicked, back: true, note: "J1'e döner, girilen numara korunur" }
+api: ["GET /v1/legal/kvkk/current"]
+
+strings:
+  j4_title: "KVKK Aydınlatma Metni"
+  j4_version: "Sürüm %1$s · %2$s"
+  j4_error_title: "Metin yüklenemedi"
+  j4_error_body: "İnternet bağlantını kontrol edip tekrar dene."
+  j4_retry: "Tekrar dene"
+
+sampleData:
+  version: "1.0"
+  publishedAt: "1 Eylül 2026"
+  legalText: "<KVKK aydınlatma metni — hukuk tarafından sağlanacak. Veri sorumlusu, işlenen kişisel veriler (telefon, ad-soyad, e-posta, adres, ödeme/fatura bilgisi), işleme amaçları, aktarım, saklama süresi ve KVKK md. 11 kapsamındaki haklar bölümlerini içerir.>"
