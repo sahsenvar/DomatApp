@@ -1,0 +1,74 @@
+id: G4
+title: İade Taleplerim
+source: DomatApp_Akis_G_Iade_v1.1.md#G4
+route: { name: OrdersGraph.ReturnListRoute, status: proposed }
+purpose: >
+  Kullanıcının açtığı tüm iade taleplerini (aktif + geçmiş) en yeni üstte tek listede göstermek. Giriş: D1'deki
+  ikincil "İade Taleplerim" satırı ve G5'teki "Tüm Taleplerim" linki. Doğruluk kaynağı GET /v1/returns;
+  pull-to-refresh + foreground'da otomatik tazeleme.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.g4_title, showBack: true }
+  - id: list
+    visibleWhen: "returns.isNotEmpty()"
+    content:
+      - component: StatusCard
+        repeat: "returns (requestedAt'e göre azalan)"
+        props:
+          title: "{itemsTitle}"
+          subtitle: "str.g4_row_meta({deliveryCode}, {requestedAt})"
+          badge: "{statusLabel}"
+          badgeVariant: "{statusVariant}"
+          unseen: "{status != last_seen_return_status_{returnId}}"
+        note: >
+          itemsTitle: ilk kalem + (varsa) str.g4_more_items(n). Rozet §4.1: pending → str.g4_status_pending (Warning),
+          approved → str.g4_status_approved (Info), refunded → str.g4_status_refunded (Success),
+          rejected → str.g4_status_rejected (ErrorSoft), withdrawn → str.g4_status_withdrawn (Neutral).
+          Sağda chevron → G5.
+  - id: empty
+    visibleWhen: "returns.isEmpty()"
+    component: StatusHero
+    props: { tone: neutral, icon: assignment_return, title: str.g4_empty }
+
+states:
+  - id: default
+    description: "Dört talep: #İAD-2381 Domates — Tarla +1 diğer · Beklemede (yeni nokta yok); #İAD-2379 Salatalık · Onaylandı (yeni nokta); #İAD-2214 İade Edildi; #İAD-2107 Geri Çekildi."
+  - id: empty
+    description: "Hiç talep yok: 'Henüz iade talebin yok.'"
+
+data:
+  uiState: ["returns: List<ReturnSummaryUi>  // returnId, itemsTitle, deliveryCode, requestedAt, status, unseen", "isRefreshing: Boolean"]
+actions: [BackClicked, ReturnClicked(returnId), Refreshed]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: ReturnClicked, goTo: G5, args: [returnId] }
+api: ["GET /v1/returns?cursor&limit", "DataStore: last_seen_return_status_{returnId}"]
+
+strings:
+  g4_title: "İade Taleplerim"
+  g4_row_meta: "%1$s · %2$s"
+  g4_more_items: "+%1$d diğer"
+  g4_status_pending: "Beklemede"
+  g4_status_approved: "Onaylandı"
+  g4_status_refunded: "İade Edildi"
+  g4_status_rejected: "Onaylanamadı"
+  g4_status_withdrawn: "Geri Çekildi"
+  g4_empty: "Henüz iade talebin yok."
+
+sampleData:
+  returns:
+    - { returnCode: "#İAD-2381", itemsTitle: "Domates — Tarla +1 diğer", deliveryCode: "#DAL1", requestedAt: "3 Ekim", status: pending, statusLabel: "Beklemede", unseen: false }
+    - { returnCode: "#İAD-2379", itemsTitle: "Salatalık", deliveryCode: "#DAL1", requestedAt: "3 Ekim", status: approved, statusLabel: "Onaylandı", unseen: true }
+    - { returnCode: "#İAD-2214", itemsTitle: "Domates — Çeri", deliveryCode: "#DAK4", requestedAt: "26 Eylül", status: refunded, statusLabel: "İade Edildi", unseen: false }
+    - { returnCode: "#İAD-2107", itemsTitle: "Domates — Tarla", deliveryCode: "#DAJ2", requestedAt: "19 Eylül", status: withdrawn, statusLabel: "Geri Çekildi", unseen: false }
+  rowMeta: "#DAL1 · 3 Ekim"
+
+open:
+  - "G4'ün navigasyondaki yeri (§8 soru 5): D1'de ikincil satır olarak varsayıldı; D1 kartında bu satırın eklenmesi gerekiyor."
+  - "Satır alt metni biçimi ('#DAL1 · 3 Ekim') ve boş durum ikonu (assignment_return) akışta yok — öneri."
+  - "Rozet renkleri §4.1'deki 'soluk kırmızı' ve 'soluk gri' için DomatBadge'de karşılık yok → DomatBadge'e ErrorSoft ve Neutral varyantı eklenmeli (change)."
+  - "Önceki haftaların teslimat kodları (#DAK4, #DAJ2) örnek veridir; teslimat kodu üretim kuralı bu akışta tanımlı değil."
+  - "Sayfalama (cursor) için 'daha fazla yükleniyor' göstergesi akışta yok; v1 hacminde (haftada 5–30 talep, kullanıcı başına az) gerekmeyebilir."

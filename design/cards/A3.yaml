@@ -1,0 +1,57 @@
+id: A3
+title: "Onboarding — Ekran 3: Cumartesi Teslimat Ritüeli"
+source: DomatApp_Akis_A_Tanitim_Bolge_Bekleme_v1.2.md#A3
+route: { name: OnboardingGraph.OnboardingPagerRoute, status: proposed, noBack: true }
+purpose: >
+  Teslimatın nasıl gerçekleştiğine dair beklentiyi yönetmek — "siparişim nerede" sorusunu baştan kesmek.
+  Somut saat aralığı yazılmaz; bildirim izni istenmez ve bildirimlerden söz edilmez.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: top
+    content:
+      - { component: ProgressDots, props: { totalDots: 4, activeIndex: 2 } }
+      - { component: TextLink, props: { text: str.a3_skip } }
+  - id: illustration
+    component: DomatImage
+    props: { asset: onboarding_door_delivery, size: hero }
+    note: "Kapı önünde teslimat sahnesi; KareKod gösterme anına hafif görsel atıf (detay yok)."
+  - id: title
+    component: text
+    style: headline-medium
+    text: str.a3_title
+  - id: body
+    component: text
+    style: body-large
+    text: str.a3_body
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.a3_next, size: Large } }
+
+states:
+  - id: default
+    description: "3. nokta aktif; kapı önü teslimat illüstrasyonu, başlık, ritüel cümlesi, 'İleri'."
+
+data:
+  uiState: ["pageIndex: Int  // 2"]
+actions: [NextClicked, SkipClicked, PageSwiped]
+navigation:
+  - { on: NextClicked, goTo: "A4 (aynı pager, sayfa 4)" }
+  - { on: PageSwiped, goTo: "A2 / A4 (yöne göre)" }
+  - { on: SkipClicked, replaceTo: "OnboardingGraph.SiteSelectionRoute (A5)", args: [mode: FirstLaunch], note: "Referrer ile site çözüldüyse → B1 + QR toast." }
+api: []
+
+strings:
+  a3_skip: "Geç"
+  a3_title: "Haftalık alışverişi zahmetsiz hale getiriyoruz"
+  a3_body: "Cumartesi, kapının önünde. Kodunu göster, ürününü al."
+  a3_next: "İleri"
+
+sampleData: {}
+
+open:
+  - "a3_title akışta yok, öneri — mevcut koddaki onboarding_effortless_title yeniden kullanıldı (satır sonları kaldırıldı)."
+  - "a3_body akışta 'tarzı' ile verildi; birebir alındı, kesin metin onayı bekliyor."
+  - "Kodla fark: mevcut Effortless gövdesi 'QR kodunuzu okutun' ve 'apartman önüne gelin' diyor; akış terimi 'KareKod'/'kod' ve 'kapının önünde' — akış kazanır. Ayrıca kodda kullanıcı okutuyor gibi anlatılmış; Nav §3.1: müşteri gösterir, dağıtıcı okur."
+  - "İllüstrasyon varlığı (onboarding_door_delivery) yok; mevcut img_effortless_illustration uygun mu, tasarım kararı."

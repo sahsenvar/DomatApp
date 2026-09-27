@@ -1,0 +1,75 @@
+id: A1
+title: "Onboarding — Ekran 1: Zincir Karşılaştırması"
+source: DomatApp_Akis_A_Tanitim_Bolge_Bekleme_v1.2.md#A1
+route: { name: OnboardingGraph.OnboardingPagerRoute, status: proposed, noBack: true }
+purpose: >
+  DomatApp'in fiyat avantajının nereden geldiğini üç saniyede hissettirmek: aracı zincirinin kısalması.
+  Faz 1 hibrit tedarik gerçeği küçük bir dipnotla şeffaf şekilde belirtilir.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: top
+    content:
+      - { component: ProgressDots, props: { totalDots: 4, activeIndex: 0 } }
+      - { component: TextLink, props: { text: str.a1_skip }, note: "Sağ üst, düşük vurgu." }
+    note: "Tek satır: solda dots, sağda 'Geç'. A1–A4 ortak üst şerit."
+  - id: title
+    component: text
+    style: headline-medium
+    text: str.a1_title
+  - id: chain
+    content:
+      - { component: SupplyChainStrip, props: { steps: [str.a1_step_farm, str.a1_step_wholesaler, str.a1_step_hal, str.a1_step_marketplace, str.a1_step_consumer], variant: long } }
+      - { component: SupplyChainStrip, props: { steps: [str.a1_step_farm, str.a1_step_your_site], variant: short } }
+    note: "Üstte uzun, çok adımlı zincir (nötr); altta kısaltılmış zincir (primary vurgulu)."
+  - id: result
+    component: text
+    style: title-medium
+    text: str.a1_result
+  - id: footnote
+    component: text
+    style: body-small
+    text: "{footnote}"
+    note: "Küçük punto, on-surface-variant. Metin GET /v1/app-config → onboarding_screen1_footnote'tan; config gelmezse varsayılan str.a1_footnote_default."
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.a1_next, size: Large } }
+
+states:
+  - id: default
+    description: "1. nokta aktif; iki zincir şeridi, tek satır sonuç, altında küçük punto dipnot; 'İleri' butonu."
+
+data:
+  uiState:
+    - "pageIndex: Int  // 0"
+    - "footnote: String  // app-config onboarding_screen1_footnote ?: varsayılan"
+actions: [NextClicked, SkipClicked, PageSwiped]
+navigation:
+  - { on: NextClicked, goTo: "A2 (aynı pager, sayfa 2)" }
+  - { on: PageSwiped, goTo: "A2 (aynı pager, sayfa 2)", note: "Yatay kaydırma dots ile senkron." }
+  - { on: SkipClicked, replaceTo: "OnboardingGraph.SiteSelectionRoute (A5)", args: [mode: FirstLaunch], note: "has_completed_onboarding = true. Referrer ile site zaten çözüldüyse → MainGraph.HomeRoute (B1) + QR toast." }
+api: ["GET /v1/app-config (onboarding_screen1_footnote) — A0'da önceden çekilir"]
+
+strings:
+  a1_skip: "Geç"
+  a1_title: "Neden bu kadar uygun fiyatlı?"
+  a1_step_farm: "Tarla"
+  a1_step_wholesaler: "Toptancı"
+  a1_step_hal: "Hal"
+  a1_step_marketplace: "Pazaryeri"
+  a1_step_consumer: "Tüketici"
+  a1_step_your_site: "Sitenizin önü"
+  a1_result: "Aracı zinciri kısaldıkça tazelik artar"
+  a1_footnote_default: "Bazı haftalar İstanbul hali kaynaklı olabilir."
+  a1_next: "İleri"
+
+sampleData:
+  footnote: "Bazı haftalar İstanbul hali kaynaklı olabilir."
+
+open:
+  - "a1_title akışta yok, öneri — mevcut koddaki onboarding_pricing_title ('Neden bu kadar\\nuygun fiyatlı?') yeniden kullanıldı. Akış 'ana görsel başlık' diyor ama metnini vermiyor."
+  - "a1_result akışta 'örn.' ile verildi; birebir alındı, kesin metin onayı bekliyor. Nav §6 tazelik süresini 'sonuç olarak tek satır' diyor (saat/gün rakamı yok)."
+  - "Kodla fark: mevcut OnboardingPricing sayfasının zinciri 'Üretici → Toptancı → Perakende Mağaza → Siz' ve '%40 tasarruf' iddiası; akış 'Tarla → Toptancı → Hal → Pazaryeri → Tüketici' / 'Tarla → Sitenizin önü' diyor — akış kazanır. '%40 tasarruf' metni kaldırılmalı."
+  - "Kodla fark: mevcut onboarding 5 sayfa (Welcome, Effortless, Pricing, Community, Trust), 'Geç' yok, buton metinleri esprili ('Hmm.. Güzelmiş. Başka?'); akış 4 sayfa + 'Geç' + 'İleri' diyor. Welcome sayfası akışta yok."
+  - "Hitap: 'Sitenizin önü' (siz) — A5/A6 ve diğer akışlar 'sen' kullanıyor. Onboarding sayfa sayısı/sırası geçici (§8 Soru 9, çözülmedi)."

@@ -1,0 +1,48 @@
+id: A0
+title: Açılış Ekranı (Splash + Oturum/Bölge Kontrolü)
+source: DomatApp_Akis_A_Tanitim_Bolge_Bekleme_v1.2.md#A0
+route: { name: OnboardingGraph.SplashRoute, status: proposed, noBack: true }
+purpose: >
+  Cihazda hangi bilginin (seçili site, onboarding görüldü mü, Android Install Referrer) olduğunu sessizce kontrol
+  edip kullanıcıyı doğru sonraki adıma yönlendirmek. Kullanıcıya gösterilen tek şey marka logosudur; etkileşim yoktur.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: brand
+    component: DomatImage
+    props: { asset: brand_logo, size: splash, contentDescription: str.a0_logo_cd }
+    note: "Ekranın ortasında marka logosu (statik). Görünür metin YOK; 'DomatApp' yalnızca erişilebilirlik açıklaması."
+  - id: decision
+    note: >
+      Görünmez karar mantığı (sıralı): (1) selected_site_id dolu → Pazar (B1). (2) boş ve has_completed_onboarding=true
+      → A5. (3) ikisi de boş (ilk açılış) → Android'de Install Referrer arka planda okunur (en fazla 1500 ms), sonra A1.
+      Zaman aşımı/yükleniyor göstergesi YOK.
+
+states:
+  - id: default
+    description: "Arka plan + ortada marka logosu. Hiçbir metin, gösterge ya da buton yok. Referrer beklemesi (ilk açılış, ≤1500 ms) görsel olarak aynıdır."
+
+data:
+  uiState:
+    - "destination: Loading | Market | SiteSelection | Onboarding"
+actions: []
+navigation:
+  - { on: "selected_site_id != null", replaceTo: "MainGraph.HomeRoute (B1)", note: "Önbelleklenen siteye güvenilir; her açılışta teyit sorulmaz. Düzeltme B1 üst çubuğundaki site seçiciden." }
+  - { on: "selected_site_id == null && has_completed_onboarding", replaceTo: "OnboardingGraph.SiteSelectionRoute (A5)", args: [mode: FirstLaunch] }
+  - { on: "ilk açılış, referrer geçerli bir siteye çözüldü (POST /v1/sites/resolve-referrer 200)", replaceTo: "OnboardingGraph.OnboardingPagerRoute (A1)", note: "Onboarding yine gösterilir (sıra kesin: Splash → Onboarding → Bölge). Site DataStore'a yazılır; onboarding sonunda A5 atlanır → B1 + tek seferlik QR toast'ı." }
+  - { on: "ilk açılış, referrer yok / 404 / 1500 ms zaman aşımı", replaceTo: "OnboardingGraph.OnboardingPagerRoute (A1)", note: "404'te hata gösterilmez, bozuk QR olayı loglanır. Geç gelen referrer, kullanıcı A5'i geçmemişse A5'i ön-doldurur; geçtiyse atılır." }
+api:
+  - "POST /v1/devices/anonymous-session (ilk açılış; anonymous_device_id)"
+  - "POST /v1/sites/resolve-referrer (yalnızca Android, ilk açılış; ardından install_referrer_processed = true)"
+  - "GET /v1/app-config (onboarding_content_version, onboarding_screen1_footnote, onboarding_screen2_example_price_before/after, min sürüm)"
+
+strings:
+  a0_logo_cd: "DomatApp"
+
+sampleData: {}
+
+open:
+  - "a0_logo_cd (erişilebilirlik açıklaması) akışta yok, öneri — ortak strings.xml'deki app_name ile aynı değer; kodda app_name yeniden kullanılabilir."
+  - "Marka logosu varlığı (brand_logo) henüz yok; tasarımda yer tutucu. Android 12+ SplashScreen API'nin sistem splash'ı ile bu ekranın ilişkisi (tek ekran mı, ardışık mı) akışta tanımsız."
+  - "Referrer geçerliyken onboarding sonrası A5'in atlanması: akış A5 Edge Case 2 'ekran gösterilmez' diyor, §3 akış şeması ise onboarding → A5 gösteriyor; kartta onboarding gösterilir, A5 atlanır olarak yorumlandı."
+  - "minimum desteklenen sürüm (app-config) altındaysa açılacak 'güncelleme gerekli' ekranı akışta tanımsız."

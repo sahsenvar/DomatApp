@@ -1,0 +1,109 @@
+id: D5
+title: Çekim Sonucu Bildirimi
+source: DomatApp_Akis_D_Siparis_Durumu_v1.1.md#D5
+route: { name: "— (ekran değil: push + in-app banner + kalıcı rozet; deep link → MainGraph.DeliveryDetailRoute)", args: [deliveryId: String], status: proposed }
+purpose: >
+  Pencere kapanışındaki durum değişikliğini (çekim sonucu) kullanıcı uygulamada olmasa bile ona ulaştırmak;
+  başarı ve başarısızlık dilini standartlaştırmak. Push bir hızlandırıcıdır, tek kaynak değil — doğruluk
+  kaynağı her zaman GET /v1/deliveries/{deliveryId}.
+frame: { width: 390, height: "hug" }
+
+regions:
+  - id: push
+    note: "İşletim sistemi bildirimi — bileşen değil; Figma'da sistem bildirim çerçevesi içinde yalnızca metin önizlemesi."
+    content:
+      - component: text
+        style: title-small
+        text: "success ? str.d5_push_success_title : str.d5_push_failed_title"
+      - component: text
+        style: body-medium
+        text: >
+          success && releasedAmount > 0 → str.d5_push_success_body({newUnitPrice}, {chargedAmount}, {releasedAmount}) ·
+          success && releasedAmount == 0 → str.d5_charge_plain({chargedAmount}) ·
+          partially_confirmed → str.d5_push_partial_body({orderCount}, {confirmedCount}, {failedCount}) ·
+          all_failed → str.d5_push_failed_body({failedItemsSummary})
+        note: "Tek teslimat = tek push (Edge case 9). Dokununca deep link → D2."
+
+  - id: in-app-banner
+    component: InAppBanner
+    visibleWhen: "uygulama ön planda, herhangi bir ekranda (örnekte B1 üstünde)"
+    props:
+      tone: "success ? success : (partially_confirmed ? warning : error)"
+      title: "success ? str.d5_push_success_title : str.d5_push_failed_title"
+      body: "success ? str.d5_charge_plain({chargedAmount}) : str.d5_banner_tap_details"
+    note: "Ekranın üstünde, içeriğin üzerinde geçici şerit (elevation); dokununca D2; ~4 sn sonra kendiliğinden kapanır."
+
+  - id: persistent-badge
+    content:
+      - component: BottomNavBar
+        props: { selected: market, ordersDot: true }
+        note: "Siparişler ikonunda kırmızı nokta: last_seen_delivery_status_{deliveryId} != sunucu durumu. Push izninden bağımsız (Edge case 10)."
+      - component: DomatBadge
+        props: { text: "{statusLabel}", variant: "{statusBadgeVariant}" }
+        note: "D1 kartı / D2 başlığındaki kalıcı durum rozeti — etiketler D1.strings."
+
+states:
+  - id: push-success
+    description: "'Ödemen tamamlandı' / 'Hedef tuttu, fiyat ₺28/kg'a indi. Kartından ₺171,00 çekildi, kalan ₺17,00 serbest bırakıldı.'"
+  - id: push-success-no-discount
+    description: "Fark 0: 'Ödemen tamamlandı' / 'Kartından ₺188,00 çekildi.'"
+  - id: push-partial
+    description: "'Bir kalemin ödemesi tamamlanamadı' / '2 siparişten 1 tanesi onaylandı, 1 tanesi düştü. Detaylar için dokun.'"
+  - id: push-all-failed
+    description: "'Bir kalemin ödemesi tamamlanamadı' / 'Domates (Tarla) 1 file, Salatalık 1 file, Kuru Soğan 2 kg bu hafta teslimatından çıkarıldı, bloke tutar serbest bırakıldı. Detaylar için dokun.'"
+  - id: banner-partial
+    description: "Uygulama açıkken B1 üstünde amber banner; alt barda Siparişler'de kırmızı nokta."
+  - id: tab-dot
+    description: "Banner kapandıktan / push izni yokken: yalnızca Siparişler sekmesinde kırmızı nokta (kalıcı iz)."
+
+data:
+  uiState:
+    - "deliveryId: String"
+    - "outcome: Success | PartiallyConfirmed | AllFailed"
+    - "chargedAmount: Money?"
+    - "releasedAmount: Money"
+    - "newUnitPrice: String?"
+    - "orderCount: Int"
+    - "confirmedCount: Int"
+    - "failedCount: Int"
+    - "failedItemsSummary: String?"
+    - "hasUnseenStatusChange: Boolean"
+actions: [PushTapped, BannerTapped, BannerAutoDismissed, OrdersTabClicked]
+navigation:
+  - { on: PushTapped, goTo: "MainGraph.DeliveryDetailRoute (D2)", args: [deliveryId], note: "Deep link; açılışta GET ile doğrulanır. Gezgin'de deep-link dispatch yok (V2) — elle yönlendirme." }
+  - { on: BannerTapped, goTo: "MainGraph.DeliveryDetailRoute (D2)", args: [deliveryId] }
+  - { on: OrdersTabClicked, goTo: "MainGraph.OrdersRoute (D1)", note: "Nokta, ilgili teslimat D1/D2'de görülünce temizlenir." }
+api:
+  - "POST /v1/devices/push-token (önkoşul; A/B'de kaydedilir)"
+  - "GET /v1/deliveries/{deliveryId} (doğrulama)"
+  - "DataStore last_seen_delivery_status_{deliveryId}"
+
+strings:
+  d5_push_success_title: "Ödemen tamamlandı"
+  d5_push_success_body: "Hedef tuttu, fiyat %1$s'a indi. Kartından %2$s çekildi, kalan %3$s serbest bırakıldı."
+  d5_charge_plain: "Kartından %1$s çekildi."
+  d5_push_failed_title: "Bir kalemin ödemesi tamamlanamadı"
+  d5_push_partial_body: "%1$d siparişten %2$d tanesi onaylandı, %3$d tanesi düştü. Detaylar için dokun."
+  d5_push_failed_body: "%1$s bu hafta teslimatından çıkarıldı, bloke tutar serbest bırakıldı. Detaylar için dokun."
+  d5_banner_tap_details: "Detaylar için dokun."
+
+sampleData:
+  deliveryId: "dlv-dal1-w40"
+  newUnitPrice: "₺28/kg"
+  chargedAmount: "₺171,00"
+  releasedAmount: "₺17,00"
+  noDiscountChargedAmount: "₺188,00"
+  orderCount: 2
+  confirmedCount: 1
+  failedCount: 1
+  failedItemsSummary: "Domates (Tarla) 1 file, Salatalık 1 file, Kuru Soğan 2 kg"
+  statusLabel: "Kısmen Onaylandı"
+  statusBadgeVariant: Warning
+
+open:
+  - "Kısmi başarısızlık push gövdesi: §D5 madde 1 '[Ürün özeti] bu hafta teslimatından çıkarıldı...' ile Edge case 9 '[N] siparişten [M] tanesi onaylandı...' çelişiyor. Kart: partially_confirmed → Edge case 9 (nihai karar), ürün özetli kalıp → all_failed. Onay gerekli."
+  - "all_failed için ayrı push başlığı yok ('Bir kalemin...' tüm siparişler düştüğünde yanlış); öneri gerekli."
+  - "In-app banner metni akışta yok ('aynı özetin kısası'); öneri: push başlığı + 'Detaylar için dokun.' / sade çekim cümlesi."
+  - "Banner otomatik kapanma süresi ('birkaç saniye') tanımsız; öneri 4 sn. InfoBanner 'kapatılamayan şerit' — üstte overlay kullanımı InfoBanner'a konum/elevation varyantı gerektirebilir."
+  - "Siparişler sekmesi kırmızı noktası MVP Scope'ta yok (§8 soru 4 onay bekliyor); BottomNavBar'a ordersDot prop'u eklenmeli (change)."
+  - "Push 'fiyat X TL/kg'a indi' — çok ürünlü teslimatta hangi ürün? (D2 ile aynı soru)."

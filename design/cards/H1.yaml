@@ -1,0 +1,82 @@
+id: H1
+title: Dağıtıcı Girişi
+source: claude/DomatApp_Akis_H_Dagitici_Arayuzu_v1.1.md#H1
+route: { name: EmployeeGraph.LoginRoute, status: proposed, noBack: true }
+purpose: >
+  DomatApp for Employee'nin açılış ekranı: yalnızca yetkili kişinin uygulamaya girmesini, paylaşılan tek bir PIN ile
+  (müşteri hesap sisteminden bağımsız) sağlamak. Sade iş aracı ekranı — marka coşkusu yok.
+frame: { width: 390, height: 844 }
+
+regions:   # yukarıdan aşağı
+  - id: brand
+    content:
+      - { component: text, style: headline-small, text: str.h1_app_name }
+      - { component: text, style: title-medium, text: str.h1_title, note: "on-surface-variant" }
+    note: "Uygulamanın kendi ikonu/kimliği; müşteri uygulamasının marka rengi/illüstrasyonu kullanılmaz."
+
+  - id: name
+    component: DomatTextField
+    props: { label: str.h1_name_label, value: "{courierName}", state: "{nameFieldState}", singleLine: true }
+    note: "Opsiyonel, kimlik doğrulamaz; courier_name_last_used ile ön-doldurulur. Değer redeem çağrısına courierName olarak eklenir."
+
+  - id: pin
+    content:
+      - component: PinDots
+        props: { length: "{pinLength}", filled: "{pinDigitsEntered}", state: "{pinState}" }
+        note: "PIN 4-6 hane; nokta sayısı sunucu yapılandırmasından gelen uzunluk kadar (bkz. open)."
+      - { component: InlineNote, visibleWhen: "wrong-pin", props: { tone: error, text: str.h1_error_wrong_pin } }
+      - { component: InlineNote, visibleWhen: "network-error", props: { tone: error, text: str.h1_error_network } }
+
+  - id: keypad
+    component: NumericKeypad
+    props: { enabled: "!signingIn" }
+    note: "Sistem klavyesi yerine özel, büyük dokunma hedefli tuş takımı (eldiven / soğuk el)."
+
+  - id: cta
+    component: BottomActionBar
+    content:
+      - component: PrimaryButton
+        props: { text: str.h1_cta, size: Large, enabled: "pinDigitsEntered >= 4", loading: "signingIn" }
+      - { component: InlineNote, props: { tone: neutral, text: str.h1_footer_note } }
+
+states:
+  - id: empty
+    description: "İlk açılış: isim alanı boş (state=empty), PIN noktaları boş, Giriş Yap pasif."
+  - id: pin-entered
+    description: "İsim 'Mehmet' ön-dolu, 4 PIN noktası dolu, Giriş Yap etkin."
+  - id: signing-in
+    description: "POST /v1/courier/auth/login sürüyor: buton loading, tuş takımı pasif."
+  - id: wrong-pin
+    description: "401: PIN noktaları hata renginde ve temizlenmiş, 'PIN hatalı' notu. Kilitleme yok, sınırsız deneme."
+  - id: network-error
+    description: "Girişte bağlantı yok: hata notu, PIN korunur, Giriş Yap tekrar denenebilir."
+
+data:
+  uiState:
+    - "courierName: String"
+    - "pinLength: Int"
+    - "pinDigitsEntered: Int"
+    - "loginState: Idle | SigningIn | WrongPin | NetworkError"
+actions: [NameChanged, DigitPressed(d), BackspacePressed, LoginClicked]
+navigation:
+  - { on: "login 200 (courierToken kaydedildi)", replaceTo: "EmployeeGraph.TourRoute (H2)", note: "Geri yığını temizlenir; token DataStore'da kalıcı, sonraki açılışlarda H1 atlanır." }
+  - { on: "app launch && courier_token != null", replaceTo: "EmployeeGraph.TourRoute (H2)" }
+api: ["POST /v1/courier/auth/login { courierPin, courierName? } → { courierToken, expiresAt } | 401"]
+
+strings:
+  h1_app_name: "DomatApp for Employee"
+  h1_title: "Dağıtıcı Girişi"
+  h1_name_label: "Kim olarak giriş yapıyorsun?"
+  h1_cta: "Giriş Yap"
+  h1_error_wrong_pin: "PIN hatalı"
+  h1_error_network: "Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene."
+  h1_footer_note: "Bu uygulama müşteri hesabından bağımsızdır."
+
+sampleData: { courierName: "Mehmet", pinLength: 4, pinDigitsEntered: 4 }
+
+open:
+  - "PIN uzunluğu akışta '4-6 hane' — sabit bir uzunluk seçilmeli (öneri: 4) ya da sunucudan gelmeli; otomatik gönderim (H4 gibi) buna bağlı."
+  - "'Giriş Yap' buton metni akışta yok, öneri."
+  - "Ağ hatası metni (h1_error_network) akışta yok, öneri."
+  - "İsim alanı (courierName) §8 soru 7'de onay bekliyor; kaldırılırsa bölge silinir."
+  - "Kilitleme yok (EC2) — PIN unutulursa uygulama içi yol yok; 'PIN'ini mi unuttun?' benzeri bir yardım satırı eklenmedi."

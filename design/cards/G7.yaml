@@ -1,0 +1,78 @@
+id: G7
+title: Durum Değişikliği Bildirimi
+source: DomatApp_Akis_G_Iade_v1.1.md#G7
+route: { name: "— (ekran değil: push + in-app banner + kalıcı rozet)", status: proposed }
+purpose: >
+  Kurucunun onay/iade/onaylamama kararını, kullanıcı uygulamada olmasa bile ona ulaştırmak. D5 ile aynı üç
+  bileşenli desen: push tetikleyicidir, in-app banner uygulama açıkken gösterir, kalıcı rozet (G4 satırı +
+  Siparişler sekmesi noktası) kaçırılanı tutar. Doğruluk kaynağı her zaman GET /v1/returns(/{returnId}).
+  Push metinlerinde "reddedildi" kelimesi hiç geçmez.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: push
+    component: PushMock
+    visibleWhen: "push-* durumları"
+    props:
+      appName: "DomatApp"
+      title: "str.g7_push_approved_title | str.g7_push_refunded_title | str.g7_push_update_title"
+      body: "str.g7_push_approved_body({itemsSummary}, {refundAmount}) | str.g7_push_refunded_body({refundAmount}) | str.g7_push_update_body"
+    note: "Tasarım-yalnız maket (sistem bildirimi, kodda bileşen yok). Deep link: returnId → G5."
+  - id: in-app-banner
+    component: InAppBanner
+    visibleWhen: "uygulama ön plandayken durum değişikliği"
+    props:
+      title: "push ile aynı başlık anahtarları"
+      body: "push ile aynı gövde anahtarları"
+      icon: assignment_return
+    note: "Ekranın üstünde, durum çubuğunun altında belirir; dokununca G5, birkaç saniye sonra kendiliğinden kapanır. Arka planda o an açık ekran (örnekte B1 Pazar)."
+  - id: tab-badge
+    component: BottomNavBar
+    visibleWhen: "rozet durumu"
+    props: { selected: market, ordersBadgeDot: "{hasUnseenReturnUpdate}" }
+    note: "Siparişler sekmesi ikonunda kırmızı nokta (D5 Edge Case 10 mekanizması; §8 soru 9 onayı bekliyor). BottomNavBar'a ordersBadgeDot prop'u eklenmeli (change). G4 satırındaki 'yeni' noktası G4 kartında."
+
+states:
+  - id: push-approved
+    description: "Kilit ekranı: 'İade talebin onaylandı' / 'Domates — Tarla +1 diğer için ₺213,00 iade edilecek. Detaylar için dokun.'"
+  - id: push-refunded
+    description: "Kilit ekranı: 'İaden tamamlandı' / '₺213,00 kartına iade edildi. Detaylar için dokun.'"
+  - id: push-update
+    description: "Kilit ekranı (rejected): 'İade talebin hakkında bir güncelleme var' / 'Detaylar için dokun.' — nötr, sonucu söylemez."
+  - id: in-app-banner
+    description: "Uygulama açık (B1 Pazar): üstte onaylandı banner'ı."
+  - id: tab-badge
+    description: "Banner kapandıktan sonra: alt barda Siparişler ikonunda nokta."
+
+data:
+  uiState: ["pendingBanner: ReturnStatusBannerUi?", "hasUnseenReturnUpdate: Boolean"]
+actions: [PushTapped(returnId), BannerTapped(returnId), BannerAutoDismissed, OrdersTabClicked]
+navigation:
+  - { on: PushTapped, goTo: G5, args: [returnId], note: "Deep link — Gezgin'de URL dispatch yok (V2); push intent'inden route elle kurulmalı" }
+  - { on: BannerTapped, goTo: G5, args: [returnId] }
+  - { on: OrdersTabClicked, goTo: "D1 (Siparişler sekmesi)", note: "Nokta, ilgili G5 görüldüğünde (last_seen_return_status_{returnId} güncellenince) kalkar" }
+api: ["Push payload: { type: return_status_changed, returnId, status }", "GET /v1/returns/{returnId} (doğrulama)", "GET /v1/returns (rozet hesabı)", "DataStore: last_seen_return_status_{returnId}"]
+
+strings:
+  g7_push_approved_title: "İade talebin onaylandı"
+  g7_push_approved_body: "%1$s için %2$s iade edilecek. Detaylar için dokun."
+  g7_push_refunded_title: "İaden tamamlandı"
+  g7_push_refunded_body: "%1$s kartına iade edildi. Detaylar için dokun."
+  g7_push_update_title: "İade talebin hakkında bir güncelleme var"
+  g7_push_update_body: "Detaylar için dokun."
+
+sampleData:
+  appName: "DomatApp"
+  returnCode: "#İAD-2381"
+  itemsSummary: "Domates — Tarla +1 diğer"
+  refundAmount: "₺213,00"
+  approvedBody: "Domates — Tarla +1 diğer için ₺213,00 iade edilecek. Detaylar için dokun."
+  refundedBody: "₺213,00 kartına iade edildi. Detaylar için dokun."
+  lockScreenTime: "10:24"
+
+open:
+  - "Tutar biçimi: akış '[X] TL', kart '₺213,00' (G5 ile aynı açık)."
+  - "Push deep link'i (returnId → G5): Gezgin'de deep-link/URL dispatch yok (CLAUDE.md, V2) — push intent'inden elle route kurma kararı gerekiyor."
+  - "Siparişler sekmesi kırmızı noktası D §8 soru 4 / G §8 soru 9 onayına bağlı; onaylanmazsa tab-badge durumu düşer."
+  - "In-app banner'ın süresi ('birkaç saniye') ve pending/withdrawn için bildirim olmadığı varsayımı akışta sayısal/açık değil."
+  - "Push'lar kilit ekranı maketi olarak çizildi; OS görünümü platforma göre değişir, tasarım yalnızca metin/ton referansıdır."

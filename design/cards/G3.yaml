@@ -1,0 +1,59 @@
+id: G3
+title: Gönderim Onayı
+source: DomatApp_Akis_G_Iade_v1.1.md#G3
+route: { name: OrdersGraph.ReturnSubmittedRoute, args: [returnId: String], status: proposed, noBack: true }
+purpose: >
+  Talebin alındığını netleştirmek; süre taahhüdü vermeden sakin bir kapanış sunmak ve G5'e yönlendirmek.
+  Kutlama ekranı değildir — iade bir "süreç başlangıcı"dır, ton kasıtlı olarak sakindir.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: hero
+    component: StatusHero
+    props: { tone: success, icon: check_circle, title: str.g3_title, subtitle: str.g3_expectation }
+  - id: summary
+    component: FormSection
+    props: { title: str.g3_summary_title }
+    content:
+      - { component: InfoRow, props: { label: str.g3_reference_label, value: "{returnCode}" } }
+      - { component: SummaryRow, repeat: "items", props: { label: "{productName} — {variant}", detail: "{quantityLabel}", amount: "{chargedAmount}" } }
+  - id: actions
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.g3_view_request } }
+      - { component: GhostButton, props: { text: str.g3_back_to_orders } }
+
+states:
+  - id: default
+    description: "'Talebin alındı' + #İAD-2381 + Tarla (₺172,00) ve Çeri (₺41,00) özeti; iki CTA."
+
+data:
+  uiState: ["returnCode: String", "items: List<ReturnItemUi>"]
+actions: [ViewRequestClicked, BackToOrdersClicked, BackPressed, AutoAdvanceElapsed]
+navigation:
+  - { on: ViewRequestClicked, replaceTo: G5, args: [returnId] }
+  - { on: BackToOrdersClicked, backTo: "D2 (teslimat detayı; yoksa D1)" }
+  - { on: BackPressed, replaceTo: G5, args: [returnId] }
+  - { on: AutoAdvanceElapsed, replaceTo: G5, args: [returnId], note: "Birkaç saniye sonra otomatik; süre akışta tanımsız" }
+api: ["POST /v1/returns yanıtı (201: returnId, status: pending, items, estimatedRefundAmount) — ek çağrı yok"]
+
+strings:
+  g3_title: "Talebin alındı"
+  g3_expectation: "Talebini inceleyeceğiz. Ek bir bilgiye ihtiyacımız olursa WhatsApp'tan ulaşırız."
+  g3_summary_title: "Talep özeti"
+  g3_reference_label: "Talep no"
+  g3_view_request: "Talebi Görüntüle"
+  g3_back_to_orders: "Siparişlerime Dön"
+
+sampleData:
+  returnCode: "#İAD-2381"
+  deliveryCode: "#DAL1"
+  items:
+    - { productName: "Domates", variant: "Tarla", quantityLabel: "2 file", chargedAmount: "₺172,00" }
+    - { productName: "Domates", variant: "Çeri", quantityLabel: "1 kutu", chargedAmount: "₺41,00" }
+
+open:
+  - "Otomatik G5 yönlendirme süresi ('birkaç saniye') akışta sayısal değil — öneri: 4 sn; ekran okuyucu açıkken otomatik geçiş kapatılmalı."
+  - "'Talep özeti' bölüm başlığı ve 'Talep no' etiketi akışta yok — öneri."
+  - "Akış 'onay ikonu' diyor ama tonun 'kutlama değil, sakin' olmasını istiyor; StatusHero success (yeşil) mi neutral mi? Kart success + check_circle kullandı."
+  - "'Siparişlerime Dön' hedefi akışta 'D1/D2' — kart D2'ye (girişin geldiği teslimat) dönmeyi seçti."

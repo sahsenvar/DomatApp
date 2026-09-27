@@ -1,0 +1,97 @@
+id: H3
+title: KareKod Okutma
+source: claude/DomatApp_Akis_H_Dagitici_Arayuzu_v1.1.md#H3
+route: { name: EmployeeGraph.ScanRoute, args: ["expectedDeliveryId: String?"], status: proposed }
+purpose: >
+  Müşterinin gösterdiği KareKod'u okuyup tanımlama (lookup, mutasyonsuz) adımını tetiklemek; başarıda otomatik H5'e geçmek.
+  Kamera çalışmazsa 6 haneli koda tek dokunuşla kaçış.
+frame: { width: 390, height: 844 }
+
+regions:   # yukarıdan aşağı (kamera tam ekran, diğerleri üstüne biner)
+  - id: camera
+    component: ScannerViewport
+    props: { state: "{scannerState}", torchOn: "{torchOn}" }
+    note: "Tam ekran önizleme + ortada hedefleme çerçevesi. Tasarımda kamera görüntüsü nötr koyu yer tutucu. Başarılı okumada haptic + kısa ses."
+
+  - id: topbar
+    content:
+      - { component: DomatIconButton, props: { icon: close, size: 48 }, note: "Sol üst — H2'ye döner" }
+      - { component: DomatIconButton, props: { icon: "flashlight_on | flashlight_off", size: 48 }, note: "Sağ üst — manuel torch; otomatik açılma yok (EC1). Son tercih courier_torch_enabled_last." }
+    note: "Kamera üstünde, scrim üzerinde inverse-on-surface ikonlar."
+
+  - id: hint
+    component: text
+    style: body-large
+    text: str.h3_hint
+    visibleWhen: "scannerState == scanning"
+    note: "Çerçevenin altında, inverse-on-surface."
+
+  - id: feedback
+    visibleWhen: "state in [not-in-tour, code-not-found, offline]"
+    content:
+      - { component: InfoBanner, visibleWhen: "not-in-tour", props: { tone: error, body: str.h3_error_not_in_tour } }
+      - { component: InfoBanner, visibleWhen: "code-not-found", props: { tone: error, body: str.h3_error_not_found } }
+      - { component: InfoBanner, visibleWhen: "offline", props: { tone: warning, title: str.h3_offline_title, body: str.h3_offline_body } }
+    note: "Çerçevenin altında; tarama kendiliğinden devam eder, yeni okumada kaybolur."
+
+  - id: permission
+    visibleWhen: "state == permission-denied"
+    content:
+      - { component: StatusHero, props: { tone: neutral, icon: no_photography, title: str.h3_permission_title } }
+      - { component: SecondaryButton, props: { text: str.h3_permission_settings, icon: settings } }
+    note: "Kamera yerine yüzeyde; alt buton (Kodu Yazarak Gir) aynen kalır."
+
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.h3_manual_entry, size: Large, leadingIcon: dialpad, enabled: "scannerState != detected" } }
+
+states:
+  - id: scanning
+    description: "Canlı önizleme, boş çerçeve, ipucu metni; torch kapalı."
+  - id: torch-on
+    description: "Torch açık: sağ üst ikon flashlight_on (dolu)."
+  - id: detected
+    description: "KareKod algılandı: çerçeve primary vurgulu + ortada yükleniyor göstergesi; lookup sürüyor, ardından otomatik H5."
+  - id: not-in-tour
+    description: "409 not_in_todays_tour: 'Bu kod bugünkü seferinde yok.' bandı."
+  - id: code-not-found
+    description: "404 code_not_found (geçersiz / DomatApp'e ait olmayan KareKod): hata bandı."
+  - id: offline
+    description: "Lookup internet ister: uyarı bandı; okuma kuyruğa alınmaz."
+  - id: permission-denied
+    description: "Kamera izni reddedilmiş: bilgi + Ayarlara Git + Kodu Yazarak Gir."
+
+data:
+  uiState:
+    - "scannerState: Scanning | Detected | Error"
+    - "torchOn: Boolean"
+    - "cameraPermission: Granted | Denied"
+    - "lookupError: NotInTour | NotFound | Offline | null"
+actions: [CloseClicked, TorchToggled, CodeDetected(qrPayload), ManualEntryClicked, OpenSettingsClicked]
+navigation:
+  - { on: CloseClicked, back: true }
+  - { on: "lookup 200", replaceTo: "EmployeeGraph.DeliveryConfirmRoute (H5, mode=verify)", args: [lookupResult], note: "Kimlik bandı her zaman lookup'ın döndürdüğü kişi; expectedDeliveryId ile farklıysa ek uyarı yok (EC H5#2)." }
+  - { on: "lookup 409 already_redeemed", replaceTo: "EmployeeGraph.DeliveryConfirmRoute (H5, mode=alreadyRedeemed)", args: [deliveredAt, courierName] }
+  - { on: ManualEntryClicked, replaceTo: "EmployeeGraph.CodeEntryRoute (H4)", args: [expectedDeliveryId] }
+  - { on: "kamera izni ilk kez soruluyor", effect: "Sistem izin diyaloğu" }
+  - { on: OpenSettingsClicked, effect: "Uygulama ayarları intent'i" }
+api: ["POST /v1/courier/deliveries/lookup-by-code { method: qr, qrPayload } → 200 | 404 code_not_found | 409 already_redeemed | 409 not_in_todays_tour"]
+
+strings:
+  h3_hint: "KareKod'u çerçeveye hizala"
+  h3_error_not_in_tour: "Bu kod bugünkü seferinde yok."
+  h3_error_not_found: "Bu kod bulunamadı, tekrar dener misin?"
+  h3_offline_title: "İnternet yok"
+  h3_offline_body: "Kodu tanımlamak için bağlantı gerekli. Bağlantı gelince tekrar okut."
+  h3_permission_title: "KareKod okutmak için kamera erişimi gerekli"
+  h3_permission_settings: "Ayarlara Git"
+  h3_manual_entry: "Kodu Yazarak Gir"
+
+sampleData: {}
+
+open:
+  - "Hedefleme ipucu ('KareKod'u çerçeveye hizala') ve çevrimdışı uyarı metni akışta yok, öneri."
+  - "code_not_found metni akışta yalnızca H4 için tanımlı; KareKod okumasında da aynısı kullanıldı — öneri."
+  - "İzin reddinde akış 'H3'e hiç girilemez, doğrudan H4'e yönlendirilir' ve 'Ayarlara Git butonu' diyor; ikisi birlikte H3 içinde permission-denied durumu olarak çizildi. Alternatif: H4'e yönlendirip Ayarlara Git'i orada göstermek."
+  - "Hata bandının kaç saniye kalacağı / tarama devam ederken aynı hatalı kodun tekrar tekrar okunmasının bastırılması tanımsız (öneri: aynı payload 3 sn yok sayılır)."

@@ -1,0 +1,179 @@
+id: G2
+title: İade Talebi Formu
+source: DomatApp_Akis_G_Iade_v1.1.md#G2
+route: { name: OrdersGraph.ReturnFormRoute, args: [deliveryId: String, itemIds: List<String>], status: proposed }
+purpose: >
+  Seçilen kalem(ler) için kanıt (1–4 fotoğraf zorunlu, en fazla 1 video ≤10 sn) ve bağlam (tek sebep, "Diğer"de
+  zorunlu serbest metin) toplamak; tüm koşullar sağlanmadan gönderimi kapalı tutmak. Medya yalnızca gönderimde tek
+  multipart istekle yüklenir; sunucu refundable'ı o anda yeniden kontrol eder (Edge Case 6). Form yerel taslak
+  olarak korunur (tek taslak, Edge Case 4).
+frame: { width: 390, height: "hug (kaydırılabilir; gönder çubuğu sabit)" }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.g2_title, showBack: true }
+  - id: window-expired
+    component: InfoBanner
+    visibleWhen: "submitResult == 409 item_not_refundable"
+    props: { tone: warning, body: str.g2_window_expired, actions: [str.g2_whatsapp] }
+    note: "Akış D2 Edge Case 5 ile birebir aynı dil. Yerel taslak bu anda silinir; gönder pasif."
+  - id: media-missing
+    component: InfoBanner
+    visibleWhen: "taslak geri yüklendi ve bazı yerel URI'ler erişilemiyor"
+    props: { tone: warning, body: str.g2_media_missing }
+  - id: selected-items
+    component: FormSection
+    props: { title: str.g2_items_title }
+    content:
+      - { component: SummaryRow, repeat: "selectedItems", props: { label: "{productName} — {variant}", detail: "{quantityLabel}", amount: "{chargedAmount}" } }
+      - { component: TextLink, visibleWhen: "!g1Skipped", props: { text: str.g2_change } }
+    alternative:
+      visibleWhen: "g1Skipped (seçilebilir tek kalem)"
+      component: InfoRow
+      props: { label: str.g2_items_title, value: "str.g2_single_item({productName} — {variant}, {quantityLabel})" }
+      note: "Salt okunur; 'Değiştir' linki yok."
+  - id: reason
+    component: FormSection
+    props: { title: str.g2_reason_title }
+    content:
+      - component: RadioOptionRow
+        repeat: "reasons"
+        props: { label: "str.g2_reason_crushed | str.g2_reason_moldy | str.g2_reason_underweight | str.g2_reason_wrong_item | str.g2_reason_other", selected: "{reasonCode == code}", enabled: "!submitting" }
+        note: "reasonCode: crushed | moldy | underweight | wrong_item | other (tekli seçim)"
+      - component: DomatTextField
+        props:
+          label: "str.g2_text_label_optional | str.g2_text_label_required (reasonCode == other)"
+          value: "{reasonText}"
+          multiline: true
+          supportingText: "str.g2_text_counter({reasonTextLength})"
+          state: "disabled (submitting)"
+        note: "Maks. 240 karakter. 'Diğer' seçiliyken zorunlu (min. ~10 karakter); aksi hâlde opsiyonel. Boş/odaksız: etiket alanın içinde (kural 5)."
+  - id: photos
+    component: FormSection
+    props: { title: str.g2_photos_title, description: str.g2_photos_help }
+    content:
+      - component: MediaTile
+        repeat: "4 slot (2×2 ızgara, gap sp3)"
+        props: { kind: photo, state: "empty | filled | unavailable", addLabel: str.g2_photo_add, removable: "!submitting" }
+        note: "Boş slota dokununca kaynak seçimi (ActionSheet). Dolu slotta önizleme + sağ üstte sil (x). İstemci sıkıştırması: uzun kenar ~1920px, JPEG ~%80."
+  - id: video
+    component: FormSection
+    props: { title: str.g2_video_title, description: str.g2_video_help }
+    content:
+      - { component: MediaTile, props: { kind: video, state: "empty | filled", addLabel: str.g2_video_add, duration: "{videoDuration}", removable: "!submitting" } }
+      - { component: InlineNote, visibleWhen: "galeriden seçilen video > 10 sn", props: { tone: warning, text: str.g2_video_too_long } }
+    note: "Uygulama içi kayıt 10. saniyede durur; galeriden uzun video otomatik kesilmez, reddedilir. İkinci video öncekinin yerini alır (onay yok)."
+  - id: source-sheet
+    component: BottomSheet
+    visibleWhen: "boş medya slotuna dokunuldu"
+    props:
+      options: "photo: [str.g2_source_camera, str.g2_source_gallery] · video: [str.g2_source_record, str.g2_source_gallery]"
+    note: "Bottom sheet — statik düzen olarak akışta çizilir (kural 6)."
+  - id: snackbar
+    component: Snackbar
+    visibleWhen: "gönderim ağ hatasıyla başarısız"
+    props: { text: str.g2_send_failed }
+    note: "Form verisi (taslak) korunur, buton eski hâline döner."
+  - id: cta
+    component: BottomActionBar
+    content:
+      - component: PrimaryButton
+        props:
+          text: "str.g2_submit | str.g2_submitting (submitting)"
+          size: Large
+          enabled: "photos >= 1 && reasonCode != null && (reasonCode != other || reasonText.length >= 10) && !windowExpired && !mediaMissing"
+          loading: "submitting"
+
+states:
+  - id: empty
+    description: "İki kalem (Tarla + Çeri) özeti + Değiştir; sebep seçilmemiş, fotoğraf yok, video yok; gönder pasif."
+  - id: single-item
+    description: "G1 atlandı: salt okunur 'İade edilecek: Domates — Tarla, 2 file' satırı, Değiştir yok."
+  - id: source-sheet
+    description: "Boş fotoğraf slotuna dokunuldu: 'Kamerayla Çek / Galeriden Seç' alt sayfası açık."
+  - id: ready
+    description: "Ezilmiş seçili, 2 fotoğraf eklendi, metin dolu, video 0:08; gönder aktif."
+  - id: other-needs-text
+    description: "'Diğer' seçili, 2 fotoğraf var, metin boş: alan etiketi zorunlu biçime geçer, gönder pasif."
+  - id: video-too-long
+    description: "Galeriden 10 sn'den uzun video seçildi: video slotu boş kalır, altında uyarı notu."
+  - id: submitting
+    description: "'Gönderiliyor...' + spinner; tüm alanlar kilitli (sil ikonları gizli, radyolar pasif)."
+  - id: send-failed
+    description: "Ağ hatası: form dolu kalır, buton normale döner, 'Gönderilemedi, tekrar dene' snackbar."
+  - id: window-expired
+    description: "Sunucu 409 item_not_refundable: süre doldu bandı + WhatsApp aksiyonu; gönder pasif, taslak silindi."
+  - id: draft-media-missing
+    description: "Geri yüklenen taslakta 1 fotoğraf erişilemiyor: uyarı bandı, ilgili slot 'unavailable', gönder yeniden fotoğraf eklenene kadar pasif."
+
+data:
+  uiState:
+    - "selectedItems: List<ReturnItemUi>"
+    - "g1Skipped: Boolean"
+    - "reasonCode: ReasonCode?  // crushed | moldy | underweight | wrong_item | other"
+    - "reasonText: String"
+    - "photos: List<MediaSlotUi>  // maks. 4; Empty | Filled(uri) | Unavailable"
+    - "video: MediaSlotUi?  // durationSec"
+    - "videoTooLong: Boolean"
+    - "sourceSheet: None | Photo | Video"
+    - "submitState: Idle | Submitting | NetworkError | WindowExpired | AlreadyReturned"
+    - "canSubmit: Boolean"
+actions: [BackClicked, ChangeItemsClicked, ReasonSelected(code), ReasonTextChanged, PhotoSlotClicked(index), PhotoRemoved(index), VideoSlotClicked, VideoRemoved, SourceCameraClicked, SourceGalleryClicked, SourceRecordClicked, SheetDismissed, SubmitClicked, WhatsAppClicked]
+navigation:
+  - { on: BackClicked, back: true, note: "Taslak return_draft_json'a yazılır" }
+  - { on: ChangeItemsClicked, back: true, note: "G1'e döner, seçim korunur" }
+  - { on: submitted, replaceTo: G3, args: [returnId], note: "201 → yerel taslak silinir" }
+  - { on: WhatsAppClicked, effect: "WhatsApp destek intent'i" }
+  - { on: "409 item_already_returned", back: true, note: "G1'e dönüp listeyi tazeler (metin akışta yok — bkz. open)" }
+api: ["POST /v1/returns (multipart: deliveryId, itemIds, reasonCode, reasonText?, photos[1–4], video?)", "DataStore: return_draft_json"]
+
+strings:
+  g2_title: "İade Talebi"
+  g2_items_title: "İade edilecek ürünler"
+  g2_single_item: "İade edilecek: %1$s, %2$s"
+  g2_change: "Değiştir"
+  g2_reason_title: "Sorun ne?"
+  g2_reason_crushed: "Ezilmiş"
+  g2_reason_moldy: "Küflü"
+  g2_reason_underweight: "Az gelmiş"
+  g2_reason_wrong_item: "Yanlış ürün"
+  g2_reason_other: "Diğer"
+  g2_text_label_optional: "Ne oldu, kısaca anlat (opsiyonel)"
+  g2_text_label_required: "Ne oldu, kısaca anlat *"
+  g2_text_counter: "%1$d/240"
+  g2_photos_title: "Fotoğraflar"
+  g2_photos_help: "En az 1, en fazla 4 fotoğraf"
+  g2_photo_add: "Fotoğraf Ekle"
+  g2_video_title: "Video"
+  g2_video_add: "Video Ekle (opsiyonel, maks. 10 sn)"
+  g2_video_help: "Ezilme, yumuşama veya koku gibi fotoğrafla gösteremeyeceğin bir şey varsa kısa bir video ekleyebilirsin."
+  g2_video_too_long: "Video 10 saniyeden uzun. Daha kısa bir video seç veya uygulama içinden yeni bir video çek."
+  g2_source_camera: "Kamerayla Çek"
+  g2_source_gallery: "Galeriden Seç"
+  g2_source_record: "Kayıt Yap"
+  g2_submit: "İade Talebini Gönder"
+  g2_submitting: "Gönderiliyor..."
+  g2_send_failed: "Gönderilemedi, tekrar dene"
+  g2_window_expired: "İade talebi süresi doldu, WhatsApp'tan bize ulaşabilirsin"
+  g2_whatsapp: "Destek: WhatsApp"
+  g2_media_missing: "Bazı fotoğraflar artık erişilemiyor, lütfen tekrar ekle"
+
+sampleData:
+  deliveryCode: "#DAL1"
+  selectedItems:
+    - { productName: "Domates", variant: "Tarla", quantityLabel: "2 file", chargedAmount: "₺172,00" }
+    - { productName: "Domates", variant: "Çeri", quantityLabel: "1 kutu", chargedAmount: "₺41,00" }
+  singleItem: "İade edilecek: Domates — Tarla, 2 file"
+  reasonCode: crushed
+  reasonText: "Kutu ezik geldi, domateslerin yarısı patlamıştı."
+  reasonTextCounter: "48/240"
+  photos: ["photo_1.jpg", "photo_2.jpg"]
+  videoDuration: "0:08"
+
+open:
+  - "Ekran başlığı ('İade Talebi'), bölüm başlıkları ('İade edilecek ürünler', 'Sorun ne?', 'Fotoğraflar', 'Video'), fotoğraf yardım metni ('En az 1, en fazla 4 fotoğraf'), 'Fotoğraf Ekle' slot etiketi ve '%1$d/240' sayaç akışta yok — öneri."
+  - "Sebep etiketleri akışta küçük harfle (ezilmiş / küflü / az gelmiş / yanlış ürün / diğer) geçiyor; kartta ilk harf büyük yazıldı."
+  - "'Diğer' seçiliyken zorunluluk yalnızca etikette '*' ile ve pasif butonla gösteriliyor; min. 10 karakter altı için hata metni akışta yok. Satır içi hata mesajı istenir mi?"
+  - "409 item_already_returned (kalem bu sırada başka talebe girdi) için kullanıcı metni akışta tanımsız; kart G1'e dönüp listeyi tazelemeyi öneriyor."
+  - "Süre doldu bandındaki WhatsApp aksiyonu G5'teki 'Destek: WhatsApp' metnini kullanıyor; D2 Edge Case 5'te buton metni yok."

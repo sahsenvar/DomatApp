@@ -1,0 +1,118 @@
+id: I8
+title: Hesabı Sil
+source: DomatApp_Akis_I_Hesap_v1.1.md#I8
+route: { name: AccountGraph.DeleteAccountRoute, status: proposed }
+purpose: >
+  Apple 4.8 gereği uygulama-içi hesap silme. Talep hiçbir koşulda engellenmez; OTP ile yeniden doğrulanır
+  (purpose: account_deletion). Bekleyen teslimat varsa gerçek silme teslimat bitene kadar ertelenir ve bu açıkça söylenir.
+  Her iki sonuçta da kullanıcı hemen çıkış yaptırılır (I1 çıkış akışı).
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.i8_title, showBack: true }
+  - id: info
+    component: text
+    style: body-medium / on-surface
+    text: str.i8_info
+  - id: retention
+    component: InlineNote
+    props: { tone: neutral, text: str.i8_retention_note }
+  - id: pending-delivery
+    component: InfoBanner
+    visibleWhen: "GET /v1/deliveries/current → status not in [delivered, cancelled]"
+    props: { tone: warning, title: "str.i8_pending_title({deliveryCode})", body: str.i8_pending_body }
+  - id: confirm
+    component: ConsentCheckbox
+    props: { label: str.i8_confirm_label, checked: false, expandable: false, required: true }
+  - id: cta
+    component: BottomActionBar
+    content:
+      - component: DestructiveButton
+        props: { text: str.i8_cta, enabled: "confirmChecked", loading: "otpRequestInFlight" }
+        note: "Yıkıcı eylem için DestructiveButton (error dolgu, on-error metin) — L-039."
+
+  - id: otp-dialog
+    component: DomatDialog
+    visibleWhen: "otpDialogVisible"
+    props: { title: str.i8_otp_title, body: "str.i8_otp_body({maskedPhone})", dismissText: str.i8_otp_cancel }
+    content:
+      - { component: OtpCodeField, props: { length: 6, value: "{code}", state: "default | error" } }
+      - { component: text, style: body-small / on-error-container, text: str.i8_otp_error, visibleWhen: "otp-error" }
+      - { component: TextLink, props: { text: str.i8_otp_resend, enabled: "cooldownSeconds == 0" } }
+    note: "Kural 6: akış içinde çizilir. Birincil buton yok — 6. hanede doğrulama otomatik (C2 ile aynı)."
+
+  - id: result
+    visibleWhen: "deletion-request tamamlandı (ekranın tamamı bu içerikle değişir, geri yok)"
+    content:
+      - { component: StatusHero, props: { tone: neutral, icon: check_circle, title: str.i8_result_title, subtitle: "str.i8_result_processing | str.i8_result_scheduled({deliveryCode})" } }
+      - { component: PrimaryButton, props: { text: str.i8_result_cta, size: Large } }
+
+states:
+  - id: default
+    description: "Bilgilendirme + saklama notu; onay kutusu işaretsiz, Hesabı Sil pasif; bekleyen teslimat yok."
+  - id: ready
+    description: "Onay kutusu işaretli, Hesabı Sil aktif (danger)."
+  - id: pending-delivery
+    description: "#DAL1 bekliyor: uyarı bandı; onay işaretli, buton aktif (talep engellenmez)."
+  - id: otp-dialog
+    description: "OTP modalı akış içinde: maskeli numara, 6 hücre (4 hane girilmiş), tekrar gönder geri sayımda."
+  - id: otp-error
+    description: "Yanlış kod: hücreler error + hata metni."
+  - id: result-processing
+    description: "Bekleyen teslimat yok: silme işleme alındı; çıkış yapıldı; Pazar'a Dön."
+  - id: result-scheduled
+    description: "Bekleyen teslimat var: silme #DAL1 teslim edildikten sonra; çıkış yapıldı; Pazar'a Dön."
+
+data:
+  uiState:
+    - "confirmChecked: Boolean"
+    - "pendingDeliveryCode: String?"
+    - "otpDialogVisible: Boolean"
+    - "maskedPhone: String"
+    - "code: String"
+    - "isOtpError: Boolean"
+    - "cooldownSeconds: Int"
+    - "result: None | Processing | ScheduledAfterDelivery"
+actions: [BackClicked, ConfirmToggled, DeleteClicked, CodeChanged(code), ResendClicked, OtpDismissed, ResultCtaClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: DeleteClicked, effect: "POST /v1/auth/otp/request { purpose: account_deletion } → OTP diyaloğu" }
+  - { on: "6 hane girildi", effect: "POST /v1/auth/otp/verify → deletionToken → POST /v1/users/me/deletion-request → I1 çıkış akışı (token/sepet temizliği) → sonuç durumu" }
+  - { on: OtpDismissed, effect: "Diyalog kapanır, ekranda kalınır" }
+  - { on: ResultCtaClicked, replaceTo: "MainGraph.HomeRoute (B1)", note: "Misafir modu; back stack temizlenir." }
+api: ["GET /v1/deliveries/current", "POST /v1/auth/otp/request { phoneNumber, purpose: account_deletion }", "POST /v1/auth/otp/verify { phoneNumber, code, purpose }", "POST /v1/users/me/deletion-request { deletionToken } → { status: processing | scheduled_after_delivery, pendingDeliveryId? }", "POST /v1/auth/logout"]
+
+strings:
+  i8_title: "Hesabı Sil"
+  i8_info: "Hesabını sildiğinde adın, telefon numaran, adresin ve hesabınla ilişkili kişisel bilgilerin silinir. Bu işlem geri alınamaz."
+  i8_retention_note: "Yasal zorunluluklar gereği bazı kayıtlar (örn. fatura) mevzuatta belirtilen süre boyunca saklanır."
+  i8_pending_title: "Aktif bir teslimatın var (%1$s)."
+  i8_pending_body: "Hesabını silersen bu teslimat etkilenmez — ürünün normal şekilde gelir, ödemen normal şekilde tamamlanır. Hesabın, bu teslimat 'Teslim Edildi' olarak işaretlendikten sonra silinme sürecine alınacak."
+  i8_confirm_label: "Hesabımı ve verilerimi kalıcı olarak silmek istediğimi onaylıyorum."
+  i8_cta: "Hesabı Sil"
+  i8_otp_title: "Kodu Gir"
+  i8_otp_body: "Bu işlemi onaylamak için %1$s numarasına bir kod gönderdik."
+  i8_otp_error: "Kod hatalı. Tekrar dener misin?"
+  i8_otp_resend: "Kodu Tekrar Gönder"
+  i8_otp_cancel: "Vazgeç"
+  i8_result_title: "Hesap silme talebin alındı"
+  i8_result_processing: "Kişisel bilgilerin silinme sürecine alındı ve çıkış yaptın."
+  i8_result_scheduled: "Hesabın, %1$s teslimatın 'Teslim Edildi' olarak işaretlendikten sonra silinecek. Bu arada çıkış yaptın."
+  i8_result_cta: "Pazar'a Dön"
+
+sampleData:
+  maskedPhone: "+90 5XX XXX XX 67"
+  deliveryCode: "#DAL1"
+  code: ["4", "8", "2", "9"]
+  cooldownSeconds: 45
+
+open:
+  - "i8_retention_note akışta yok, öneri — kesin saklama süresi §8 Soru 8 (avukat/SMMM) bekliyor."
+  - "Sonuç 'ekranı/toast' metinleri (i8_result_*) akışta yok, öneri; kart tam ekran sonuç (StatusHero) seçti."
+  - "i8_otp_title, i8_otp_error, i8_otp_resend, i8_otp_cancel akışta yok; C2 kartıyla aynı metinler (öneri)."
+  - "Silme butonu için PrimaryButton tone=danger (bileşen değişikliği) gerekiyor; Hesap silme 'tehlikeli' tonu DESIGN.md'de tanımlı değil."
+  - "Aktif teslimat bandı: akış 'kullanıcıya önce net bir bilgi ekranı gösterilir' diyor; kart ayrı ekran yerine aynı ekranda bant kullandı — onay gerekiyor."
+  - "OTP deneme sınırı / tekrar gönder geri sayımı C2 app-config'ten mi (otpResendCooldownSeconds) — akışta belirtilmedi."
+  - "OTP onayı §8 Soru 3, erteleme kararı §8 Soru 7 ile onay bekliyor."

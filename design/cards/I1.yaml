@@ -1,0 +1,177 @@
+id: I1
+title: Hesap Ana Ekranı
+source: DomatApp_Akis_I_Hesap_v1.1.md#I1
+route: { name: MainGraph.AccountRoute, status: proposed }
+purpose: >
+  Hesap sekmesinin tüm alt sayfalarına mantıksal gruplar hâlinde tek yerden erişim. Aynı ekran,
+  GET /v1/users/me sonucuna göre hesaplı ve misafir için iki ayrı üst bant + satır seti çizer (Edge Case 1, Seçenek B).
+frame: { width: 390, height: 844 }
+
+regions:   # yukarıdan aşağı
+  - id: header
+    component: ScreenHeader
+    props: { title: str.i1_title, showBack: false }
+    note: "Sekme kökü — geri butonu yok."
+
+  - id: pending-deletion
+    component: InfoBanner
+    visibleWhen: "accountStatus == pending_deletion_after_delivery (I8 sonrası aynı telefonla tekrar giriş)"
+    props: { tone: warning, title: str.i1_pending_deletion_title, body: str.i1_pending_deletion_body }
+
+  - id: profile
+    component: ListRow
+    visibleWhen: "signedIn"
+    props: { leadingIcon: account_circle, title: "{fullName}", subtitle: "{maskedPhone}", trailing: chevron, emphasis: true }
+    variant: { when: "fullName == null (henüz sipariş yok)", title: "{maskedPhone}", subtitle: null }
+    note: "Dokununca I2."
+
+  - id: guest-cta
+    visibleWhen: "!signedIn"
+    content:
+      - { component: text, style: body-large / on-surface, text: str.i1_guest_body }
+      - { component: PrimaryButton, props: { text: str.i1_guest_login, size: Medium } }
+
+  - id: group-account
+    component: FormSection
+    visibleWhen: "signedIn"
+    props: { title: str.i1_group_account }
+    content:
+      - { component: ListRow, props: { leadingIcon: person, title: str.i1_personal_info, trailing: chevron } }
+      - { component: ListRow, props: { leadingIcon: home, title: str.i1_address, subtitle: "str.i1_address_preview({siteName}, {blockName})", trailing: chevron } }
+
+  - id: group-info
+    component: FormSection
+    props: { title: str.i1_group_info }
+    content:
+      - { component: ListRow, props: { leadingIcon: info, title: str.i1_how_it_works, trailing: chevron } }
+      - { component: ListRow, props: { leadingIcon: gavel, title: str.i1_legal, trailing: chevron } }
+
+  - id: group-settings
+    component: FormSection
+    visibleWhen: "signedIn"
+    props: { title: str.i1_group_settings }
+    content:
+      - { component: ListRow, props: { leadingIcon: notifications, title: str.i1_notifications, trailing: chevron } }
+      - component: ListRow
+        visibleWhen: "savedCardEnabled (Akış I §8 Soru 1 — koşullu)"
+        props: { leadingIcon: credit_card, title: str.i1_saved_cards, subtitle: "{savedCardLabel}", trailing: chevron }
+
+  - id: group-support
+    component: FormSection
+    props: { title: str.i1_group_support }
+    content:
+      - { component: ListRow, props: { leadingIcon: chat, title: str.i1_support_whatsapp, trailing: external } }
+
+  - id: group-danger
+    component: FormSection
+    visibleWhen: "signedIn"
+    props: { title: str.i1_group_danger }
+    note: "Görsel olarak ayrılmış, kırmızı/uyarı tonunda (ListRow tone=danger)."
+    content:
+      - { component: ListRow, props: { leadingIcon: logout, title: str.i1_logout, trailing: none, tone: danger } }
+      - { component: ListRow, props: { leadingIcon: delete, title: str.i1_delete_account, trailing: chevron, tone: danger } }
+
+  - id: footer
+    component: text
+    style: body-small / on-surface-variant
+    text: "str.i1_app_version({appVersion})"
+    note: "Ortalı, küçük gri."
+
+  - id: logout-dialog
+    component: DomatDialog
+    visibleWhen: "logoutConfirmVisible"
+    props: { title: str.i1_logout_confirm_title, dismissText: str.i1_logout_confirm_cancel, confirmText: str.i1_logout_confirm_ok, confirmTone: danger }
+    note: "Kural 6: diyalog akış içinde (scrim + ortalanmış kart) statik çizilir."
+
+  - id: nav
+    component: BottomNavBar
+    props: { selected: account }
+
+states:
+  - id: signed-in
+    description: "Elif Yılmaz + maskeli telefon; 5 grup; Kayıtlı Kartlarım satırı YOK (saklı kart kapalı)."
+  - id: signed-in-saved-cards
+    description: "Saklı kart v1'e girerse: Ayarlar grubunda 'Kayıtlı Kartlarım · Visa •••• 4242'."
+  - id: signed-in-new-user
+    description: "Giriş yapmış ama hiç sipariş vermemiş: profil bandında yalnızca maskeli telefon."
+  - id: guest
+    description: "Misafir: üstte giriş CTA'sı; yalnızca Bilgi ve Destek grupları; Hesabım/Ayarlar/Tehlikeli Alan yok."
+  - id: logout-confirm
+    description: "Çıkış Yap'a basıldı: onay diyaloğu akış içinde çizili (arka planda signed-in)."
+  - id: pending-deletion
+    description: "Silme talebi teslimat sonrasına ertelenmiş kullanıcı tekrar giriş yaptı: üstte uyarı bandı."
+
+data:
+  uiState:
+    - "isSignedIn: Boolean"
+    - "fullName: String?"
+    - "maskedPhone: String?"
+    - "siteName: String?"
+    - "blockName: String?"
+    - "savedCardEnabled: Boolean"
+    - "savedCardLabel: String?"
+    - "accountStatus: Active | PendingDeletionAfterDelivery"
+    - "pendingDeliveryCode: String?"
+    - "appVersion: String"
+    - "logoutConfirmVisible: Boolean"
+    - "isLoggingOut: Boolean"
+actions: [ProfileClicked, LoginClicked, PersonalInfoClicked, AddressClicked, HowItWorksClicked, LegalClicked, NotificationsClicked, SavedCardsClicked, SupportClicked, LogoutClicked, LogoutConfirmed, LogoutDismissed, DeleteAccountClicked, NavTabClicked]
+navigation:
+  - { on: ProfileClicked, goTo: I2 }
+  - { on: PersonalInfoClicked, goTo: I2 }
+  - { on: AddressClicked, goTo: I3 }
+  - { on: HowItWorksClicked, goTo: I4 }
+  - { on: LegalClicked, goTo: I5 }
+  - { on: NotificationsClicked, goTo: I7 }
+  - { on: DeleteAccountClicked, goTo: I8 }
+  - { on: LoginClicked, goTo: "CheckoutGraph.PhoneEntryRoute (C1)", note: "Giriş sonrası Hesap sekmesine dönülür (öneri — open)." }
+  - { on: SavedCardsClicked, goTo: "Kayıtlı Kartlarım (kapsam dışı ayrı bilet)", note: "Yalnızca saklı kart onaylanırsa." }
+  - { on: SupportClicked, effect: "WhatsApp intent, önceden doldurulmuş mesajla" }
+  - { on: LogoutConfirmed, replaceTo: "MainGraph.HomeRoute (B1)", note: "POST /v1/auth/logout → token'lar Keystore'dan silinir → yerel sepet temizlenir, yeni boş misafir sepeti; anonymous_device_id korunur → Pazar, misafir modu." }
+  - { on: LogoutDismissed, effect: "Diyalog kapanır" }
+  - { on: NavTabClicked, goTo: "Pazar (B1) · Siparişler (Akış D) · KareKod (Akış F)" }
+api: ["GET /v1/users/me", "GET /v1/addresses/me", "POST /v1/auth/logout", "GET /v1/payments/cards (koşullu)"]
+
+strings:
+  i1_title: "Hesap"
+  i1_pending_deletion_title: "Hesabın silinme sürecinde"
+  i1_pending_deletion_body: "%1$s teslimatın tamamlandıktan sonra hesabın silinecek. Bu süreçte yeni sipariş veremezsin."
+  i1_guest_body: "Giriş yap, siparişlerini ve bilgilerini yönet."
+  i1_guest_login: "Telefon ile giriş yap"
+  i1_group_account: "Hesabım"
+  i1_personal_info: "Kişisel Bilgiler"
+  i1_address: "Adres Bilgilerim"
+  i1_address_preview: "%1$s · %2$s"
+  i1_group_info: "Bilgi"
+  i1_how_it_works: "Nasıl Çalışıyoruz"
+  i1_legal: "Yasal / Sözleşmeler"
+  i1_group_settings: "Ayarlar"
+  i1_notifications: "Bildirimler"
+  i1_saved_cards: "Kayıtlı Kartlarım"
+  i1_group_support: "Destek"
+  i1_support_whatsapp: "Destek: WhatsApp"
+  i1_group_danger: "Tehlikeli Alan"
+  i1_logout: "Çıkış Yap"
+  i1_delete_account: "Hesabımı Sil"
+  i1_app_version: "Sürüm %1$s"
+  i1_logout_confirm_title: "Çıkış yapmak istediğine emin misin?"
+  i1_logout_confirm_cancel: "Vazgeç"
+  i1_logout_confirm_ok: "Evet, Çıkış Yap"
+
+sampleData:
+  fullName: "Elif Yılmaz"
+  maskedPhone: "+90 5XX XXX XX 67"
+  siteName: "Dalyan Sitesi"
+  blockName: "A Blok"
+  savedCardLabel: "Visa •••• 4242"
+  pendingDeliveryCode: "#DAL1"
+  appVersion: "1.0.0 (42)"
+
+open:
+  - "i1_title ('Hesap'), i1_app_version ('Sürüm %1$s'), i1_pending_deletion_title/body akışta yok, öneri."
+  - "Silinme sürecindeki kullanıcının tekrar girişte göreceği 'salt-bilgi ekran' (I8 Edge Case 2) akışta kod/ID almamış; I1 üst bandı olarak modellendi — ayrı tam ekran mı, bant mı? Bu durumda hangi satırlar (örn. Hesabımı Sil, Çıkış Yap) gizlenmeli?"
+  - "'Tehlikeli Alan' akışta grup adı; ekranda görünür başlık olarak mı kalsın, yoksa başlıksız ayrık grup mu? (öneri: görünür başlık kaldırılabilir)."
+  - "Maskeleme biçimi: akış '+90 5XX XXX XX 34', C2 kartı '+90 532 *** ** 67' — tek biçim seçilmeli."
+  - "Misafir 'Telefon ile giriş yap' → C1 sonrası nereye dönülür (Hesap mı, Pazar mı) ve sepet devri (cart/merge) bu kapıdan da tetiklenir mi — akışta tanımsız; Navigasyon'un 'tek giriş kapısı Siparişi Tamamla' ilkesiyle de gerilimli."
+  - "WhatsAppFab bu ekranda da duruyor mu, yoksa 'Destek: WhatsApp' satırı onun yerini mi alıyor — akış belirsiz; kartta FAB çizilmedi."
+  - "Kayıtlı Kartlarım satırı Akış I §8 Soru 1'e bağlı (koşullu)."

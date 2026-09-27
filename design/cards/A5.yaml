@@ -1,0 +1,110 @@
+id: A5
+title: Bölge / Site Seçimi
+source: DomatApp_Akis_A_Tanitim_Bolge_Bekleme_v1.2.md#A5
+route: { name: OnboardingGraph.SiteSelectionRoute, args: [mode: "FirstLaunch | Change"], status: proposed }
+purpose: >
+  Kullanıcının hangi sitede oturduğunu (mahalle havuzunu belirleyen bilgi) toplamak. Tek ortak ekran (Android/iOS);
+  platform farkı yalnızca ön-doldurma var/yok. GPS istenmez. Düz liste, gruplama yok; mahalle bilgisi her satırda
+  küçük puntolu ilçe/mahalle etiketi. Site listede yoksa Bekleme Listesi'ne (A6) yönlendirir.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.a5_title, showBack: "{mode == Change}" }
+    note: "İlk açılışta geri butonu YOK; B1/Hesap'tan 'bölge değiştir' ile açıldığında var."
+  - id: prefill
+    component: ListRow
+    visibleWhen: "prefilledSite != null"
+    props: { name: "{prefilledSite.name}", districtLabel: "{prefilledSite.districtLabel}", selected: true, variant: prefilled, trailingAction: str.a5_change }
+    note: "Referrer'dan (geç gelen) site: check ikonu + site adı + ilçe/mahalle + 'Değiştir'. Salt-okunur DEĞİL; 'Değiştir' listeye döner."
+  - id: search
+    component: DomatTextField
+    visibleWhen: "prefilledSite == null"
+    props: { label: str.a5_search_label, value: "{query}", state: "{query.isEmpty ? empty : default}", singleLine: true }
+    note: "Site/mahalle adına göre anlık, in-memory filtre (List.filter)."
+  - id: list
+    visibleWhen: "prefilledSite == null && listState == Content"
+    content:
+      - component: ListRow
+        repeat: "filteredSites"
+        props: { name: "{name}", districtLabel: "{districtLabel}", selected: "{id == selectedSiteId}", variant: list }
+    note: "Düz liste — mahalle başlığı/gruplama YOK."
+  - id: no-result
+    visibleWhen: "query.isNotEmpty && filteredSites.isEmpty"
+    component: text
+    style: body-medium
+    text: "str.a5_no_result({query})"
+  - id: waitlist-link
+    component: TextLink
+    visibleWhen: "prefilledSite == null && listState == Content"
+    props: { text: str.a5_waitlist_link }
+    note: "Listenin sonunda sabit satır (arama boş sonuçta da görünür). Arama metnini A6'ya taşır."
+  - id: error
+    visibleWhen: "listState == Error"
+    content:
+      - { component: StatusHero, props: { tone: error, icon: wifi_off, title: str.a5_error_title, subtitle: str.a5_error_body } }
+      - { component: SecondaryButton, props: { text: str.a5_error_retry, icon: refresh } }
+  - id: cta
+    component: BottomActionBar
+    visibleWhen: "prefilledSite == null"
+    content:
+      - { component: PrimaryButton, props: { text: str.a5_cta, size: Large, enabled: "{selectedSiteId != null}" } }
+
+states:
+  - id: default
+    description: "İlk açılış (FirstLaunch): geri butonu yok, arama boş, 2 site listede, seçim yok; 'Devam Et' pasif. Listenin altında bekleme listesi bağlantısı."
+  - id: selected
+    description: "'Dalyan Sitesi' seçili (satır vurgulu); 'Devam Et' aktif."
+  - id: search-no-result
+    description: "Aramaya 'Mavişehir Evleri' yazıldı: liste boş, 'sonuç bulunamadı' satırı + 'Sitenizi bulamadınız mı? Bize haber verin'."
+  - id: prefilled
+    description: "Geç gelen referrer (kullanıcı henüz A5'teyken): üstte seçili kart 'Dalyan Sitesi · Tuzla, Aydınlı' + 'Değiştir'; arama, liste ve buton yok."
+  - id: change-mode
+    description: "B1 site seçicisinden açıldı (Change): geri butonu var, mevcut site 'Dalyan Sitesi' seçili, 'Devam Et' aktif."
+  - id: load-error
+    description: "Site listesi alınamadı ve önbellek boş: hata + 'Tekrar dene'."
+
+data:
+  uiState:
+    - "mode: FirstLaunch | Change"
+    - "prefilledSite: SiteUi?  // geç gelen referrer"
+    - "query: String"
+    - "sites: List<SiteUi>  // id, name, districtLabel, neighborhoodId"
+    - "filteredSites: List<SiteUi>"
+    - "selectedSiteId: String?"
+    - "listState: Loading | Content | Error"
+actions: [BackClicked, QueryChanged, SiteClicked(id), ContinueClicked, ChangePrefillClicked, WaitlistLinkClicked, RetryClicked]
+navigation:
+  - { on: ContinueClicked, replaceTo: "MainGraph.HomeRoute (B1)", note: "selected_site_id/name, selected_neighborhood_id yazılır; site_selection_source = manual. Change modunda back stack B1'e döner." }
+  - { on: "prefilledSite != null (otomatik)", replaceTo: "MainGraph.HomeRoute (B1)", note: "Kart seçili kabul edilir, ayrı 'Devam' yok; site_selection_source = qr_referrer; B1'de tek seferlik QR toast." }
+  - { on: ChangePrefillClicked, goTo: "state default (aynı ekran, ön-doldurma temizlenir)" }
+  - { on: WaitlistLinkClicked, goTo: "OnboardingGraph.WaitlistRoute (A6)", args: [siteNameQuery: query] }
+  - { on: BackClicked, back: true, note: "Yalnızca Change modunda (B1'e döner, seçim değişmez)." }
+api: ["GET /v1/sites (id, ad, neighborhoodId, districtLabel; DataStore'da JSON blob önbelleği)", "POST /v1/events (site_selected, waitlist_link_clicked)"]
+
+strings:
+  a5_title: "Neredesin?"
+  a5_change: "Değiştir"
+  a5_search_label: "Site veya mahalle ara"
+  a5_no_result: "“%1$s” için sonuç bulunamadı."
+  a5_waitlist_link: "Sitenizi bulamadınız mı? Bize haber verin"
+  a5_error_title: "Bağlantı sorunu"
+  a5_error_body: "Site listesi yüklenemedi. İnternet bağlantını kontrol edip tekrar dene."
+  a5_error_retry: "Tekrar dene"
+  a5_cta: "Devam Et"
+
+sampleData:
+  sites:
+    - { id: dalyan, name: "Dalyan Sitesi", districtLabel: "Tuzla, Aydınlı" }
+    - { id: aydinli-konaklari, name: "Aydınlı Konakları", districtLabel: "Tuzla, Aydınlı" }
+  selectedSiteId: dalyan
+  prefilledSite: { name: "Dalyan Sitesi", districtLabel: "Tuzla, Aydınlı" }
+  queryNoResult: "Mavişehir Evleri"
+
+open:
+  - "a5_title akışta 'Neredesin? veya benzeri'; birebir alındı. Mevcut kod başlığı 'Teslimat Bölgesi' (location_selection_title) — akış kazanır."
+  - "a5_search_label, a5_no_result, a5_error_* akışta yok, öneri. Hata/yükleniyor durumu akışta tanımsız (ilk açılış + ağ yok + önbellek boş). Arama alanında 'search' ikonu ikon setinde yok."
+  - "Hitap tutarsızlığı: 'Neredesin?' (sen) ile 'Sitenizi bulamadınız mı? Bize haber verin' (siz) aynı ekranda — akış metni birebir alındı, tek hitaba çekilmeli."
+  - "Kodla fark: mevcut LocationSelection (feature/auth) İlçe/İl → Mahalle → Site/Apartman → Blok → Daire dropdown'ları içeriyor; akış tek katmanlı düz site listesi + arama diyor, blok/daire ödemeye (C3) taşındı — akış kazanır, ekran yeniden yazılmalı."
+  - "Geç gelen referrer'da ön-dolu kart gösterilip 'ekran otomatik ilerler' mi, yoksa kullanıcı 'Değiştir'e basabilsin diye bekler mi akışta belirsiz; kartta kısa gösterim + otomatik geçiş varsayıldı. Change modunda 'Devam Et' metni ('Kaydet'?) akışta tanımsız."

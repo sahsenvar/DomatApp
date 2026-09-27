@@ -1,0 +1,120 @@
+id: I3
+title: Adres Bilgilerim
+source: DomatApp_Akis_I_Hesap_v1.1.md#I3
+route: { name: AccountGraph.AddressRoute, status: proposed }
+purpose: >
+  C3'te toplanan adresi (site salt-okunur, blok, daire, not) sonradan güncellemek. Tek adres kaydı; güncelleme her
+  zaman kabul edilir ama pencere kapanmış (kilitli) bir teslimat varsa o teslimata yansımaz ve bu açıkça söylenir.
+  C3 ile aynı bileşenler ve blok sözleşmesi.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.i3_title, showBack: true }
+  - id: site
+    component: InfoRow
+    props: { label: str.i3_site_label, value: "{siteName}" }
+  - id: site-change
+    component: TextLink
+    props: { text: str.i3_site_change_link }
+    note: "Site değişikliği bu akışta yapılmaz; Pazar'a yönlendirir (Akış A/B)."
+  - id: address-form
+    component: FormSection
+    props: { title: str.i3_form_title }
+    content:
+      - component: DomatDropdown
+        props: { label: str.i3_block_label, value: "{blockName}", footerOption: str.i3_block_not_found }
+        itemsFrom: "GET /v1/sites/{siteId}/blocks (sortOrder'a göre)"
+      - component: DomatTextField
+        visibleWhen: "blockNotFoundSelected"
+        props: { label: str.i3_block_free_label, value: "{blockFreeText}" }
+      - component: InlineNote
+        visibleWhen: "blockNotFoundSelected"
+        props: { tone: warning, text: str.i3_block_manual_review }
+      - component: DomatTextField
+        props: { label: str.i3_apartment_label, value: "{apartmentNo}", keyboard: number }
+      - component: DomatTextField
+        props: { label: str.i3_note_label, value: "{deliveryNote}", placeholder: str.i3_note_placeholder, multiline: true, supportingText: str.i3_note_helper }
+  - id: locked-delivery
+    component: InfoBanner
+    visibleWhen: "GET /v1/deliveries/current → status != window_open (kilitli teslimat var)"
+    props: { tone: warning, title: "str.i3_locked_title({deliveryCode})", body: str.i3_locked_body }
+    note: "Kaydet'in hemen üstünde. Aktif teslimat yoksa ya da window_open ise hiç gösterilmez."
+  - id: snackbar
+    component: Snackbar
+    visibleWhen: "kayıt başarılı (bir kez)"
+    props: { text: str.i3_saved }
+  - id: cta
+    component: BottomActionBar
+    content:
+      - component: PrimaryButton
+        props: { text: str.i3_save, size: Large, enabled: "(blockSelected || blockFreeText.isNotBlank()) && apartmentFilled", loading: "isSaving" }
+
+states:
+  - id: filled
+    description: "Dalyan Sitesi · A Blok · Daire 12 · not dolu; kilit bandı yok."
+  - id: locked-delivery
+    description: "#DAL1 pencere kapanmış (awaiting_charge+): Kaydet üstünde uyarı bandı; form düzenlenebilir."
+  - id: dropdown-open
+    description: "Blok listesi açık (A/B/C Blok, A seçili), en altta 'Listede bulamadım' — akış içinde statik (kural 6)."
+  - id: block-not-found
+    description: "Serbest metin blok alanı + manuel kontrol uyarısı görünür."
+  - id: empty
+    description: "Kayıtlı adres yok (Edge Case 3): aynı form boş (TextField state=empty), Kaydet pasif."
+  - id: saved
+    description: "Kaydedildi: filled görünümü + alt snackbar."
+
+data:
+  uiState:
+    - "siteName: String"
+    - "blocks: List<Block>"
+    - "selectedBlockId: String?"
+    - "isBlockNotFound: Boolean"
+    - "blockFreeText: String"
+    - "apartmentNo: String"
+    - "deliveryNote: String"
+    - "lockedDeliveryCode: String?"
+    - "isSaving: Boolean"
+    - "showSavedNotice: Boolean"
+actions: [SiteChangeClicked, BlockSelected(id), BlockNotFoundSelected, BlockFreeTextChanged, ApartmentChanged, NoteChanged, SaveClicked, BackClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: SiteChangeClicked, replaceTo: "MainGraph.HomeRoute (B1)", note: "Pazar sekmesine geçer; site seçici oradan A5'i açar." }
+  - { on: saved, effect: "Snackbar; has_active_address = true; ekranda kalınır (öneri — open)" }
+api: ["GET /v1/addresses/me", "GET /v1/sites/{siteId}/blocks", "GET /v1/deliveries/current", "PATCH /v1/addresses/me { blockId?, blockFreeText?, apartmentNo, deliveryNote? } (hiç reddetmez)"]
+
+strings:
+  i3_title: "Adres Bilgilerim"
+  i3_site_label: "Site"
+  i3_site_change_link: "Siteni değiştirmek mi istiyorsun? Pazar'a git."
+  i3_form_title: "Adres bilgileri"
+  i3_block_label: "Blok"
+  i3_block_not_found: "Listede bulamadım"
+  i3_block_free_label: "Blok adı"
+  i3_block_manual_review: "Bu bilgiyi elle kontrol edeceğiz."
+  i3_apartment_label: "Daire no"
+  i3_note_label: "Teslimat notu (isteğe bağlı)"
+  i3_note_placeholder: "Örn. 3. kat, soldaki daire"
+  i3_note_helper: "Dağıtıcımız bu notu teslimat listesinde görür."
+  i3_locked_title: "Aktif bir teslimatın var (%1$s)."
+  i3_locked_body: "Buradaki değişiklik bu teslimatı etkilemez, yalnızca bundan sonraki siparişlerine uygulanır. Bu teslimat için düzeltme gerekiyorsa Destek: WhatsApp'tan bize ulaş."
+  i3_saved: "Adresin güncellendi."
+  i3_save: "Kaydet"
+
+sampleData:
+  siteName: "Dalyan Sitesi"
+  blocks: ["A Blok", "B Blok", "C Blok"]
+  blockName: "A Blok"
+  blockFreeText: "Yeni Ek Bina"
+  apartmentNo: "12"
+  deliveryNote: "Kapı zili çalışmıyor, lütfen arayın."
+  deliveryCode: "#DAL1"
+
+open:
+  - "i3_form_title, i3_block_free_label, i3_apartment_label, i3_note_*, i3_saved akışta yok; C3 kartıyla aynı metinler kullanıldı (i3_saved öneri)."
+  - "i3_block_manual_review akıştan birebir ('Bu bilgiyi elle kontrol edeceğiz'); C3 kartı daha uzun bir sürüm kullanıyor — ikisi aynı karar olduğu için tek metinde birleştirilmeli."
+  - "'Pazar'a git' linki Pazar'a mı gider, yoksa doğrudan A5 (değiştirme modu) mı açar? Akış 'Pazar'a git' diyor; kart Pazar'a gönderdi."
+  - "Kilit bandı ile 'Destek: WhatsApp' ifadesi metin içinde; tıklanabilir link olsun mu akışta belirtilmemiş."
+  - "Kilitlenme anı = pencere kapanışı kararı §8 Soru 6 ile Sahan onayı bekliyor."
+  - "Kaydet sonrası ekranda kalma / I1'e dönme akışta tanımsız."

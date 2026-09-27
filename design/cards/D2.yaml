@@ -1,0 +1,231 @@
+id: D2
+title: Teslimat Detayı
+source: DomatApp_Akis_D_Siparis_Durumu_v1.1.md#D2
+route: { name: MainGraph.DeliveryDetailRoute, args: [deliveryId: String], status: proposed }
+purpose: >
+  Bir teslimatın tüm durumunu (siparişler, tutarlar, şeffaflık notu, iptal/iade hakkı) tek ekranda özetlemek.
+  D1'den ve push bildirimlerinden (deep link) gelinen ortak varış noktası.
+frame: { width: 390, height: "hug" }
+
+regions:   # yukarıdan aşağı
+  - id: header
+    component: ScreenHeader
+    props: { title: "{deliveryCode}", showBack: true }
+
+  - id: status-head
+    content:
+      - component: DomatBadge
+        props: { text: "{statusLabel}", variant: "{statusBadgeVariant}" }
+        note: "Büyük durum rozeti — D1 ile aynı etiket/renk eşlemesi (D1.statusLabel). 'Büyük' boyut DomatBadge'e size prop'u gerektirir (change)."
+      - { component: InfoRow, props: { label: str.d2_delivery_day_label, value: "{deliveryDay}" } }
+
+  - id: status-band
+    note: "Tek blok; içerik teslimat durumuna göre değişir."
+    content:
+      - component: CountdownBanner
+        visibleWhen: "status == window_open"
+        props: { text: "str.d2_window_countdown({timeLeft})", tone: normal }
+        note: "windowClosesAt'e göre istemcide yerel statik sayaç."
+      - component: InlineNote
+        visibleWhen: "status == window_open && cancellable"
+        props: { tone: neutral, text: "str.d2_cancel_deadline({cancellationDeadline})" }
+      - component: SecondaryButton
+        visibleWhen: "status == window_open"
+        props: { text: str.d2_back_to_market_add }
+      - component: InfoBanner
+        visibleWhen: "status == awaiting_charge"
+        props: { tone: info, body: str.d2_processing }
+      - component: InfoBanner
+        visibleWhen: "status in [partially_confirmed, all_failed]"
+        props: { tone: "partially_confirmed ? warning : error", title: str.d2_failed_title, body: "str.d2_failed_body({failedItemsSummary}, {failedReleasedAmount})" }
+        note: "Asla suçlayıcı değil; 'kartın reddedildi' kullanılmaz (Edge case 3)."
+      - component: FormSection
+        visibleWhen: "status in [confirmed, partially_confirmed]"
+        props: { title: str.d2_payment_summary_title }
+        content:
+          - component: text
+            style: body-medium
+            text: "releasedAmount > 0 ? str.d2_charge_with_discount({newUnitPrice}, {chargedAmount}, {releasedAmount}) : str.d2_charge_plain({chargedAmount})"
+            note: "Ödeme Özeti — D5 ile paylaşılan dil kuralı (D3 Edge case 7)."
+      - component: InfoBanner
+        visibleWhen: "status == delivery_pending"
+        props: { tone: info, body: "str.d2_delivery_pending({deliveryWeekday})" }
+      - component: PrimaryButton
+        visibleWhen: "status == delivery_pending"
+        props: { text: str.d2_show_karekod, size: Medium, leadingIcon: qr_code_2 }
+        note: "Akış F'ye devir — yalnızca kısayol."
+      - component: InfoBanner
+        visibleWhen: "status == delivered"
+        props: { tone: success, body: str.d2_delivered }
+      - component: InfoBanner
+        visibleWhen: "status == cancelled"
+        props: { tone: neutral, body: str.d2_cancelled }
+      - component: InfoRow
+        visibleWhen: "status == cancelled"
+        props: { label: str.d2_cancelled_date_label, value: "{cancelledAt}" }
+
+  - id: sourcing
+    component: InlineNote
+    visibleWhen: "sourcingLabel != null (yalnızca pencere kapandıktan sonra)"
+    props: { tone: neutral, text: "str.d2_sourcing({sourcingLabel})" }
+    note: "Nötr 'i' ikonu + gri tek satır, kartla aynı zemin; karar butonu yok (Edge case 6)."
+
+  - id: orders
+    component: FormSection
+    props: { title: str.d2_orders_title }
+    content:
+      - component: StatusCard
+        repeat: "orders"
+        props:
+          variant: row
+          title: "str.d2_order_sequence({orderSequenceInWindow})"
+          caption: "{itemsSummary}"
+          badge: { text: "{chargeStatusLabel}", variant: "{chargeStatusBadgeVariant}" }
+          amount: "{orderAmount}"
+          chevron: true
+        chargeStatusLabel: >
+          provisioned → str.d2_order_status_provisioned (Neutral) · awaiting_charge → str.d2_order_status_awaiting (Info) ·
+          charged → str.d2_order_status_charged (Success) · charge_failed → str.d2_order_status_failed (Error) ·
+          cancelled → str.d2_order_status_cancelled (Muted)
+        note: "orderAmount: çekildiyse chargedAmount, değilse provisionedAmount."
+
+  - id: totals
+    component: FormSection
+    content:
+      - { component: SummaryRow, props: { label: str.d2_total_blocked, amount: "{totalBlockedAmount}" } }
+      - { component: SummaryRow, visibleWhen: "totalChargedAmount != null", props: { label: str.d2_total_charged, amount: "{totalChargedAmount}", emphasis: true } }
+      - { component: SummaryRow, visibleWhen: "totalReleasedAmount > 0", props: { label: str.d2_total_released, amount: "{totalReleasedAmount}" } }
+
+  - id: actions
+    component: BottomActionBar
+    content:
+      - component: SecondaryButton
+        visibleWhen: "cancellable"
+        props: { text: str.d2_cancel_delivery }
+      - component: PrimaryButton
+        visibleWhen: "status == delivered"
+        props: { text: str.d2_create_return, enabled: "anyItemRefundable" }
+        note: "Süre dolunca PASİF görünür ama dokunulabilir → snackbar d2_return_expired (Edge case 5). Kaybolmaz."
+      - component: TextLink
+        props: { text: str.d2_support_whatsapp }
+        note: "Her zaman, düşük vurgu."
+
+  - id: snackbar
+    component: Snackbar
+    visibleWhen: "cancelRejected (409 cancellation_window_closed) || returnExpiredTapped"
+    props: { text: "cancelRejected ? str.d2_cancel_window_closed : str.d2_return_expired" }
+
+states:
+  - id: window-open
+    description: "Pencere açık, 2 sipariş (₺150,00 + ₺38,00), geri sayım + iptal son tarihi notu + 'Teslimatı İptal Et'; şeffaflık satırı yok."
+  - id: window-open-cancel-closed
+    description: "Pencere açık ama iptal hakkı kapanmış (Edge case 4 / D4 409 dönüşü): iptal butonu yok, 'İptal hakkı doldu' snackbar."
+  - id: awaiting-charge
+    description: "Mavi 'İşleniyor': 'Ödemen işleniyor, kısa süre içinde netleşecek.' Sipariş rozetleri 'İşleniyor'."
+  - id: confirmed
+    description: "Yeşil 'Onaylandı': Ödeme Özeti 'Hedef tuttu, fiyat ₺28/kg'a indi. Kartından ₺171,00 çekildi, ₺17,00 serbest bırakıldı.' + şeffaflık satırı + toplamlar."
+  - id: partially-confirmed
+    description: "Amber 'Kısmen Onaylandı': uyarı bandı (Kuru Soğan 2 kg bu hafta gelmeyecek, ₺38,00 serbest), 1. sipariş yeşil, 2. sipariş kırmızı."
+  - id: all-failed
+    description: "Kırmızı 'Ödeme Tamamlanamadı': hata tonlu bant, tüm siparişler kırmızı, çekilen satırı yok, serbest bırakılan ₺188,00."
+  - id: delivery-pending
+    description: "Mor 'Teslimat Yakında': 'Cumartesi kapının önünde' + KareKod kısayolu."
+  - id: delivered
+    description: "'Teslim Edildi' + etkin 'İade Talebi Oluştur' + WhatsApp linki."
+  - id: delivered-return-expired
+    description: "İade penceresi (48 sa) dolmuş: 'İade Talebi Oluştur' pasif görünür; dokununca snackbar."
+  - id: cancelled
+    description: "Soluk gri 'İptal Edildi': 'İptal edildi, bloke tutarlar serbest bırakıldı' + tarih; sipariş rozetleri 'İptal Edildi'."
+
+data:
+  uiState:
+    - "deliveryCode: String"
+    - "status: DeliveryStatus"
+    - "deliveryDay: String"
+    - "windowClosesAt: Instant?"
+    - "cancellable: Boolean"
+    - "cancellationDeadline: Instant"
+    - "sourcingLabel: String?"
+    - "orders: List<OrderRowUi>"
+    - "totalBlockedAmount: Money"
+    - "totalChargedAmount: Money?"
+    - "totalReleasedAmount: Money"
+    - "paymentSummary: PaymentSummaryUi?  // newUnitPrice, charged, released"
+    - "failedItemsSummary: String?"
+    - "anyItemRefundable: Boolean"
+    - "cancelledAt: String?"
+    - "snackbar: CancelWindowClosed | ReturnExpired | null"
+actions: [BackClicked, BackToMarketClicked, ShowKareKodClicked, OrderClicked(orderId), CancelDeliveryClicked, CreateReturnClicked, SupportWhatsAppClicked, Refresh]
+navigation:
+  - { on: BackClicked, back: true, note: "Deep link ile gelindiyse D1'e (Siparişler sekmesi) döner." }
+  - { on: BackToMarketClicked, goTo: "MainGraph.HomeRoute (B1)" }
+  - { on: ShowKareKodClicked, goTo: "KareKod sekmesi (Akış F)" }
+  - { on: OrderClicked, goTo: "MainGraph.OrderDetailRoute (D3)", args: [orderId, deliveryId] }
+  - { on: CancelDeliveryClicked, goTo: "İptal Onay Diyaloğu (D4)", args: [deliveryId] }
+  - { on: CreateReturnClicked, goTo: "İade — G1 Kalem Seçimi (tek uygun kalemde doğrudan G2)", args: [deliveryId], note: "Yalnızca anyItemRefundable; değilse snackbar." }
+  - { on: SupportWhatsAppClicked, effect: "WhatsApp destek sohbeti (intent)" }
+api:
+  - "GET /v1/deliveries/{deliveryId}"
+  - "GET /v1/app-config (cancellationWindowHours)"
+  - "Foreground + pull-to-refresh; push yalnızca tetikleyici, doğruluk kaynağı bu GET (§6.2)"
+
+strings:
+  d2_delivery_day_label: "Tahmini teslimat"
+  d2_window_countdown: "Pencere %1$s sonra kapanıyor"
+  d2_cancel_deadline: "İptal hakkın %1$s'e kadar geçerli."
+  d2_back_to_market_add: "Pazar'a dön, ekleme yap"
+  d2_processing: "Ödemen işleniyor, kısa süre içinde netleşecek."
+  d2_failed_title: "Ödemen tamamlanamadı"
+  d2_failed_body: "Bu kalemi bu haftaki teslimatından çıkardık. %1$s bu hafta gelmeyecek, %2$s bloke serbest bırakıldı. Bir sonraki hafta tekrar sipariş verebilirsin."
+  d2_payment_summary_title: "Ödeme Özeti"
+  d2_charge_with_discount: "Hedef tuttu, fiyat %1$s'a indi. Kartından %2$s çekildi, %3$s serbest bırakıldı."
+  d2_charge_plain: "Kartından %1$s çekildi."
+  d2_delivery_pending: "%1$s kapının önünde"
+  d2_show_karekod: "KareKod'u Göster"
+  d2_delivered: "Teslim edildi"
+  d2_cancelled: "İptal edildi, bloke tutarlar serbest bırakıldı"
+  d2_cancelled_date_label: "İptal tarihi"
+  d2_sourcing: "Bu hafta %1$s'den tedarik edildi."
+  d2_orders_title: "Siparişler"
+  d2_order_sequence: "%1$d. sipariş"
+  d2_order_status_provisioned: "Bekleniyor"
+  d2_order_status_awaiting: "İşleniyor"
+  d2_order_status_charged: "Onaylandı"
+  d2_order_status_failed: "Ödeme Tamamlanamadı"
+  d2_order_status_cancelled: "İptal Edildi"
+  d2_total_blocked: "Toplam bloke"
+  d2_total_charged: "Toplam çekilen"
+  d2_total_released: "Toplam serbest bırakılan"
+  d2_cancel_delivery: "Teslimatı İptal Et"
+  d2_create_return: "İade Talebi Oluştur"
+  d2_support_whatsapp: "Destek: WhatsApp"
+  d2_return_expired: "İade talebi süresi doldu, WhatsApp'tan bize ulaşabilirsin"
+  d2_cancel_window_closed: "İptal hakkı doldu"
+
+sampleData:
+  deliveryCode: "#DAL1"
+  deliveryDay: "Cumartesi, 3 Ekim"
+  deliveryWeekday: "Cumartesi"
+  timeLeft: "2 gün 14 saat"
+  cancellationDeadline: "Salı 22:00"
+  statusLabels: { window-open: "Bekleniyor", awaiting-charge: "İşleniyor", confirmed: "Onaylandı", partially-confirmed: "Kısmen Onaylandı", all-failed: "Ödeme Tamamlanamadı", delivery-pending: "Teslimat Yakında", delivered: "Teslim Edildi", cancelled: "İptal Edildi" }
+  sourcingLabel: "Ataşehir Hal"
+  orders:
+    - { orderId: "o-10481", orderSequenceInWindow: 1, itemsSummary: "Domates (Tarla) 1 file · Salatalık 1 file", provisionedAmount: "₺150,00", chargedAmount: "₺135,00" }
+    - { orderId: "o-10482", orderSequenceInWindow: 2, itemsSummary: "Kuru Soğan 2 kg", provisionedAmount: "₺38,00", chargedAmount: "₺36,00" }
+  totalBlockedAmount: "₺188,00"
+  confirmed: { newUnitPrice: "₺28/kg", chargedAmount: "₺171,00", releasedAmount: "₺17,00" }
+  partial: { failedItemsSummary: "Kuru Soğan 2 kg", failedReleasedAmount: "₺38,00", totalChargedAmount: "₺135,00", totalReleasedAmount: "₺53,00" }
+  allFailed: { failedItemsSummary: "Domates (Tarla) 1 file, Salatalık 1 file, Kuru Soğan 2 kg", failedReleasedAmount: "₺188,00", totalReleasedAmount: "₺188,00" }
+  cancelledAt: "Salı, 29 Eylül · 18:40"
+
+open:
+  - "Başarısızlık metni akışta tek cümle ('Ödemen tamamlanamadı, bu kalemi...'); InfoBanner başlık + gövde olarak ikiye bölündü — öneri."
+  - "Sipariş satırı rozet metinleri (chargeStatus bazlı) akışta yok, öneri: teslimat rozetleriyle aynı kelimeler."
+  - "'Tahmini teslimat' etiketi (C5'ten), 'İptal hakkın ... kadar geçerli' notu, 'KareKod'u Göster' ve 'Siparişler' bölüm başlığı akışta yok, öneri."
+  - "Ödeme Özeti 'fiyat X TL/kg'a indi': çok ürünlü teslimatta hangi ürünün kg fiyatı yazılacak? Akışta tanımsız; örnekte Domates."
+  - "all_failed için ayrı metin yok; kısmi başarısızlık kalıbı tüm kalemlerle kullanıldı — onay gerekli."
+  - "İade butonu 'pasif görünür ama dokunulabilir' — M3 disabled butonu tıklanmaz; özel görünüm (enabled=false görünüm + tıklama) kod tarafında gerekir."
+  - "'Teslimatı İptal Et' buton vurgusu akışta yok; öneri SecondaryButton (asıl kırmızı onay D4'te)."
+  - "Türkçe ek uyumu ('%1$s'den', '%1$s'e kadar', '%1$s'a indi') kodda üretilmeli — şablonlar yalnızca örnek."
+  - "İptal tarihi satırı biçimi akışta yok ('+ tarih'); öneri: 'İptal tarihi' InfoRow."

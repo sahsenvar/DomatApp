@@ -1,0 +1,112 @@
+id: I2
+title: Kişisel Bilgiler
+source: DomatApp_Akis_I_Hesap_v1.1.md#I2
+route: { name: AccountGraph.PersonalInfoRoute, status: proposed }
+purpose: >
+  C4'te ilk siparişte toplanan ad-soyad, e-posta ve pazarlama iznini sonradan düzenlemek; telefonu salt bilgi
+  olarak göstermek (v1'de değiştirilemez). Hiç sipariş vermemiş kullanıcıda alanlar boş açılır ve sebebi açıklanır.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.i2_title, showBack: true }
+
+  - id: empty-note
+    component: InfoBanner
+    visibleWhen: "firstName, lastName ve email üçü de boş (Edge Case 2, Seçenek B)"
+    props: { tone: info, body: str.i2_empty_note }
+
+  - id: identity
+    component: FormSection
+    props: { title: str.i2_section_identity }
+    content:
+      - { component: DomatTextField, props: { label: str.i2_first_name, value: "{firstName}" } }
+      - { component: DomatTextField, props: { label: str.i2_last_name, value: "{lastName}" } }
+      - component: DomatTextField
+        props: { label: str.i2_email, value: "{email}", keyboard: email, state: "error ⇢ email-invalid", supportingText: "str.i2_email_error (yalnızca email-invalid)" }
+      - component: InlineNote
+        visibleWhen: "firstName.isNotBlank() && lastName.isNotBlank()"
+        props: { tone: neutral, text: str.i2_invoice_note }
+
+  - id: phone
+    component: FormSection
+    props: { title: str.i2_section_phone }
+    content:
+      - { component: InfoRow, props: { label: str.i2_phone_label, value: "{maskedPhone}" } }
+      - { component: InlineNote, props: { tone: neutral, text: str.i2_phone_note } }
+
+  - id: marketing
+    component: ListRow
+    props: { title: str.i2_marketing_consent, trailing: switch, checked: "{marketingConsent}" }
+    note: "KVKK onayından ayrı, geri alınabilir tercih. Kayıt, Kaydet ile birlikte PATCH /v1/users/me."
+
+  - id: snackbar
+    component: Snackbar
+    visibleWhen: "kayıt başarılı (bir kez)"
+    props: { text: str.i2_saved }
+
+  - id: cta
+    component: BottomActionBar
+    content:
+      - component: PrimaryButton
+        props: { text: str.i2_save, size: Large, enabled: "firstName.isNotBlank() && lastName.isNotBlank() && emailValidOrBlank", loading: "isSaving" }
+        note: "E-posta bu ekranda opsiyonel."
+
+states:
+  - id: filled
+    description: "Elif / Yılmaz / elif.yilmaz@example.com; fatura notu görünür; pazarlama izni açık; Kaydet aktif."
+  - id: empty-new-user
+    description: "Hiç sipariş yok: üç alan boş (TextField state=empty), üstte bilgi notu, fatura notu yok, Kaydet pasif."
+  - id: email-invalid
+    description: "Geçersiz e-posta biçimi: e-posta alanı state=error + hata metni; Kaydet pasif."
+  - id: saved
+    description: "Kaydedildi: filled görünümü + alt snackbar."
+
+data:
+  uiState:
+    - "firstName: String"
+    - "lastName: String"
+    - "email: String"
+    - "isEmailValid: Boolean"
+    - "maskedPhone: String"
+    - "marketingConsent: Boolean"
+    - "showEmptyNote: Boolean"
+    - "isSaving: Boolean"
+    - "showSavedNotice: Boolean"
+actions: [FirstNameChanged, LastNameChanged, EmailChanged, MarketingToggled, SaveClicked, BackClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: saved, effect: "Snackbar; ekranda kalınır (öneri — open)" }
+api: ["GET /v1/users/me", "PATCH /v1/users/me { firstName, lastName, email, marketingConsentAccepted }"]
+
+strings:
+  i2_title: "Kişisel Bilgiler"
+  i2_empty_note: "Bu bilgileri henüz almadık — ilk siparişinde ödeme ekranında senden isteyeceğiz. Şimdiden doldurmak istersen buradan da girebilirsin."
+  i2_section_identity: "Ad ve iletişim"
+  i2_first_name: "Ad"
+  i2_last_name: "Soyad"
+  i2_email: "E-posta (isteğe bağlı)"
+  i2_email_error: "Geçerli bir e-posta adresi gir."
+  i2_invoice_note: "Faturalarında bu isim görünür."
+  i2_section_phone: "Telefon"
+  i2_phone_label: "Telefon numarası"
+  i2_phone_note: "Numaranı değiştirmen gerekiyorsa Destek: WhatsApp'tan bize ulaş."
+  i2_marketing_consent: "Kampanya ve duyurulardan e-postayla haberdar olmak istiyorum."
+  i2_saved: "Bilgilerin kaydedildi."
+  i2_save: "Kaydet"
+
+sampleData:
+  firstName: "Elif"
+  lastName: "Yılmaz"
+  email: "elif.yilmaz@example.com"
+  emailInvalid: "elif.yilmaz@"
+  maskedPhone: "+90 5XX XXX XX 67"
+  marketingConsent: true
+
+open:
+  - "i2_section_identity, i2_section_phone, i2_phone_label, i2_email_error, i2_saved akışta yok, öneri. Ad/Soyad/E-posta etiketleri ve pazarlama izni metni C4 kartından birebir alındı (akışta yok)."
+  - "Pazarlama izni e-posta boşken anlamlı mı? C4'te checkbox yalnızca e-posta doluyken görünüyor; I2'de her zaman görünür çizildi — hizalanmalı."
+  - "E-posta doğrulama kuralı (istemci biçim kontrolü) akışta tanımlı değil."
+  - "Kaydet sonrası ekranda mı kalınır, I1'e mi dönülür — akışta tanımsız; öneri: snackbar + ekranda kal."
+  - "Telefon değiştirme yok kararı §8 Soru 4/10 ile Sahan onayı bekliyor."

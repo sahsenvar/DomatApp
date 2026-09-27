@@ -29,7 +29,7 @@
 # figma.key: Figma kütüphanesi yayınlandığında component key ile doldurulur.
 # ─────────────────────────────────────────────────────────────────────────────
 
-version: 1.2
+version: 1.3
 updated: 2026-09-26
 package: com.domatapp.core.presentation.component
 
@@ -257,7 +257,9 @@ components:
       tone: { figma: "tone (VARIANT: success|neutral|error)", kotlin: "tone: StatusTone" }
       title: { figma: "title (TEXT)", kotlin: "title: String" }
       subtitle: { figma: "subtitle (TEXT)", kotlin: "subtitle: String?" }
-    usedIn: [C5, WindowClosed]
+      icon: { figma: "icon (INSTANCE_SWAP, Icon/*)", kotlin: "icon: DrawableResource? = null  // null = tone varsayılanı" }
+    change: "Akış B: boş sepet ve ağ hatası için ikon değiştirilebilir (shopping_basket, wifi_off). Kod tarafı bekliyor."
+    usedIn: [C5, WindowClosed, B1, B3]
 
   InfoRow:
     status: existing
@@ -300,11 +302,13 @@ components:
   # ── Etiket / rozet / ilerleme (C akışında kullanılmıyor, katalog bütünlüğü için) ──
   DomatBadge:
     status: existing
+    spec: { padding: "sp1 sp2", radius: full, text: label-small, tones: "Neutral surface-variant/on-surface-variant · ErrorSoft error-container/on-error-container · Primary primary/on-primary · Warning warning-container/on-warning-container · Error error/on-error · Dark inverse-surface/inverse-on-surface · Info tertiary-container/on-tertiary-container · Success success-container/on-success-container" }
+    note: "Figma karşılığı Akış B ile koddan türetildi (kural 8)."
     compose: badge.DomatBadge
-    figma: { name: "Badge/Badge", key: null }
+    figma: { name: "Badge/Badge", nodeId: "41:57", key: null }
     props:
       text: { figma: "text (TEXT)", kotlin: "text: String" }
-      variant: { figma: "variant (VARIANT: Primary|Warning|Error|Dark|Info|Success)", kotlin: "variant: BadgeVariant" }
+      variant: { figma: "variant (VARIANT: Primary|Warning|Error|Dark|Info|Success|Neutral|ErrorSoft)", kotlin: "variant: BadgeVariant" }
     usedIn: []
 
   Tag:
@@ -317,10 +321,20 @@ components:
     usedIn: []
 
   ProductCard:
-    status: existing
+    status: change
+    purpose: "Pazar listesindeki tam genişlik ürün kartı: görsel, ad, canlı fiyat, topluluk ilerlemesi, aciliyet rozeti, Ekle butonu. Eski 163 dp ızgara kartının yerini alır (kodda kullanılmıyordu)."
     compose: card.ProductCard
-    figma: { name: "Card/Product", key: null }
-    usedIn: []
+    figma: { name: "Card/Product", nodeId: "42:139", key: null }
+    spec: { card: "surface, 1 outline-variant, radius md, padding sp3, gap sp3, yatay", image: "Media/Image thumb 96×96 radius sm", content: "dikey, gap sp1, fill", name: title-medium on-surface, price: "title-large on-surface + unit body-small on-surface-variant", badge: "DomatBadge (sağ üst, isteğe bağlı)", progress: "LinearProgress 6 yükseklik, tam yuvarlak, track surface-variant, indicator primary", caption: body-small on-surface-variant, action: "PrimaryButton size=Small 'Ekle' (sağ alt)", states: "default · loading (iskelet: tüm metin/görsel yerine surface-variant bloklar, buton yok) · capacity-full (buton yok, caption yerine InlineNote warning)" }
+    props:
+      name: { figma: "name (TEXT)", kotlin: "name: String" }
+      price: { figma: "price (TEXT)", kotlin: "price: String  // '₺96'dan'" }
+      unit: { figma: "unit (TEXT)", kotlin: "unit: String  // '/ file'" }
+      caption: { figma: "caption (TEXT)", kotlin: "caption: String" }
+      progress: { figma: "progress (VARIANT: 25|50|75)", kotlin: "progress: Float" }
+      badge: { figma: "showBadge (BOOLEAN) + badge (INSTANCE Badge/Badge)", kotlin: "badge: ProductUrgency?  // Warning|Error" }
+      state: { figma: "state (VARIANT: default|loading|capacity-full)", kotlin: "state: ProductCardState" }
+    usedIn: [B1]
 
   SelectionCard:
     status: existing
@@ -342,13 +356,397 @@ components:
 
 # İkonlar: Figma'da "Icon/<ad>" bileşenleri; kodda composeResources/drawable/ic_<ad>.xml (XML Vector Drawable).
 # Akış C'nin ihtiyacı: arrow_back, chevron_down, check, info, warning, error, lock, phone, card, whatsapp, success_circle, clock.
+
+  # ---- Akış B ile eklenenler (status: new → kod bekliyor; Figma kütüphanesi spec'ten) ----
+  MarketTopBar:
+    status: new
+    purpose: "Pazar üst çubuğu: solda değiştirilebilir site seçici (konum pimi + site adı + aşağı ok), sağda rozetli sepet ikonu."
+    compose: bar.MarketTopBar
+    figma: { name: "Bar/MarketTop", nodeId: "42:202", key: null }
+    spec: { height: 64, padding: "0 sp1 0 sp2", fill: background, bottomBorder: "1 outline-variant", siteSelector: "yükseklik 48, padding 0 sp2, gap sp1, radius full; location_on 20 on-surface, site adı title-medium on-surface, expand_more 20 on-surface-variant", cart: "48×48 dokunma, shopping_basket 24 on-surface", badge: "min 18×18, radius full, primary / on-primary label-small, ikonun sağ üstü; 0 iken gösterilmez" }
+    props:
+      siteName: { figma: "siteName (TEXT)", kotlin: "siteName: String" }
+      cartCount: { figma: "cartCount (TEXT) + showBadge (BOOLEAN)", kotlin: "cartCount: Int  // 0 = rozet yok" }
+    usedIn: [B1]
+
+  BottomNavBar:
+    status: new
+    purpose: "Ana alt bar: Pazar · Siparişler · KareKod (ortada kabarık) · (boş slot) · Hesap — Navigasyon notu §3.1."
+    compose: bar.BottomNavBar
+    figma: { name: "Bar/BottomNav", nodeId: "42:280", key: null }
+    spec: { height: 80, fill: surface, topBorder: "1 outline-variant", slots: "5 eşit; 4. slot bilinçli boş", item: "dikey, gap sp1, ikon 24 + label-medium; seçili: ikon kabı 56×32 radius full primary-container, ikon/etiket on-surface · seçili değil: on-surface-variant", fab: "KareKod: 56 daire, primary dolgu, qr_code_2 28 on-primary, çubuğun üstünden 20 taşar, altında 'KareKod' etiketi" }
+    props:
+      selected: { figma: "selected (VARIANT: market|orders|account)", kotlin: "selected: MainTab" }
+      ordersDot: { figma: "ordersDot (BOOLEAN)", kotlin: "ordersDot: Boolean  // Siparişler sekmesinde 8 dp error nokta (D5/G7)" }
+    usedIn: [B1]
+
+  WhatsAppFab:
+    status: new
+    purpose: "İkincil yüzen destek butonu (mini). Sağ alt, alt barın belirgin şekilde üstünde. Ürün Detay'da gizlenir."
+    compose: button.WhatsAppFab
+    figma: { name: "Button/FabMini", nodeId: "41:153", key: null }
+    spec: { size: "40 daire (dokunma 48)", fill: surface, border: "1 outline-variant", elevation: sm, icon: "chat 20 success", position: "sağdan sp4, alt bardan sp4 yukarıda" }
+    props: {}
+    note: "Marka logosu yerine Material 'chat' ikonu (kural 12). WhatsApp logosu istenirse icons.exempt'e eklenmeli — açık soru."
+    usedIn: [B1]
+
+  CountdownBanner:
+    status: new
+    purpose: "Tam genişlik pencere geri sayımı (Ürün Detay üstü; Sepet'te ikincil)."
+    compose: feedback.CountdownBanner
+    figma: { name: "Feedback/Countdown", nodeId: "41:112", key: null }
+    spec: { padding: "sp2 sp4", gap: sp2, align: center, icon: "schedule 16", text: label-large, tones: "normal: surface-variant/on-surface-variant · urgent: error-container/on-error-container (son 1 saat)" }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String  // 'Siparişler 1 gün 4 sa 12 dk sonra kapanıyor'" }
+      tone: { figma: "tone (VARIANT: normal|urgent)", kotlin: "tone: CountdownTone" }
+    usedIn: [B2]
+
+  DomatImage:
+    status: new
+    purpose: "Görsel yuvası (ürün fotoğrafı, onboarding/splash illüstrasyonu). Gerçek varlık gelene kadar tasarımda nötr yer tutucu (surface-variant + eco ikonu)."
+    compose: media.DomatImage
+    figma: { name: "Media/Image", nodeId: "41:119", key: null }
+    spec: { fill: surface-variant, icon: "eco on-surface-variant (thumb 32, hero 64, illustration 48, splash 48)", sizes: "thumb 96×96 radius sm · hero 390×240 radius none · illustration 358×268 (4:3) radius lg · splash 120×120 radius xl" }
+    props:
+      size: { figma: "size (VARIANT: thumb|hero|illustration|splash)", kotlin: "size: ImageSize" }
+      asset: { figma: "— (yer tutucu)", kotlin: "asset: DrawableResource | url" }
+    usedIn: [B1, B2, A0, A3, A4, I4]
+
+  ChoiceChip:
+    status: new
+    purpose: "Tekli seçim pill'i (varyant seçimi: Tarla / Çeri)."
+    compose: input.ChoiceChip
+    figma: { name: "Input/Chip", nodeId: "41:70", key: null }
+    spec: { height: "40 (dokunma 48)", padding: "0 sp4", radius: full, text: label-large, default: "surface, 1 outline, on-surface", selected: "primary-container, 1 primary, on-primary-container, check 18 önde", disabled: "düğüm opaklığı 0,38" }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      selected: { figma: "selected (VARIANT: false|true)", kotlin: "selected: Boolean" }
+      enabled: { figma: "enabled (VARIANT: true|false)", kotlin: "enabled: Boolean" }
+    usedIn: [B2]
+
+  QuantityStepper:
+    status: new
+    purpose: "Miktar seçici: − değer +. Ürün Detay'da büyük, Sepet satırında küçük."
+    compose: input.QuantityStepper
+    figma: { name: "Input/Stepper", nodeId: "41:103", key: null }
+    spec: { container: "1 outline, radius full", buttons: "48×48 (medium) / 40×40 + 48 dokunma (small); remove/add 20 on-surface", value: "title-medium on-surface, min genişlik 40, ortalı", minusDisabled: "remove ikonu düğüm opaklığı 0,38 (değer 1'de)" }
+    props:
+      value: { figma: "value (TEXT)", kotlin: "value: Int" }
+      size: { figma: "size (VARIANT: medium|small)", kotlin: "size: StepperSize" }
+      minusEnabled: { figma: "minusEnabled (VARIANT: true|false)", kotlin: "(value > min)" }
+    usedIn: [B2, B3]
+
+  TierCard:
+    status: new
+    purpose: "Açılır kademe kartı: kapalıyken yalnızca aktif kademe; açıkken tüm kademeler + eşikler; 'sen eklersen' kademesi farklı renkte."
+    compose: community.TierCard
+    figma: { name: "Community/TierCard", nodeId: "42:201", key: null }
+    spec: { card: "surface, 1 outline-variant, radius md, padding sp4, gap sp3", header: "yatay: başlık title-medium on-surface + alt satır body-small on-surface-variant; sağda expand_more 24 (açıkken 180°)", rows: "Community/TierRow listesi, gap sp2", note: "açıkken altta InlineNote neutral: fiyat yalnızca düşer" }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String  // aktif kademe" }
+      subtitle: { figma: "subtitle (TEXT)", kotlin: "subtitle: String" }
+      expanded: { figma: "expanded (VARIANT: false|true)", kotlin: "expanded: Boolean" }
+      tiers: { figma: "açıkken 3 × TierRow örneği", kotlin: "tiers: List<TierRowUi>" }
+    usedIn: [B2]
+
+  TierRow:
+    status: new
+    purpose: "Kademe satırı: ad + eşik + kg fiyatı; durum rengine göre."
+    compose: community.TierRow
+    figma: { name: "Community/TierRow", nodeId: "41:152", key: null }
+    spec: { height: 48, padding: "0 sp3", radius: sm, gap: sp3, label: "label-large", threshold: body-small, price: title-small, states: "reached: şeffaf, on-surface-variant, check 18 · current: primary-container / on-primary-container, 'Şu an' etiketi · preview: tertiary-container / on-tertiary-container, 1 kesikli tertiary kenarlık, 'Sen eklersen' etiketi · locked: şeffaf, on-surface-variant" }
+    props:
+      label: { figma: "label (TEXT)", kotlin: "label: String" }
+      threshold: { figma: "threshold (TEXT)", kotlin: "threshold: String" }
+      price: { figma: "price (TEXT)", kotlin: "price: String" }
+      state: { figma: "state (VARIANT: reached|current|preview|locked)", kotlin: "state: TierRowState" }
+    usedIn: [B2]
+
+  CartLine:
+    status: new
+    purpose: "Sepet kalemi (varyant satırı): ad + birim fiyat, sil, küçük miktar seçici, satır tutarı."
+    compose: cart.CartLine
+    figma: { name: "Card/CartLine", nodeId: "42:140", key: null }
+    spec: { padding: "sp2 0", gap: sp2, top: "yatay: ad title-small on-surface + birim body-small on-surface-variant (dikey) | delete 48×48 ikon 20 on-surface-variant", bottom: "yatay space-between: QuantityStepper small | tutar title-medium on-surface" }
+    props:
+      name: { figma: "name (TEXT)", kotlin: "name: String" }
+      unitPrice: { figma: "unitPrice (TEXT)", kotlin: "unitPrice: String" }
+      quantity: { figma: "stepper.value", kotlin: "quantity: Int" }
+      amount: { figma: "amount (TEXT)", kotlin: "amount: String" }
+    usedIn: [B3]
+
+  Snackbar:
+    status: new
+    purpose: "Geçici, düşük vurgulu bilgi (ör. 'Yeni hafta başladı, sepetin sıfırlandı'). Alt barın üstünde."
+    compose: feedback.DomatSnackbar
+    figma: { name: "Feedback/Snackbar", nodeId: "41:157", key: null }
+    spec: { fill: inverse-surface, radius: sm, padding: "sp3 sp4", gap: sp3, text: "body-medium inverse-on-surface", action: "label-large primary (isteğe bağlı)", elevation: md }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "message: String" }
+      action: { figma: "showAction (BOOLEAN) + action (TEXT)", kotlin: "actionLabel: String?" }
+    usedIn: [B1]
+
+
+  # ---- A/D/F/G/H/I kartlarıyla eklenenler (status: new → kod bekliyor; Figma kütüphanesi spec'ten) ----
+  SupplyChainStrip:
+    status: new
+    purpose: "Tedarik zinciri adımları, oklarla (A1: uzun zincir vs kısa zincir). SupplyChainRow'un (onboarding) yerini alır."
+    compose: onboarding.SupplyChainStrip
+    figma: { name: "Onboarding/SupplyChain", nodeId: "49:531", key: null }
+    spec: { layout: "yatay sarmalı (wrap), gap sp1, satır gap sp2", step: "label-medium, padding sp1 sp2, radius full", arrow: "arrow_forward 16 on-surface-variant", long: "surface-variant / on-surface-variant", short: "primary-container / on-primary-container, title-small" }
+    props:
+      steps: { figma: "variant başına sabit örnek (5 / 2 adım)", kotlin: "steps: List<String>" }
+      variant: { figma: "variant (VARIANT: long|short)", kotlin: "variant: ChainVariant" }
+    usedIn: [A1]
+
+  ListRow:
+    status: new
+    purpose: "Genel liste/ayar satırı: isteğe bağlı ön ikon, başlık, alt metin, sonda chevron | anahtar | onay | değer | yok. Site listesi (A5), Hesap menüsü (I), ayarlar."
+    compose: list.ListRow
+    figma: { name: "List/Row", nodeId: "50:195", key: null }
+    spec: { minHeight: "56 (alt metinsiz 48)", padding: "sp3 sp4", gap: sp4, fill: surface, leading: "24 on-surface-variant", title: body-large on-surface, subtitle: "body-small on-surface-variant, 2 satır", trailing: "chevron_right 24 on-surface-variant | Switch 52×32 (on: primary iz + on-primary düğme; off: outline kenarlık + surface-variant iz) | check_circle 24 primary | değer body-medium on-surface-variant", selected: "primary-container zemin (trailing=check)", danger: "ikon ve başlık error", divider: "1 outline-variant (liste içinde)" }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      subtitle: { figma: "subtitle (TEXT) + showSubtitle (BOOLEAN)", kotlin: "subtitle: String?" }
+      leadingIcon: { figma: "showLeading (BOOLEAN) + leading (INSTANCE Icon/*)", kotlin: "leadingIcon: DrawableResource?" }
+      trailing: { figma: "trailing (VARIANT: chevron|switch-on|switch-off|check|value|none)", kotlin: "trailing: ListRowTrailing" }
+      value: { figma: "value (TEXT)", kotlin: "(trailing=value)" }
+      tone: { figma: "tone (VARIANT: default|danger)", kotlin: "tone: RowTone" }
+    usedIn: [A5, I1, I2, I5, I6, I7]
+
+  QrCode:
+    status: new
+    purpose: "Teslimat KareKod'u (imzalı payload). Koyu temada da açık zeminde çizilir."
+    compose: media.QrCode
+    figma: { name: "Media/QrCode", nodeId: "49:539", key: null }
+    spec: { size: "264 (390 genişlikte ≈ %68)", container: "surface (her temada beyaz), padding sp4, radius sm, 1 outline-variant", modules: "on-surface (siyah)", errorCorrection: H, note: "Figma'da temsili desen" }
+    props:
+      payload: { figma: "—", kotlin: "payload: String" }
+    usedIn: [F1, F3]
+
+  LabeledDivider:
+    status: new
+    purpose: "İki eşdeğer seçenek arasında 'veya' ayırıcısı."
+    compose: layout.LabeledDivider
+    figma: { name: "Layout/LabeledDivider", nodeId: "49:532", key: null }
+    spec: { layout: "yatay, gap sp3, dikey dış boşluk sp4", line: "1 outline-variant, fill", label: "label-medium on-surface-variant, padding sp1 sp3, radius full, surface, 1 outline-variant" }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+    usedIn: [F1]
+
+  CodeDisplay:
+    status: new
+    purpose: "Sesli okunacak büyük kod (teslimat kodu 482 915)."
+    compose: data.CodeDisplay
+    figma: { name: "Data/CodeDisplay", nodeId: "49:537", key: null }
+    spec: { text: "display-large on-surface, tabular rakamlar, 3'lü gruplar arası sp3, ortalı", a11y: "rakam rakam okunur", note: "Tasarım sisteminde monospace yok (açık soru)" }
+    props:
+      code: { figma: "code (TEXT)", kotlin: "code: String" }
+    usedIn: [F1]
+
+  StatusCard:
+    status: new
+    purpose: "Durum rozetli liste öğesi: teslimat kartı (D1), sipariş satırı (D2), iade talebi (G4), senkron kuyruğu satırı (H6)."
+    compose: card.StatusCard
+    figma: { name: "Card/Status", nodeId: "50:217", key: null }
+    spec: { card: "surface, 1 outline-variant, radius md, padding sp4, gap sp2, dikey", row: "padding sp3 0, alt çizgi 1 outline-variant, yatay, minHeight 56", top: "başlık title-medium on-surface + DomatBadge sağda", caption: body-medium on-surface-variant, amount: "title-medium on-surface (sağda)", chevron: "chevron_right 24 on-surface-variant", unseen: "8 dp error nokta başlıktan önce", touch: "tüm öğe, ≥48" }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      caption: { figma: "caption (TEXT) + showCaption (BOOLEAN)", kotlin: "caption: String?" }
+      amount: { figma: "amount (TEXT) + showAmount (BOOLEAN)", kotlin: "amount: String?" }
+      badge: { figma: "badge (INSTANCE Badge/Badge) + showBadge (BOOLEAN)", kotlin: "badge: BadgeUi?" }
+      unseen: { figma: "unseen (BOOLEAN)", kotlin: "unseen: Boolean" }
+      variant: { figma: "variant (VARIANT: card|row)", kotlin: "variant: StatusCardVariant" }
+    usedIn: [D1, D2, G4, H6]
+
+  SegmentedControl:
+    status: new
+    purpose: "2 seçenekli bölümlü anahtar (Aktif / Geçmiş)."
+    compose: input.SegmentedControl
+    figma: { name: "Input/Segmented", nodeId: "49:299", key: null }
+    spec: { height: 40, radius: full, border: "1 outline", segments: "eşit genişlik", label: label-large, selected: "secondary-container / on-secondary-container + check 18", unselected: "surface / on-surface" }
+    props:
+      options: { figma: "first (TEXT), second (TEXT)", kotlin: "options: List<String>" }
+      selected: { figma: "selected (VARIANT: first|second)", kotlin: "selected: Int" }
+    usedIn: [D1]
+
+  SelectableItemRow:
+    status: new
+    purpose: "Onay kutulu kalem satırı (iade için kalem seçimi)."
+    compose: list.SelectableItemRow
+    figma: { name: "List/SelectableItem", nodeId: "49:483", key: null }
+    spec: { minHeight: 48, padding: "sp3 0", gap: sp3, checkbox: "20×20 radius xs, 2 outline; seçili primary dolgu + check on-primary", title: body-large on-surface, detail: body-small on-surface-variant, amount: "body-medium on-surface sağda", disabled: "düğüm opaklığı 0,38 + neden metni body-small; eylem TextLink tam opak" }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      detail: { figma: "detail (TEXT)", kotlin: "detail: String" }
+      amount: { figma: "amount (TEXT)", kotlin: "amount: String" }
+      selected: { figma: "selected (VARIANT: false|true)", kotlin: "selected: Boolean" }
+      enabled: { figma: "enabled (VARIANT: true|false) + reason (TEXT)", kotlin: "disabledReason: String?" }
+    usedIn: [G1]
+
+  RadioOptionRow:
+    status: new
+    purpose: "Tekli seçim satırı (iade nedeni, iptal nedeni)."
+    compose: input.RadioOptionRow
+    figma: { name: "Input/RadioRow", nodeId: "49:437", key: null }
+    spec: { minHeight: 48, gap: sp3, radio: "20, 2 outline halka; seçili primary halka + 10 primary nokta", label: body-large on-surface, disabled: "düğüm opaklığı 0,38" }
+    props:
+      label: { figma: "label (TEXT)", kotlin: "label: String" }
+      selected: { figma: "selected (VARIANT: false|true)", kotlin: "selected: Boolean" }
+    usedIn: [G2, D4]
+
+  MediaTile:
+    status: new
+    purpose: "Fotoğraf/video yuvası (iade kanıtı)."
+    compose: media.MediaTile
+    figma: { name: "Media/Tile", nodeId: "50:246", key: null }
+    spec: { photo: "kare 104×104", video: "tam genişlik 16:9", radius: md, empty: "surface-variant, 1 kesikli outline, add_a_photo/videocam 24 on-surface-variant + label-medium", filled: "görsel (yer tutucu: secondary-container) + sağ üstte 24 kaldır düğmesi (inverse-surface, close 16 inverse-on-surface); video: play_arrow + süre çipi label-small", unavailable: "error-container + broken_image on-error-container" }
+    props:
+      kind: { figma: "kind (VARIANT: photo|video)", kotlin: "kind: MediaKind" }
+      state: { figma: "state (VARIANT: empty|filled|unavailable)", kotlin: "state: MediaTileState" }
+      label: { figma: "label (TEXT)", kotlin: "addLabel / duration" }
+    usedIn: [G2, G5]
+
+  NumericKeypad:
+    status: new
+    purpose: "Büyük sayısal tuş takımı (dağıtıcı PIN ve kod girişi) — eldivenle / ayakta kullanım."
+    compose: input.NumericKeypad
+    figma: { name: "Input/Keypad", nodeId: "50:305", key: null }
+    spec: { grid: "3×4: 1-9, boş, 0, backspace", key: "yükseklik 64, radius md, surface-variant, headline-medium on-surface; backspace ikonu 24", gap: sp2, disabled: "düğüm opaklığı 0,38" }
+    props:
+      enabled: { figma: "enabled (VARIANT: true|false)", kotlin: "enabled: Boolean" }
+    usedIn: [H1, H4]
+
+  PinDots:
+    status: new
+    purpose: "Maskeli PIN göstergesi."
+    compose: input.PinDots
+    figma: { name: "Input/PinDots", nodeId: "49:504", key: null }
+    spec: { dot: "16 daire, gap sp4", empty: "2 outline kenarlık", filled: "on-surface dolgu", error: "2 error kenarlık / error dolgu" }
+    props:
+      filled: { figma: "filled (VARIANT: 0|2|4)", kotlin: "filled: Int (length 4)" }
+      state: { figma: "state (VARIANT: default|error)", kotlin: "isError: Boolean" }
+    usedIn: [H1]
+
+  SummaryTopBar:
+    status: new
+    purpose: "İki satırlı üst çubuk + ikon eylemleri (dağıtıcı Teslimat Listesi)."
+    compose: bar.SummaryTopBar
+    figma: { name: "Bar/TitleActions", nodeId: "50:306", key: null }
+    spec: { height: 64, padding: "0 sp1 0 sp4", fill: background, bottomBorder: "1 outline-variant", title: title-large on-surface, subtitle: body-medium on-surface-variant, actions: "48×48, ikon 24 on-surface; rozet DomatBadge sağ üst" }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      subtitle: { figma: "subtitle (TEXT)", kotlin: "subtitle: String" }
+      queueCount: { figma: "queueCount (TEXT) + showQueue (BOOLEAN)", kotlin: "actions: List<TopBarAction>" }
+    usedIn: [H2]
+
+  DeliveryListRow:
+    status: new
+    purpose: "Dağıtıcı listesinde bir durak: sıra, müşteri + adres, not, ürün özeti, durum, Okut/Kod Gir."
+    compose: courier.DeliveryListRow
+    figma: { name: "Card/DeliveryRow", nodeId: "50:361", key: null }
+    spec: { padding: sp4, gap: sp3, minHeight: 88, divider: "1 outline-variant", index: "32 daire surface-variant, label-large", title: title-large on-surface, subtitle: body-medium on-surface-variant, note: "body-small + sticky_note 16", meta: label-medium on-surface-variant, status: "DomatBadge Dark 'Bekliyor' | Success 'Teslim edildi' + saat", action: "SecondaryButton 'Okut / Kod Gir' (teslim edilince gizli)", dimmed: "teslim edilen satır düğüm opaklığı 0,6" }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      subtitle: { figma: "subtitle (TEXT)", kotlin: "subtitle: String" }
+      meta: { figma: "meta (TEXT)", kotlin: "meta: String" }
+      index: { figma: "index (TEXT)", kotlin: "index: Int" }
+      status: { figma: "status (VARIANT: pending|delivered|pending-sync)", kotlin: "status: StopStatus" }
+    usedIn: [H2]
+
+  ScannerViewport:
+    status: new
+    purpose: "Tam ekran kamera önizlemesi + hedef çerçevesi (KareKod okutma)."
+    compose: courier.ScannerViewport
+    figma: { name: "Scanner/Viewport", nodeId: "50:396", key: null }
+    spec: { fill: "inverse-surface (kamera yer tutucu)", window: "248×248 radius lg, çevresi scrim", corners: "4 dp × 32, inverse-on-surface; algılandığında primary", detected: "ortada 48 ilerleme", error: "köşeler error" }
+    props:
+      state: { figma: "state (VARIANT: scanning|detected|error)", kotlin: "state: ScanState" }
+    usedIn: [H3]
+
+  HoldToConfirmButton:
+    status: new
+    purpose: "Basılı tutarak onay (yanlışlıkla teslim onayını önler)."
+    compose: button.HoldToConfirmButton
+    figma: { name: "Button/HoldToConfirm", nodeId: "50:411", key: null }
+    spec: { look: "PrimaryButton Large (60, radius md, primary, title-large on-primary)", progress: "soldan sağa primary-container katman, ≈800 ms", helper: "body-small on-surface-variant ortalı, üstten sp2" }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      helper: { figma: "helper (TEXT)", kotlin: "helper: String" }
+      progress: { figma: "progress (VARIANT: 0|50|100)", kotlin: "progress: Float" }
+    usedIn: [H5]
+
+  DestructiveButton:
+    status: new
+    purpose: "Geri alınamaz eylem düğmesi (hesabı sil)."
+    compose: button.DestructiveButton
+    figma: { name: "Button/Destructive", nodeId: "49:215", key: null }
+    spec: { height: 56, radius: md, fill: error, text: "title-large on-error", disabled: "secondary-container / on-surface %38" }
+    props:
+      text: { figma: "text (TEXT)", kotlin: "text: String" }
+      enabled: { figma: "enabled (VARIANT: true|false)", kotlin: "enabled: Boolean" }
+    usedIn: [I8]
+
+  InAppBanner:
+    status: new
+    purpose: "Uygulama içi üst bildirim (push'un ön plan karşılığı); birkaç saniye sonra kaybolur."
+    compose: feedback.InAppBanner
+    figma: { name: "Feedback/InAppBanner", nodeId: "49:868", key: null }
+    spec: { fill: inverse-surface, radius: md, padding: sp4, gap: sp3, elevation: md, margin: "sp2 sp4", icon: "24 inverse-on-surface", title: "label-large inverse-on-surface", body: "body-medium inverse-on-surface" }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "title: String" }
+      body: { figma: "body (TEXT)", kotlin: "body: String" }
+    usedIn: [D5, G7]
+
+  PushMock:
+    status: new
+    purpose: "Yalnızca tasarım: işletim sistemi bildirimi önizlemesi (kilit ekranı)."
+    compose: null
+    figma: { name: "Mock/Push", nodeId: "49:874", key: null }
+    spec: { fill: surface, radius: lg, padding: sp4, gap: sp1, elevation: md, appName: "label-small on-surface-variant", title: title-small on-surface, body: body-medium on-surface }
+    props:
+      title: { figma: "title (TEXT)", kotlin: "—" }
+      body: { figma: "body (TEXT)", kotlin: "—" }
+    usedIn: [D5, F1, F3, G7]
+
+  # ---- Çerçeve kalıpları (Figma'da bileşen değil, builder helper'ı ile çizilir; FormSection gibi) ----
+  BottomSheet:
+    status: new
+    kind: frame
+    purpose: "Alttan açılan sayfa (teslimat seçici, kaynak seçimi, senkron kuyruğu). Akış içinde, scrim üstünde çizilir (kural 6)."
+    compose: layout.DomatBottomSheet
+    figma: { name: "BottomSheet", nodeId: null, key: null }
+    spec: { scrim: "scrim değişkeni", fill: surface, radius: "üst köşeler xl", handle: "32×4 radius full outline-variant, üstten sp2", padding: "sp4 sp4 sp6", title: headline-small on-surface, gap: sp3 }
+    usedIn: [F2, G2, H6]
+
+  DomatDialog:
+    status: new
+    kind: frame
+    purpose: "Onay diyaloğu (iptal, geri çek, çıkış, hesap silme OTP). Akış içinde, scrim üstünde çizilir."
+    compose: layout.DomatDialog
+    figma: { name: "Dialog", nodeId: null, key: null }
+    spec: { scrim: "scrim değişkeni", width: "390 − 2×sp6", fill: surface, radius: xl, padding: sp6, gap: sp4, title: headline-small on-surface, body: body-medium on-surface-variant, actions: "sağa yaslı satır, gap sp2: vazgeç = GhostButton, onay = TextLink/PrimaryButton; yıkıcı onay error" }
+    usedIn: [D4, G6, I1, I8]
+
+  ContentSection:
+    status: new
+    kind: frame
+    purpose: "Sunucudan gelen içerik bloğu (Nasıl Çalışıyoruz): görsel + başlık + gövde."
+    compose: content.ContentSection
+    figma: { name: "ContentSection", nodeId: null, key: null }
+    spec: { padding: "sp6 sp4", gap: sp3, image: "DomatImage illustration", title: "headline-small (hero: headline-large)", body: body-medium on-surface-variant }
+    usedIn: [I4]
+
 icons:
   source: "Material Symbols Rounded (Apache 2.0) — TEK SET (kural 12). Varsayılan FILL 0; verified_user FILL 1."
   figmaPrefix: "Icon/"
   composePath: "core/resource/src/commonMain/composeResources/drawable/ic_<name>.xml  (siyah dolgu, renk kodda tint ile)"
-  set: [apartment, arrow_back, arrow_forward, chat, check, check_circle, credit_card, door_front, eco, error, expand_more,
-        info, local_shipping, location_on, lock, person, person_search, potted_plant, schedule, share, storefront,
-        trending_down, verified_user, warehouse, warning]
+  set: [add, add_a_photo, apartment, arrow_back, arrow_forward, backspace, broken_image, chat, check, check_circle,
+        chevron_right, close, credit_card, delete, description, door_front, eco, error, expand_more, flashlight_on,
+        group, help, home, info, keyboard, local_shipping, location_on, lock, logout, notifications, person,
+        person_search, photo_camera, photo_library, play_arrow, potted_plant, qr_code_2, receipt_long, refresh,
+        remove, schedule, search, settings, share, shopping_basket, sticky_note_2, storefront, sync, trending_down,
+        verified_user, videocam, warehouse, warning, wifi_off]
   exempt:
     ic_google: "marka logosu (çok renkli, değiştirilemez)"
     ic_trust_wallet_badge: "iki renkli illüstratif rozet (onboarding)"

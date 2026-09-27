@@ -1,0 +1,149 @@
+id: F1
+title: KareKod Ekranı (KareKod + Kodumu Söyle)
+source: claude/DomatApp_Akis_F_Teslimat_v1.0.md#F1
+route: { name: MainGraph.KareKodRoute, args: ["deliveryId: String? (null = otomatik seçim; D2 kısayolu ve sabah push'u doldurur)"], status: proposed }
+purpose: >
+  Teslimat gününde müşterinin, iki eşit yöntemden biriyle — KareKod'u okutarak ya da 6 haneli teslimat kodunu
+  söyleyerek — dağıtıcıya kimliğini kanıtlaması. Kod yerel veritabanından (handoff_codes) okunur; gösterim hiçbir
+  zaman internete bağlı değildir. Sekme yok: iki blok alt alta, ikisi de her zaman görünür.
+frame: { width: 390, height: 844 }
+theme: >
+  Zemin koyu temada da her zaman beyaz (açık tema renkleri zorla). Ekran görünürken parlaklık maksimum;
+  onPause/onStop'ta anında eski değere döner, onResume'da (teslimat hâlâ delivered değilse) yeniden maksimum.
+  Orijinal parlaklık yalnızca ViewModel'de tutulur (Teslimat Doğrulama Notu §2, F1 Edge Case 5).
+entry: "Alt bardaki kabarık KareKod butonu (her sekmeden) · D2 'delivery_pending' bandındaki kısayol · sabah push'u (deep link)"
+
+regions:
+  - id: header
+    note: "Kapat ikonu solda; başlık teslimat numarası. 'değiştir' yalnızca 2+ aktif teslimatta, başlığın hemen altında. Yükseklik 56 (tek satır) / 72 (değiştir ile)."
+    content:
+      - { component: DomatIconButton, props: { icon: close, size: Medium } }
+      - { component: text, style: headline-small, text: "{deliveryCode}", visibleWhen: "state in [active, active-multiple]" }
+      - { component: text, style: headline-small, text: str.f1_title_empty, visibleWhen: "state in [no-code, no-code-last-delivered, not-downloaded]" }
+      - { component: TextLink, visibleWhen: "activeDeliveries.size >= 2", props: { text: str.f1_switch } }
+
+  - id: qr-block
+    visibleWhen: "state in [active, active-multiple]"
+    content:
+      - { component: "QrCode", props: { payload: "{qrPayload}", size: "~%68 genişlik (264)", errorCorrection: H } }
+      - { component: text, style: body-small, color: on-surface-variant, text: str.f1_qr_caption }
+
+  - id: or-divider
+    visibleWhen: "state in [active, active-multiple]"
+    component: "LabeledDivider"
+    props: { text: str.f1_or }
+    note: "İki bloğun eşdeğer olduğunu vurgular; küçük ekranda da ilk görünümde (above the fold) kalmalı."
+
+  - id: code-block
+    visibleWhen: "state in [active, active-multiple]"
+    content:
+      - { component: "CodeDisplay", props: { code: "{shortCode}", groupSize: 3 } }
+      - { component: text, style: body-medium, color: on-surface-variant, text: str.f1_code_caption }
+
+  - id: offline-trust
+    visibleWhen: "state in [active, active-multiple]"
+    component: InlineNote
+    props: { tone: neutral, icon: wifi_off, text: str.f1_offline_trust }
+    note: "Sabit, iki bloğun altında; ortalı."
+
+  - id: no-code
+    visibleWhen: "state in [no-code, no-code-last-delivered]"
+    content:
+      - { component: StatusHero, props: { tone: neutral, icon: qr_code_2, title: str.f1_empty_title, subtitle: str.f1_empty_body } }
+      - { component: InlineNote, visibleWhen: "no-code-last-delivered", props: { tone: neutral, text: "str.f1_last_delivered({lastDeliveredCode})" } }
+      - { component: SecondaryButton, props: { text: str.f1_empty_cta, icon: receipt_long } }
+
+  - id: not-downloaded
+    visibleWhen: "state == not-downloaded"
+    content:
+      - { component: StatusHero, props: { tone: neutral, icon: wifi_off, title: str.f1_not_downloaded_title, subtitle: str.f1_not_downloaded_body } }
+      - { component: InlineNote, props: { tone: neutral, text: str.f1_sms_hint } }
+    note: "Yeniden dene butonu yok: bağlantı dinlenir, gelince otomatik indirilir."
+
+notifications:
+  - id: morning-push
+    when: "Teslimat günü sabahı (öneri 08:00); kod yeniden üretilmez, hatırlatılır"
+    title: str.f1_push_morning_title
+    body: "str.f1_push_morning_body({shortCodeGrouped})"
+    deepLink: "MainGraph.KareKodRoute(deliveryId)"
+  - id: morning-sms
+    when: "Push ile aynı anda"
+    body: "str.f1_sms_morning({shortCode})"
+
+states:
+  - id: active
+    description: "Tek aktif teslimat #DAL1: KareKod + 'veya' + 482 915 + çevrimdışı güven satırı. Çevrimdışıyken de görünüm aynıdır (polling sessizce başarısız olur, hata gösterilmez)."
+  - id: active-multiple
+    description: "2+ aktif teslimat: aynı içerik, başlığın altında 'değiştir' etiketi (F2'yi açar)."
+  - id: no-code
+    description: "Henüz delivery_pending teslimat yok (örn. Pazartesi): nötr ikon + 'Şu an gösterilecek bir teslimat kodun yok' + Siparişlerim."
+  - id: no-code-last-delivered
+    description: "Aktif teslimat kalmadı, en son teslimat teslim alındı: boş durum + 'En son #DAL1 teslim alındı' notu."
+  - id: not-downloaded
+    description: "Kod yerelde yok ve cihaz çevrimdışı: 'Kodun henüz bu cihaza inmemiş' + SMS ipucu; bağlantı gelince otomatik indirilir."
+
+data:
+  uiState:
+    - "screenState: Active | NoCode | NotDownloaded | Delivered (→ F3)"
+    - "deliveryId: String?"
+    - "deliveryCode: String"
+    - "qrPayload: String   // imzalı opak string, çözümlenmez"
+    - "shortCode: String   // 6 hane, önde sıfır korunur"
+    - "canSwitchDelivery: Boolean   // aktif teslimat >= 2"
+    - "lastDeliveredCode: String?"
+    - "originalBrightness: Float?   // yalnızca bellekte"
+  local:
+    - "Room/SQLDelight handoff_codes (deliveryId PK, deliveryCode, qrPayload, shortCode, issuedAt, localCachedAt, lastKnownDeliveryStatus)"
+    - "DataStore karekod_last_selected_delivery_id, karekod_prefetch_last_attempt_at_{deliveryId}"
+  selection: "active kodlar teslimat tarihine göre; en yakın/en acil otomatik seçilir; aynı gün → daha eski deliveryId önce. deliveryId argümanı verilmişse otomatik seçim atlanır."
+actions: [CloseClicked, SwitchDeliveryClicked, OrdersClicked, ScreenResumed, ScreenPaused, ConnectivityRestored, RedemptionDetected]
+navigation:
+  - { on: CloseClicked, back: true, note: "Açıldığı sekmeye döner" }
+  - { on: SwitchDeliveryClicked, goTo: "F2 (bottom sheet, F1'in üzerinde)" }
+  - { on: OrdersClicked, goTo: "MainGraph.OrdersRoute (D1)" }
+  - { on: RedemptionDetected, goTo: F3, note: "Aynı route; gövde yerinde, yumuşak geçişle F3 'Teslim Alındı' içeriğine dönüşür. Parlaklık normale döner." }
+  - { on: "F2 seçimi", replaceTo: "MainGraph.KareKodRoute", args: [deliveryId] }
+api:
+  - "GET /v1/deliveries/{deliveryId}/handoff-code (proaktif: sessiz push ile delivery_pending anında; fallback: yerel boşsa F1 açılışında bir kez)"
+  - "GET /v1/deliveries/{deliveryId} (foreground polling, handoffCodePollingIntervalSeconds = 6; yalnızca görünür + online)"
+  - "POST /v1/deliveries/{deliveryId}/handoff-code/downloaded (opsiyonel telemetri)"
+  - "GET /v1/app-config (handoffCodePollingIntervalSeconds)"
+
+strings:
+  f1_title_empty: "KareKod"
+  f1_switch: "değiştir"
+  f1_qr_caption: "Dağıtıcı okutsun"
+  f1_or: "veya"
+  f1_code_caption: "Dağıtıcıya bu kodu söyle"
+  f1_offline_trust: "İnternetin olmasa da bu ekran çalışır."
+  f1_empty_title: "Şu an gösterilecek bir teslimat kodun yok"
+  f1_empty_body: "Kodun, teslimat günü yaklaştığında burada hazır olacak"
+  f1_empty_cta: "Siparişlerim"
+  f1_last_delivered: "En son %1$s teslim alındı"
+  f1_not_downloaded_title: "Kodun henüz bu cihaza inmemiş"
+  f1_not_downloaded_body: "İnternete bağlan, otomatik olarak indirilecek"
+  f1_sms_hint: "Kod SMS ile de gönderildi, mesajlarını kontrol edebilirsin"
+  f1_push_morning_title: "Bugün teslimat günü"
+  f1_push_morning_body: "Teslimat kodun: %1$s. Dağıtıcıya söyle ya da uygulamadan KareKod'u göster."
+  f1_sms_morning: "DomatApp: Bugünkü teslimat kodun %1$s. Dağıtıcı geldiğinde bu kodu söylemen yeterli, uygulamayı açmana gerek yok."
+
+sampleData:
+  deliveryId: "dlv_01"
+  deliveryCode: "#DAL1"
+  qrPayload: "dmt1.DAL1.u_8842.sig"
+  shortCode: "482915"
+  shortCodeGrouped: "482 915"
+  lastDeliveredCode: "#DAL1"
+  deliveryDay: "Cumartesi, 3 Ekim"
+  timeWindow: "10:00–12:00"
+
+open:
+  - "Nav notu §3.1 KareKod'u alt barın 'tek ekranlı sekmesi' sayıyor, akış F1'i kapat ikonlu tam ekran tanımlıyor. Kart: tam ekran, alt bar gizli, kapat → açıldığı sekme. Alt bar görünür kalmalı mı? (BottomNavBar.selected'da 'karekod' varyantı da yok.)"
+  - "Başlık 'KareKod' (kod yokken) akışta yok, öneri. Kod yokken başlığın ne olacağı tanımsız."
+  - "'değiştir' etiketi akıştaki gibi küçük harf bırakıldı; büyük harf ('Değiştir') tercih edilirse strings güncellenmeli."
+  - "6 haneli kod için akış monospace ~40–48sp istiyor; tasarım sisteminde monospace font yok. CodeDisplay display-large (48) + tabular rakam önerildi — onay gerekli."
+  - "InlineNote'un ikon prop'u yok (tone varsayılanı info). Güven satırı wifi_off istiyor → InlineNote'a 'icon' prop'u (change) gerekli."
+  - "Akış örneklerinde kod 482913, kartta proje örneği 482915 kullanıldı (yalnızca örnek veri)."
+  - "Sabah push/SMS saati (öneri 08:00) ve öğleden sonraya sarkan teslimatta ikinci hatırlatma açık (akış §8 s.7)."
+  - "Kod inerken (bağlantı geldi, istek sürüyor) ayrı bir 'indiriliyor' görünümü akışta yok; not-downloaded aynen kalıp active'e geçer varsayıldı."
+  - "Küçük ekranda (≤640 dp yükseklik) iki bloğun sığma kuralı: QR boyutu min kaç dp? Akış yalnızca 'veya ayracı above the fold' diyor."

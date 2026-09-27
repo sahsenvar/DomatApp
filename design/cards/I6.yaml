@@ -1,0 +1,86 @@
+id: I6
+title: Sözleşme Metni Görüntüleme
+source: DomatApp_Akis_I_Hesap_v1.1.md#I6
+route: { name: AccountGraph.LegalDocumentRoute, args: ["documentId: String", "version: String?"], status: proposed }
+purpose: >
+  Seçilen sözleşmenin tam metnini native olarak göstermek (varsayılan güncel sürüm); KVKK ve Mesafeli Satış'ta
+  kullanıcının kabul ettiği geçmiş sürümlere geçiş sağlamak.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: "{documentTitle}", showBack: true }
+  - id: version-caption
+    component: text
+    style: body-small / on-surface-variant
+    text: "str.i6_version_current({effectiveDate}) | str.i6_version_past({effectiveDate}, {acceptedOrderDate})"
+  - id: version-picker
+    component: DomatDropdown
+    visibleWhen: "type in [kvkk, distanceSales] && kabul edilmiş farklı sürüm sayısı > 1"
+    props: { label: str.i6_version_label, value: "str.i6_version_option_current | {selectedVersionDate}" }
+    itemsFrom: "'Güncel' + GET /v1/users/me/legal-acceptances (type'a göre, acceptedAt azalan)"
+  - id: body
+    component: text
+    style: body-medium / on-surface
+    text: "{content}"
+    note: "Kaydırılabilir, native metin (WebView yok); sunucudan düz metin/markdown."
+  - id: error
+    visibleWhen: "istek başarısız"
+    content:
+      - { component: StatusHero, props: { tone: error, icon: wifi_off, title: str.i6_error_title, subtitle: str.i6_error_body } }
+      - { component: SecondaryButton, props: { text: str.i6_error_retry, icon: refresh } }
+
+states:
+  - id: current
+    description: "KVKK, güncel sürüm (16 Eylül 2026); sürüm seçici 'Güncel'."
+  - id: past-version
+    description: "12 Haziran 2026 sürümü seçili; başlık altı açıklama 4 Temmuz siparişine atıf yapar."
+  - id: picker-open
+    description: "Sürüm listesi açık (Güncel · 12 Haziran 2026) — akış içinde statik (kural 6)."
+  - id: no-history
+    description: "Kullanım Koşulları: sürüm seçici yok, yalnızca güncel metin."
+  - id: error
+    description: "Metin yüklenemedi: hata + Tekrar dene."
+
+data:
+  uiState:
+    - "documentTitle: String"
+    - "documentType: Terms | Kvkk | DistanceSales"
+    - "effectiveDate: String"
+    - "isCurrent: Boolean"
+    - "acceptedOrderDate: String?"
+    - "versions: List<VersionOptionUi>"
+    - "content: String"
+    - "loadState: Loading | Content | Error"
+actions: [BackClicked, VersionSelected(version), RetryClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: VersionSelected, effect: "GET /v1/legal/documents/{id}?version=… ile aynı ekranda yeniden yükle" }
+api: ["GET /v1/legal/documents/{documentId}?version=", "GET /v1/users/me/legal-acceptances"]
+
+strings:
+  i6_version_current: "Güncel sürüm, %1$s"
+  i6_version_past: "%1$s tarihli sürüm — bu, %2$s siparişinde kabul ettiğin metin"
+  i6_version_label: "Sürüm"
+  i6_version_option_current: "Güncel"
+  i6_error_title: "Bağlantı sorunu"
+  i6_error_body: "İnternet bağlantını kontrol edip tekrar dene."
+  i6_error_retry: "Tekrar dene"
+
+sampleData:
+  documentTitle: "KVKK Aydınlatma Metni"
+  documentTitleTerms: "Kullanım Koşulları"
+  effectiveDate: "16 Eylül 2026"
+  pastEffectiveDate: "12 Haziran 2026"
+  acceptedOrderDate: "4 Temmuz'daki"
+  versions: ["Güncel", "12 Haziran 2026"]
+  content: "1. Veri sorumlusu\nDomatApp olarak kişisel verilerinizi 6698 sayılı Kanun kapsamında işliyoruz…\n\n2. İşlenen veriler\nTelefon numarası, ad-soyad, e-posta, adres ve ödeme/fatura bilgisi…"
+
+open:
+  - "i6_version_label, i6_error_* akışta yok, öneri."
+  - "i6_version_past kalıbında Türkçe ek ('4 Temmuz'daki') tarih biçimlendiricide üretilmeli; %2$s ekli tarih olarak geliyor."
+  - "Geçmiş sürüm metni hangi siparişe bağlanır? Aynı sürüm birden fazla siparişte kabul edildiyse ilk/son sipariş tarihi mi gösterilir — akışta tanımsız."
+  - "Seçicinin biçimi akışta 'dropdown/segment' diye açık bırakılmış; kart DomatDropdown seçti."
+  - "Yükleme durumu tasarımda ayrı çizilmedi (kısa süreli; ScreenHeader + boş gövde)."
+  - "Tüm politika §8 Soru 2 ile avukat onayı bekliyor."

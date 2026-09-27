@@ -1,0 +1,69 @@
+id: A2
+title: "Onboarding — Ekran 2: Topluluk ve Tier Mekaniği"
+source: DomatApp_Akis_A_Tanitim_Bolge_Bekleme_v1.2.md#A2
+route: { name: OnboardingGraph.OnboardingPagerRoute, status: proposed, noBack: true }
+purpose: >
+  "Komşun sipariş verirse senin fiyatın düşer" fikrini, gerçek veri olmadan (henüz site seçilmedi) somut TL
+  rakamlarıyla sezdirmek. Rakamlar config tabanlı örnek veridir, canlı tier API'sine bağlanmaz.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: top
+    content:
+      - { component: ProgressDots, props: { totalDots: 4, activeIndex: 1 } }
+      - { component: TextLink, props: { text: str.a2_skip } }
+  - id: title
+    component: text
+    style: headline-medium
+    text: str.a2_title
+  - id: tier-example
+    content:
+      - { component: DomatBadge, props: { text: str.a2_example_tag, variant: Info }, note: "Küçük 'örnek' etiketi — KALDIRILMAZ (rakamlar gerçek fiyat sanılmasın)." }
+      - component: CommunityProgressCard
+        props: { title: "str.a2_price_pair({priceBefore}, {priceAfter})", progress: "{progress}", caption: str.a2_tier_caption }
+    note: "İlerleme çubuğu + iki örnek fiyat noktası. Fiyatlar GET /v1/app-config → onboarding_screen2_example_price_before / _after."
+  - id: body
+    component: text
+    style: body-large
+    text: str.a2_body
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.a2_next, size: Large } }
+
+states:
+  - id: default
+    description: "2. nokta aktif; 'örnek' etiketli ilerleme kartı '125 ₺ → 95 ₺', açıklama cümlesi, 'İleri'."
+
+data:
+  uiState:
+    - "pageIndex: Int  // 1"
+    - "examplePriceBefore: String  // app-config"
+    - "examplePriceAfter: String  // app-config"
+actions: [NextClicked, SkipClicked, PageSwiped]
+navigation:
+  - { on: NextClicked, goTo: "A3 (aynı pager, sayfa 3)" }
+  - { on: PageSwiped, goTo: "A1 / A3 (yöne göre)" }
+  - { on: SkipClicked, replaceTo: "OnboardingGraph.SiteSelectionRoute (A5)", args: [mode: FirstLaunch], note: "Referrer ile site çözüldüyse → B1 + QR toast." }
+api: ["GET /v1/app-config (onboarding_screen2_example_price_before, onboarding_screen2_example_price_after) — A0'da önceden çekilir"]
+
+strings:
+  a2_skip: "Geç"
+  a2_title: "Birlikte alalım, daha az ödeyelim"
+  a2_example_tag: "örnek"
+  a2_price_pair: "%1$s ₺ → %2$s ₺"
+  a2_tier_caption: "Komşular katıldıkça fiyat bir sonraki kademeye iner."
+  a2_body: "Sipariş sayısı arttıkça fiyat düşer, asla yükselmez."
+  a2_next: "İleri"
+
+sampleData:
+  priceBefore: "125"
+  priceAfter: "95"
+  progress: 0.7
+
+open:
+  - "a2_title akışta yok, öneri — mevcut koddaki onboarding_community_title_line1 + _highlight ('Birlikte alalım, daha az ödeyelim') yeniden kullanıldı."
+  - "a2_tier_caption akışta yok, öneri (CommunityProgressCard caption zorunlu). İstenirse caption boş bırakılabilir hale getirilmeli."
+  - "Fiyat biçimi: akış '125 ₺' (simge sonda) diyor; B/C kartları '₺96' (simge başta). Uygulama genelinde tek biçim seçilmeli."
+  - "Kodla fark: mevcut OnboardingCommunity '₺12.50 → ₺2.00' sabit kodlu ve gövde metni 'nakliye maliyeti' anlatıyor; akış config'den gelen '125 ₺ → 95 ₺' + 'Sipariş sayısı arttıkça fiyat düşer, asla yükselmez.' diyor — akış kazanır."
+  - "Config gelmezse (ilk açılış, ağ yok) gösterilecek varsayılan fiyat çifti akışta tanımsız; sampleData değerleri varsayılan önerisi."

@@ -1,0 +1,122 @@
+id: B1
+title: Pazar (Ana Sayfa / Ürün Listesi)
+source: DomatApp_Akis_B_Kesif_Sepet_v1.0.md#B1
+route: { name: MainGraph.HomeRoute, status: proposed }
+purpose: >
+  Kullanıcıyı (hesaplı ya da misafir) o haftanın ürünlerine ve güncel topluluk ilerlemesine en kısa yoldan
+  ulaştırmak; site bağlamını her zaman görünür ve değiştirilebilir tutmak.
+frame: { width: 390, height: 844 }
+
+regions:   # yukarıdan aşağı
+  - id: topbar
+    component: MarketTopBar
+    props: { siteName: "{siteName}", cartCount: "{cartCount}" }
+    note: "Site seçici butondur (düz metin değil). Sepet rozeti 0'da gösterilmez."
+
+  - id: qr-toast
+    component: InfoBanner
+    visibleWhen: "siteSelectionSource == qr_referrer && qrToastShownForWindowId != windowId"
+    props: { tone: info, body: str.b1_qr_toast_body, actions: [str.b1_qr_toast_change, str.b1_qr_toast_dismiss] }
+    note: "Pencere başına en fazla 1 kez; kapatılınca o pencere boyunca çıkmaz."
+
+  - id: products
+    repeat: "sections"
+    content:
+      - { component: text, style: title-large, text: "str.b1_section_vegetables | str.b1_section_fruits", note: "Section header — 3-5 SKU'da da korunur" }
+      - component: ProductCard
+        repeat: "section.products"
+        props: { name: "{name}", price: "str.b1_price_from({price})", action: str.b1_add, unit: "{unit}", caption: "{caption}", progress: "{progress}", badge: "{urgency}", state: "{cardState}" }
+        note: "İlerleme çubuğu yalnızca ödemesi tamamlanmış siparişleri gösterir; kullanıcının sepeti çubuğa yansımaz."
+    stateContent:
+      loading: "3 × ProductCard state=loading (iskelet, metin yok)"
+      network-error: "StatusHero tone=error icon=wifi_off + SecondaryButton 'Tekrar dene'"
+      window-closed: "StatusHero tone=neutral + ürün listesi yok"
+
+  - id: status
+    visibleWhen: "state in [network-error, window-closed]"
+    content:
+      - { component: StatusHero, props: { tone: error, icon: wifi_off, title: str.b1_error_title, subtitle: str.b1_error_body }, visibleWhen: "network-error" }
+      - { component: SecondaryButton, props: { text: str.b1_error_retry, icon: refresh }, visibleWhen: "network-error" }
+      - { component: StatusHero, props: { tone: neutral, title: str.b1_closed_title, subtitle: str.b1_closed_body }, visibleWhen: "window-closed" }
+
+  - id: snackbar
+    component: Snackbar
+    visibleWhen: "sepet eski pencereye aitti ve bu açılışta temizlendi (bir kez)"
+    props: { text: str.b1_week_reset }
+
+  - id: whatsapp
+    component: WhatsAppFab
+    note: "Sağ alt, alt barın sp4 üstünde. Kaydırırken yalnızca ikona iner (zaten mini)."
+
+  - id: nav
+    component: BottomNavBar
+    props: { selected: market }
+
+states:
+  - id: default
+    description: "Sebzeler (Domates, Salatalık) + Meyveler (Elma); Domates'te sarı aciliyet rozeti; sepette 2 kalem."
+  - id: qr-toast
+    description: "QR/referrer ile ilk giriş: listenin üstünde bilgi şeridi."
+  - id: loading
+    description: "İlk açılış / istek sürüyor: iskelet kartlar, metin yok."
+  - id: network-error
+    description: "Bağlantı sorunu + Tekrar dene."
+  - id: window-closed
+    description: "Aktif ürün yok (Perşembe–Pazar): sıcak bilgilendirme, eylem yok."
+  - id: week-reset
+    description: "Eski pencerenin sepeti temizlendi: bir kerelik snackbar; sepet rozeti yok."
+
+data:
+  uiState:
+    - "siteName: String"
+    - "cartCount: Int"
+    - "showQrToast: Boolean"
+    - "sections: List<ProductSectionUi>"
+    - "listState: Loading | Content | NetworkError | WindowClosed"
+    - "nextWindowOpensAt: String?"
+    - "showWeekResetNotice: Boolean"
+actions: [SiteSelectorClicked, CartClicked, QrToastChangeClicked, QrToastDismissed, ProductClicked, AddClicked, RetryClicked, WhatsAppClicked, NavTabClicked]
+navigation:
+  - { on: SiteSelectorClicked, goTo: "OnboardingGraph.SiteSelectionRoute (A5, değiştirme modu, geri butonlu)" }
+  - { on: QrToastChangeClicked, goTo: "OnboardingGraph.SiteSelectionRoute (A5, değiştirme modu)" }
+  - { on: CartClicked, goTo: "MainGraph.CartRoute (B3)" }
+  - { on: ProductClicked, goTo: "MainGraph.ProductDetailRoute (B2)", args: [productId] }
+  - { on: AddClicked, goTo: "MainGraph.ProductDetailRoute (B2)", args: [productId], note: "Varyant seçimi gerektiği için Ekle, detayı açar (öneri — open)." }
+  - { on: WhatsAppClicked, effect: "WhatsApp destek sohbeti (intent)" }
+  - { on: NavTabClicked, goTo: "Siparişler (Akış D) · KareKod (Akış F) · Hesap (Akış I)" }
+api: ["GET /v1/products?neighborhoodId={id} (60 sn polling, ön planda)", "GET /v1/neighborhoods/{id}/window", "POST /v1/events (product_viewed, qr_toast_dismissed)"]
+
+strings:
+  b1_qr_toast_body: "%1$s sakinlerine özel fiyatlar gösteriliyor."
+  b1_qr_toast_change: "Yanlışsa değiştir"
+  b1_qr_toast_dismiss: "Kapat"
+  b1_section_vegetables: "Sebzeler"
+  b1_section_fruits: "Meyveler"
+  b1_price_from: "₺%1$s'dan"
+  b1_add: "Ekle"
+  b1_error_title: "Bağlantı sorunu"
+  b1_error_body: "İnternet bağlantını kontrol edip tekrar dene."
+  b1_error_retry: "Tekrar dene"
+  b1_closed_title: "Bu haftanın siparişleri şimdilik kapalı."
+  b1_closed_body: "Pazartesi tekrar açılıyoruz."
+  b1_week_reset: "Yeni hafta başladı, sepetin sıfırlandı."
+
+sampleData:
+  siteName: "Dalyan Sitesi"
+  cartCount: 2
+  sections:
+    - title: "Sebzeler"
+      products:
+        - { name: "Domates", price: "₺96'dan", unit: "/ file", caption: "Hedefe 18 kg kaldı · 23 komşu katıldı", progress: 0.75, urgency: { variant: Warning, text: "Son 2 gün" } }
+        - { name: "Salatalık", price: "₺54'ten", unit: "/ file", caption: "Hedefe 32 kg kaldı · 11 komşu katıldı", progress: 0.5 }
+    - title: "Meyveler"
+      products:
+        - { name: "Elma", price: "₺70'ten", unit: "/ file", caption: "Hedefe 40 kg kaldı · 7 komşu katıldı", progress: 0.25 }
+
+open:
+  - "Ürün kartındaki 'Ekle' butonu: varyantlı ürünlerde doğrudan sepete eklenemez; detay ekranını açması öneriliyor (akışta tanımsız)."
+  - "Fiyat eki: akış '...TL/file'dan' diyor; Türkçe ek uyumu için sayıya göre '’dan/’den/’tan/’ten' kodda üretilmeli (b1_price_from yalnızca şablon)."
+  - "Kart alt metni (kalan kg + katılımcı) akışta metin olarak verilmedi — öneri."
+  - "Ağ hatası ve 'pencere kapalı' metinleri akıştan birebir; 'Bağlantı sorunu' başlık/gövde ayrımı öneri."
+  - "WhatsApp butonu Material 'chat' ikonu ile; marka logosu istenirse icons.exempt'e eklenmeli."
+  - "Alt barın 4. slotu bilinçli boş (Nav §3.1)."

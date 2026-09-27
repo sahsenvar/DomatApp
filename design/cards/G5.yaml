@@ -1,0 +1,156 @@
+id: G5
+title: İade Talebi Detayı
+source: DomatApp_Akis_G_Iade_v1.1.md#G5
+route: { name: OrdersGraph.ReturnDetailRoute, args: [returnId: String], status: proposed, deepLink: "returnId (G7 push)" }
+purpose: >
+  Tek bir iade talebinin güncel durumunu, gönderilen kanıtları ve (onay/iade sonrası) tutarı göstermek;
+  "param ne oldu" sorusuna tek ekranda cevap vermek. Kullanıcı yüzünde "reddedildi" ve "iptal" kelimeleri hiç
+  geçmez. Doğruluk kaynağı GET /v1/returns/{returnId}; açılışta ve foreground'da tazelenir.
+frame: { width: 390, height: "hug (kaydırılabilir; alt aksiyon çubuğu sabit)" }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: "{returnCode}", showBack: true }
+  - id: status-badge
+    component: DomatBadge
+    props:
+      text: "str.g5_status_pending | str.g5_status_approved | str.g5_status_refunded | str.g5_status_rejected | str.g5_status_withdrawn"
+      variant: "Warning | Info | Success | ErrorSoft | Neutral"
+      size: large
+    note: "Büyük durum rozeti (§4.1 renkleri). ErrorSoft/Neutral ve size=large DomatBadge'de yok → change."
+  - id: timeline
+    component: ProgressSteps
+    props:
+      steps: [str.g5_status_pending, str.g5_status_approved, str.g5_status_refunded]
+      current: "{status}"
+      terminal: "none | rejected (str.g5_status_rejected, error uç) | withdrawn (str.g5_status_withdrawn, gri uç)"
+    note: "rejected/withdrawn: çizgi 'Beklemede'den sonra kırmızı/gri uç noktayla biter, yeşil yola devam etmez. ProgressSteps'e steps/current/terminal prop'ları eklenmeli (change)."
+  - id: message
+    component: InfoBanner
+    props:
+      tone: "pending → neutral · approved → info · refunded → success · rejected → warning · withdrawn → neutral"
+      title: "str.g5_rejected_title (yalnızca rejected)"
+      body: >
+        pending → str.g5_msg_pending · approved → str.g5_msg_approved({refundAmount}) ·
+        refunded → str.g5_msg_refunded({refundAmount}) · rejected → str.g5_rejected_body_note({decisionNote}) |
+        str.g5_rejected_body · withdrawn → str.g5_msg_withdrawn
+      actions: "rejected → [str.g5_whatsapp]"
+  - id: delivery
+    component: FormSection
+    props: { title: str.g5_items_title }
+    content:
+      - { component: InfoRow, props: { label: str.g5_delivery_label, value: "{deliveryCode}", trailingAction: str.g5_delivery_open } }
+      - { component: SummaryRow, repeat: "items", props: { label: "{productName} — {variant}", detail: "{quantityLabel}", amount: "{chargedAmount}" } }
+  - id: evidence
+    component: FormSection
+    props: { title: str.g5_evidence_title }
+    content:
+      - { component: MediaTile, repeat: "photos (2×2 ızgara)", props: { kind: photo, state: filled, removable: false } }
+      - { component: MediaTile, visibleWhen: "video != null", props: { kind: video, state: filled, duration: "{videoDuration}", removable: false } }
+    note: "Fotoğrafa dokununca tam ekran görüntüleyici; videoya dokununca oynatıcı."
+  - id: reason
+    component: FormSection
+    props: { title: str.g5_reason_title }
+    content:
+      - { component: InfoRow, props: { label: str.g5_reason_label, value: "{reasonLabel}" } }
+      - { component: text, style: body-medium, visibleWhen: "reasonText != null", text: "{reasonText}" }
+  - id: actions
+    component: BottomActionBar
+    content:
+      - { component: SecondaryButton, visibleWhen: "status == pending", props: { text: str.g5_withdraw } }
+      - { component: GhostButton, props: { text: str.g5_whatsapp } }
+    note: "WhatsApp her zaman, düşük vurgu. rejected'da banner aksiyonu da aynı hedefe gider."
+  - id: all-requests
+    component: TextLink
+    props: { text: str.g5_all_requests }
+    note: "İçeriğin en altında; G4'e gider (akış G4 giriş noktası)."
+  - id: conflict-snackbar
+    component: Snackbar
+    visibleWhen: "withdraw → 409 already_reviewed"
+    props: { text: str.g5_already_reviewed }
+
+states:
+  - id: pending
+    description: "Beklemede: stepper 1. adımda, 'Talebin inceleniyor…' notu, 'Talebi Geri Çek' + WhatsApp."
+  - id: approved
+    description: "Onaylandı: stepper 2. adımda, '₺213,00 iade edilecek' (gelecek zaman), geri çek butonu yok."
+  - id: refunded
+    description: "İade Edildi: stepper tamam (yeşil), '₺213,00 kartına iade edildi…' + bankaya göre süre notu."
+  - id: rejected
+    description: "Onaylanamadı: stepper Beklemede'den sonra soluk kırmızı uç; kurucu notu + tekrar talep cümlesi + WhatsApp aksiyonu."
+  - id: withdrawn
+    description: "Geri Çekildi: stepper gri uç; 'Bu talebi geri çektin…' notu."
+  - id: withdraw-conflict
+    description: "Geri çekme sırasında kurucu karar verdi (409): ekran 'Onaylandı' durumuna yenilenmiş + bilgi snackbar'ı."
+
+data:
+  uiState:
+    - "returnCode: String"
+    - "status: Pending | Approved | Refunded | Rejected | Withdrawn"
+    - "deliveryCode: String"
+    - "items: List<ReturnItemUi>"
+    - "photos: List<String>"
+    - "video: VideoUi?"
+    - "reasonLabel: String"
+    - "reasonText: String?"
+    - "decisionNote: String?"
+    - "refundAmount: String?"
+    - "isRefreshing: Boolean"
+actions: [BackClicked, DeliveryClicked, PhotoClicked(index), VideoClicked, WithdrawClicked, WhatsAppClicked, AllRequestsClicked, Refreshed]
+navigation:
+  - { on: BackClicked, back: true, note: "Push'tan açıldıysa G4'e" }
+  - { on: DeliveryClicked, goTo: D2, args: [deliveryId] }
+  - { on: WithdrawClicked, goTo: G6, args: [returnId] }
+  - { on: AllRequestsClicked, goTo: G4 }
+  - { on: WhatsAppClicked, effect: "WhatsApp destek intent'i (talep no önceden dolu)" }
+  - { on: PhotoClicked, effect: "Tam ekran fotoğraf görüntüleyici (akışta ayrı ekran tanımlı değil)" }
+api: ["GET /v1/returns/{returnId}", "DataStore: last_seen_return_status_{returnId} (açılışta güncellenir)"]
+
+strings:
+  g5_status_pending: "Beklemede"
+  g5_status_approved: "Onaylandı"
+  g5_status_refunded: "İade Edildi"
+  g5_status_rejected: "Onaylanamadı"
+  g5_status_withdrawn: "Geri Çekildi"
+  g5_msg_pending: "Talebin inceleniyor. Ek bir şey yapmana gerek yok."
+  g5_msg_approved: "Talebin onaylandı. %1$s iade edilecek."
+  g5_msg_refunded: "%1$s kartına iade edildi. Kartına yansıma süresi bankana göre değişebilir."
+  g5_rejected_title: "Bu talebi onaylayamadık."
+  g5_rejected_body: "Farklı bir sorun yaşarsan tekrar talep açabilirsin."
+  g5_rejected_body_note: "%1$s Farklı bir sorun yaşarsan tekrar talep açabilirsin."
+  g5_msg_withdrawn: "Bu talebi geri çektin. Aynı ürün için tekrar talep açabilirsin."
+  g5_items_title: "İade edilen ürünler"
+  g5_delivery_label: "Teslimat"
+  g5_delivery_open: "Görüntüle"
+  g5_evidence_title: "Gönderdiğin fotoğraf ve video"
+  g5_reason_title: "Sebep"
+  g5_reason_label: "Sorun"
+  g5_withdraw: "Talebi Geri Çek"
+  g5_whatsapp: "Destek: WhatsApp"
+  g5_all_requests: "Tüm Taleplerim"
+  g5_already_reviewed: "Talebin bu arada incelendi, güncel durumu görüyorsun."
+
+sampleData:
+  returnCode: "#İAD-2381"
+  deliveryCode: "#DAL1"
+  deliveryDay: "Cumartesi, 3 Ekim"
+  items:
+    - { productName: "Domates", variant: "Tarla", quantityLabel: "2 file", chargedAmount: "₺172,00" }
+    - { productName: "Domates", variant: "Çeri", quantityLabel: "1 kutu", chargedAmount: "₺41,00" }
+  photos: ["photo_1.jpg", "photo_2.jpg"]
+  videoDuration: "0:08"
+  reasonLabel: "Ezilmiş"
+  reasonText: "Kutu ezik geldi, domateslerin yarısı patlamıştı."
+  refundAmount: "₺213,00"
+  decisionNote: "Fotoğraflarda ezilme net seçilemedi."
+  msgApproved: "Talebin onaylandı. ₺213,00 iade edilecek."
+  msgRefunded: "₺213,00 kartına iade edildi. Kartına yansıma süresi bankana göre değişebilir."
+
+open:
+  - "Tutar biçimi: akış '[X] TL' diyor; ürünün para biçimi '₺213,00'. Kart metinden 'TL'yi çıkarıp yer tutucuya ₺'li tutar koydu — onay gerekiyor (G7 push metinleri de aynı)."
+  - "Akış §8 soru 1 (rejected durumu v1'de var mı) ve soru 8 (decisionNote opsiyonel mi) hâlâ açık; kart rejected'ı ve opsiyonel notu çizdi."
+  - "Bölüm başlıkları ('İade edilen ürünler', 'Gönderdiğin fotoğraf ve video', 'Sebep', 'Sorun'), 'Görüntüle' linki ve 409 already_reviewed snackbar metni akışta yok — öneri."
+  - "rejected mesaj tonu: InfoBanner warning (belirgin ama sert olmayan) seçildi; error tonu kasıtlı olarak kullanılmadı."
+  - "Tam ekran fotoğraf görüntüleyici ve video oynatıcı için ayrı kart yok; platform bileşeni mi, özel ekran mı kararı gerekiyor."
+  - "'İade edilen ürünler' başlığı pending/rejected durumunda yanıltıcı olabilir; 'Talepteki ürünler' alternatifi."

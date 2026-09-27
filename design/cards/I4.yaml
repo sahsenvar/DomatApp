@@ -1,0 +1,73 @@
+id: I4
+title: Nasıl Çalışıyoruz
+source: DomatApp_Akis_I_Hesap_v1.1.md#I4
+route: { name: AccountGraph.HowItWorksRoute, status: proposed }
+purpose: >
+  Derin marka anlatısını (tedarik zinciri, topluluk mekaniği, Cumartesi ritüeli) sunan ortak içerik sayfası;
+  Hesap'tan ve onboarding A4'ten açılır. Bölüm iskeleti native ve sabit; başlık/gövde/görsel/sıra sunucudan gelir
+  ve DataStore'da önbelleklenir (önce önbellek, arkada sessiz tazeleme).
+frame: { width: 390, height: "hug" }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.i4_title, showBack: true }
+  - id: sections
+    repeat: "sections (GET /v1/content/how-it-works → sections[])"
+    content:
+      - component: ContentSection
+        props: { title: "{section.title}", body: "{section.body}", imageUrl: "{section.imageUrl}", variant: "hero (ilk bölüm) | default" }
+    note: "Sabit sıra: hero · zincir karşılaştırması · topluluk mekaniği · Cumartesi ritüeli. Metinlerin tamamı sunucudan (sampleData)."
+  - id: loading
+    visibleWhen: "önbellek yok && istek sürüyor"
+    content:
+      - { component: ContentSection, props: { state: loading } }
+  - id: error
+    visibleWhen: "önbellek yok && istek başarısız"
+    content:
+      - { component: StatusHero, props: { tone: error, icon: wifi_off, title: str.i4_error_title, subtitle: str.i4_error_body } }
+      - { component: SecondaryButton, props: { text: str.i4_error_retry, icon: refresh } }
+  - id: support
+    content:
+      - { component: text, style: body-medium / on-surface-variant, text: str.i4_support_prompt }
+      - { component: TextLink, props: { text: str.i4_support_link } }
+
+states:
+  - id: content
+    description: "4 bölüm dolu (önbellekten ya da taze); altta destek linki."
+  - id: loading
+    description: "İlk ziyaret, önbellek yok: iskelet bölümler, metin yok."
+  - id: error
+    description: "İlk ziyaret, önbellek yok ve ağ hatası: hata + Tekrar dene."
+
+data:
+  uiState:
+    - "sections: List<ContentSectionUi>"
+    - "contentState: Loading | Content | Error"
+actions: [BackClicked, RetryClicked, SupportClicked]
+navigation:
+  - { on: BackClicked, back: true, note: "I1'e ya da onboarding A4'e döner (geldiği yere)." }
+  - { on: SupportClicked, effect: "WhatsApp intent, önceden doldurulmuş mesajla" }
+api: ["GET /v1/content/how-it-works → { sections: [{ id, title, body, imageUrl? }], version, updatedAt }"]
+
+strings:
+  i4_title: "Nasıl Çalışıyoruz"
+  i4_support_prompt: "Sorularının cevabı yoksa:"
+  i4_support_link: "Destek: WhatsApp"
+  i4_error_title: "Bağlantı sorunu"
+  i4_error_body: "İnternet bağlantını kontrol edip tekrar dene."
+  i4_error_retry: "Tekrar dene"
+
+sampleData:
+  sections:
+    - { id: hero, title: "Tarladan sitenin önüne, aracısız.", body: "Komşularınla birlikte, her hafta taze ürün.", imageUrl: null }
+    - { id: chain, title: "Zinciri kısalttık", body: "Tarla → Toptancı → Hal → Pazaryeri → Tüketici yerine: Tarla → Sitenin önü.", imageUrl: null }
+    - { id: community, title: "Komşularla birlikte ucuza", body: "Sitende sipariş verenler arttıkça kg fiyatı kademe kademe düşer.", imageUrl: null }
+    - { id: saturday, title: "Cumartesi, kapının önünde", body: "Teslimat günü KareKod'unu gösterirsin, poşetin eline gelir.", imageUrl: null }
+
+open:
+  - "Tüm bölüm metinleri sunucu içeriğidir ve marka anlatısı kararına (Navigasyon §10 Soru 4) bağlıdır; sampleData yalnızca yer tutucudur (akışta yok, öneri)."
+  - "i4_error_* akışta yok, öneri (B1 metinleriyle aynı). Önbellek varken ağ hatası sessiz geçilir."
+  - "Görseller (imageUrl) için yer tutucu/oran akışta tanımlı değil; ContentSection spec'inde 16:9 önerildi. Zincir karşılaştırması görsel mi, native diyagram mı?"
+  - "Sunucudan gelen gövde düz metin mi markdown mı — I6 ile aynı karar verilmeli."
+  - "İçerik sunucudan kararı §8 Soru 5 ile onay bekliyor."

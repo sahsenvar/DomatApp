@@ -1,0 +1,61 @@
+id: I7
+title: Bildirim Ayarları
+source: DomatApp_Akis_I_Hesap_v1.1.md#I7
+route: { name: AccountGraph.NotificationSettingsRoute, status: proposed }
+purpose: >
+  Tek bir bildirim switch'i (kategori yok — MVP W19). Uygulama-içi tercih ile OS izni ayrılır: izin hiç sorulmadıysa
+  switch sistem penceresini açar; sistemde reddedildiyse switch pasif olur ve cihaz ayarlarına yönlendirilir.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.i7_title, showBack: true }
+  - id: description
+    component: text
+    style: body-medium / on-surface-variant
+    text: str.i7_description
+  - id: toggle
+    component: ListRow
+    props: { leadingIcon: notifications, title: str.i7_switch_label, trailing: switch, checked: "{notificationsEnabled}", enabled: "osPermission != denied" }
+    note: "denied: KAPALI + pasif (%38, kural 11). granted: PATCH /v1/users/me/notifications. notAsked/soft-declined: dokununca sistem izin penceresi."
+  - id: os-denied
+    component: InfoBanner
+    visibleWhen: "osPermission == denied"
+    props: { tone: neutral, body: str.i7_denied_body, actions: [str.i7_open_settings] }
+
+states:
+  - id: enabled
+    description: "OS izni verilmiş, switch AÇIK."
+  - id: disabled
+    description: "OS izni verilmiş, kullanıcı switch'i KAPATMIŞ."
+  - id: os-denied
+    description: "Sistemde kalıcı red: switch KAPALI ve pasif; altında açıklama + 'Ayarlar'a Git'."
+
+data:
+  uiState:
+    - "notificationsEnabled: Boolean"
+    - "osPermission: NotAsked | SoftDeclined | Granted | Denied  (notifications_permission_state — yalnızca okunur)"
+    - "isUpdating: Boolean"
+actions: [BackClicked, SwitchToggled, OpenSettingsClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: "SwitchToggled (NotAsked | SoftDeclined)", effect: "Sistemin native bildirim izni penceresi (OS popup — tasarımda çizilmez)" }
+  - { on: "SwitchToggled (Granted)", effect: "PATCH /v1/users/me/notifications { enabled }" }
+  - { on: OpenSettingsClicked, effect: "Cihazın uygulama bildirim ayarlarına deep-link" }
+api: ["GET /v1/users/me (notificationsEnabled)", "PATCH /v1/users/me/notifications { enabled: Boolean }"]
+
+strings:
+  i7_title: "Bildirim Ayarları"
+  i7_description: "Cumartesi teslimat saatini ve kapıda göstereceğin kodu bildirimle haber veririz. Bildirim kapalıyken de teslimat kodun SMS ile ayrıca gelir — kritik bir şeyi kaçırmazsın."
+  i7_switch_label: "Bildirimler"
+  i7_denied_body: "Bildirim iznini telefonunun ayarlarından kapatmışsın. Açmak için Ayarlar'a gitmen gerekiyor."
+  i7_open_settings: "Ayarlar'a Git"
+
+sampleData: {}
+
+open:
+  - "i7_denied_body akışta yok, öneri ('kısa bir açıklama' deniyor, metin verilmemiş)."
+  - "Akış 'dokununca kısa açıklama + Ayarlar'a Git butonu' diyor; kart açıklamayı dokunmadan, switch altında kalıcı bant olarak gösterdi (pasif switch'e dokunma geri bildirimi zayıf olduğu için) — onay gerekiyor."
+  - "Hiç sorulmadı / 'Şu an değil' durumunda switch 'AÇIK görünebilir ama bildirim gelmez' — bu kullanıcıya yalan söyleyen bir görünüm; öneri: OS izni yokken switch KAPALI gösterilsin. Karar gerekiyor."
+  - "Tek switch kararı §8 Soru 9 ile onay bekliyor."
