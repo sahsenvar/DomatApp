@@ -31,8 +31,19 @@ in your IDE’s toolbar or build it directly from the terminal:
 
 ### Build and Run iOS Application
 
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+The iOS app is a shell around the shared Compose Multiplatform UI, and it consumes the Kotlin side as
+a local Swift package. Build the framework first — SwiftPM cannot resolve the package without it:
+
+```shell
+./gradlew :shared:syncDebugSharedXCFramework
+```
+
+Then open [/iosApp](./iosApp) in Xcode and run. Re-run that Gradle task after changing Kotlin code:
+SwiftPM resolves the binary target before build phases run, so the in-Xcode `Sync Kotlin XCFramework`
+phase refreshes the framework for the *next* build rather than the current one.
+
+Apple targets only link on macOS. See `CLAUDE.md` → *iOS app and Swift Package Manager* for the
+details, including what still has to be filled into `Info.plist` before Google sign-in works.
 
 ---
 

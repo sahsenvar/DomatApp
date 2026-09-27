@@ -13,19 +13,20 @@ dependencies {
     // Used directly by this module's sources (StateFlow / viewModelScope work in the ViewModel).
     commonMainImplementation(libs.concurrency.coroutine.core)
     // Generates provideXEntry() per @Screen, wired through :core:presentation's @ScreenWrapper.
-    kspAndroid(libs.navigation.gezgin.processor)
+    // kspCommonMainMetadata rather than per target: the screens are common now and Gezgin's output
+    // for them is platform-independent. DiConventionPlugin adds that output to commonMain and
+    // orders every compile and per-target KSP task after it.
+    add("kspCommonMainMetadata", libs.navigation.gezgin.processor)
 }
 
-// DiConventionPlugin registers build/generated/ksp/metadata/commonMain/kotlin as a commonMain
-// srcDir, which makes kspAndroidMain an implicit consumer of kspCommonMainKotlinMetadata's
-// output. Gradle needs that edge declared even though nothing generates into it today.
-tasks.matching { it.name == "kspAndroidMain" }.configureEach {
-    dependsOn(tasks.matching { it.name == "kspCommonMainKotlinMetadata" })
-}
-
-// The @ScreenWrapper and its @ScreenSlot markers are compiled into :core:presentation, and KSP
-// cannot enumerate annotated declarations on the classpath - so this module names their package.
-// Without it the entries here are generated UNWRAPPED (a KSP warning, not a build failure).
+// DomatScreenRoot is compiled into :core:presentation, and KSP cannot enumerate annotated
+// declarations on the classpath - so this module names it. `wrapperDeclarations` (the wrapper's
+// fully-qualified name) rather than `wrapperPackages` (its package): the latter enumerates the
+// package, which returns nothing when the dependency arrives as Kotlin *metadata*, as it does in a
+// kspCommonMainMetadata round. The @ScreenSlot markers need no naming - Gezgin reaches them through
+// the wrapper's @FilledBy parameters.
+//
+// Without this the entries here are generated UNWRAPPED (a KSP warning, not a build failure).
 ksp {
-    arg("gezgin.wrapperPackages", "com.domatapp.core.presentation.screen")
+    arg("gezgin.wrapperDeclarations", "com.domatapp.core.presentation.screen.DomatScreenRoot")
 }

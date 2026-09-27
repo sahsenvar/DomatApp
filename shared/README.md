@@ -16,9 +16,17 @@ Tüm KMP modüllerini birleştiren ve iOS tarafına "Umbrella Framework" olarak 
     +--> [:feature:*:data]
     +--> [:feature:*:presentation]
     v
-[iOS Shared.framework]
+[Shared.xcframework]  -->  [iosApp/Packages/Shared/Package.swift]  -->  [iosApp.xcodeproj]
 ```
 
 ## 🤖 AI Context (Yapay Zeka İçin Notlar)
 - iOS tarafına export edilecek sınıflar ve interface'ler burada konfigüre edilir.
-- Koin modüllerinin ana başlatma noktası burasıdır.
+- Koin modüllerinin ana başlatma noktası burasıdır (`initKoin` / iOS için `doInitKoin`).
+- Paylaşılan Compose kökü burada: `DomatApp` (`commonMain`) ve onu `ComposeUIViewController` ile
+  saran `MainViewController` (`iosMain`). Android'de `MainActivity`, iOS'ta `ContentView` bunu
+  host eder.
+- Bu modül `domatapp.cmp.library`'yi uygular; Compose Gradle plugin'i olmadan Compose Resources'ın
+  iOS resource-sync task'ı `Shared.framework` için hiç koşmuyordu.
+- Xcode'u açmadan önce framework'ü üret:
+  `./gradlew :shared:syncDebugSharedXCFramework`. Ayrıntı: `CLAUDE.md` → *iOS app and Swift
+  Package Manager*. Apple hedefleri yalnız macOS'ta link'lenir.

@@ -10,14 +10,14 @@
 		C23EDE532F61DB9B006E4E9C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C23EDE522F61DB9B006E4E9C /* FirebaseAuth */; };
 		C23EDE552F61DB9B006E4E9C /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = C23EDE542F61DB9B006E4E9C /* FirebaseCore */; };
 		C23EDE572F61DB9B006E4E9C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = C23EDE562F61DB9B006E4E9C /* FirebaseFirestore */; };
-		C23EDE5A2F61DC36006E4E9C /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C23EDE592F61DC36006E4E9C /* Shared.framework */; };
 		C23EDE5E2F62B866006E4E9C /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = C23EDE5D2F62B866006E4E9C /* FirebaseRemoteConfig */; };
 		C23EDE602F62B882006E4E9C /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C23EDE5F2F62B882006E4E9C /* FirebaseAnalytics */; };
+		F1A00000000000000000A003 /* Shared in Frameworks */ = {isa = PBXBuildFile; productRef = F1A00000000000000000A002 /* Shared */; };
+		F1A00000000000000000B003 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = F1A00000000000000000B002 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		6579A8ECA736677B09E09B58 /* DomatApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DomatApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		C23EDE592F61DC36006E4E9C /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Shared.framework; path = ../shared/build/bin/iosSimulatorArm64/debugFramework/Shared.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -55,7 +55,8 @@
 				C23EDE532F61DB9B006E4E9C /* FirebaseAuth in Frameworks */,
 				C23EDE602F62B882006E4E9C /* FirebaseAnalytics in Frameworks */,
 				C23EDE572F61DB9B006E4E9C /* FirebaseFirestore in Frameworks */,
-				C23EDE5A2F61DC36006E4E9C /* Shared.framework in Frameworks */,
+				F1A00000000000000000A003 /* Shared in Frameworks */,
+				F1A00000000000000000B003 /* GoogleSignIn in Frameworks */,
 				C23EDE5E2F62B866006E4E9C /* FirebaseRemoteConfig in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -68,7 +69,6 @@
 			children = (
 				E0862BEAF386563FC57B428F /* Configuration */,
 				EF4D2949CA41C08FEF56FB35 /* iosApp */,
-				C23EDE582F61DC35006E4E9C /* Frameworks */,
 				09F4B9404861D1421D8F594A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -81,14 +81,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C23EDE582F61DC35006E4E9C /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				C23EDE592F61DC36006E4E9C /* Shared.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -96,7 +88,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8A048A24EDC73DAC5B87C847 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
-				30ADEA9A1261F9BBFA028456 /* Compile Kotlin Framework */,
+				30ADEA9A1261F9BBFA028456 /* Sync Kotlin XCFramework */,
 				C4130CD61CD1BBE525F02161 /* Sources */,
 				C7DF6EFD801421AC5331E512 /* Frameworks */,
 				027F38E1F1AC36BCADC7E68F /* Resources */,
@@ -115,6 +107,8 @@
 				C23EDE562F61DB9B006E4E9C /* FirebaseFirestore */,
 				C23EDE5D2F62B866006E4E9C /* FirebaseRemoteConfig */,
 				C23EDE5F2F62B882006E4E9C /* FirebaseAnalytics */,
+				F1A00000000000000000A002 /* Shared */,
+				F1A00000000000000000B002 /* GoogleSignIn */,
 			);
 			productName = iosApp;
 			productReference = 6579A8ECA736677B09E09B58 /* DomatApp.app */;
@@ -145,7 +139,9 @@
 			mainGroup = 03FBAEEC3387358B979983B7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				F1A00000000000000000A001 /* XCLocalSwiftPackageReference "Packages/Shared" */,
 				C23EDE512F61DB9B006E4E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				F1A00000000000000000B001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 09F4B9404861D1421D8F594A /* Products */;
@@ -168,7 +164,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		30ADEA9A1261F9BBFA028456 /* Compile Kotlin Framework */ = {
+		30ADEA9A1261F9BBFA028456 /* Sync Kotlin XCFramework */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -178,14 +174,14 @@
 			);
 			inputPaths = (
 			);
-			name = "Compile Kotlin Framework";
+			name = "Sync Kotlin XCFramework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  ./gradlew :shared:syncReleaseSharedXCFramework\nelse\n  ./gradlew :shared:syncDebugSharedXCFramework\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -398,6 +394,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		F1A00000000000000000A001 /* XCLocalSwiftPackageReference "Packages/Shared" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Shared;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		C23EDE512F61DB9B006E4E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -405,6 +408,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 12.10.0;
+			};
+		};
+		F1A00000000000000000B001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.2.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -434,6 +445,15 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C23EDE512F61DB9B006E4E9C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
+		};
+		F1A00000000000000000A002 /* Shared */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Shared;
+		};
+		F1A00000000000000000B002 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A00000000000000000B001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
