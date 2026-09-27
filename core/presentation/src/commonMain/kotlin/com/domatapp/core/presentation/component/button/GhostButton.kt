@@ -1,17 +1,13 @@
 package com.domatapp.core.presentation.component.button
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import com.domatapp.core.design.theme.DomatColors
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 
@@ -26,25 +22,22 @@ fun GhostButton(
         onClick = onClick,
         modifier = modifier.height(56.dp),
         enabled = enabled,
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = DomatColors.White,
-            contentColor = DomatColors.Slate900,
-            disabledContentColor = DomatColors.CoolGray400,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
         ),
-        border = BorderStroke(
-            width = 0.dp,
-            color = DomatColors.White,
-        ),
+        border = null,
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.titleLarge,
         )
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun GhostButtonPreview() {
     DomatTheme {

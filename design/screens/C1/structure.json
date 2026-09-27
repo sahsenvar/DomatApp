@@ -1,0 +1,462 @@
+{
+ "screen": "C1",
+ "note": "Figma use_figma ile dışa aktarıldı; \"manifest\" alanı design/components.yaml anahtarıdır. Katman adı \"<Bileşen> · <bölge-id>\" biçimindedir; bölge-id ekran kartındaki regions[].id ile eşleşir. \"texts\" = örnekte görünen metinler (metin tutarlılık kontrolü bunları kullanır).",
+ "states": {
+  "default": {
+   "figmaNodeId": "29:479",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/default.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "C1@default",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Telefon Numaran"
+      },
+      "texts": [
+       "Telefon Numaran"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "empty"
+        },
+        "texts": [
+         "Telefon numarası"
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · kvkk",
+        "component": "Input/ConsentCheckbox",
+        "manifest": "ConsentCheckbox",
+        "props": {
+         "legalText": "1. TARAFLAR — İşbu sözleşme, bir tarafta DomatApp ile diğer tarafta alıcı arasında... (hukuk tarafından sağlanacak metin)",
+         "expandable": true,
+         "label": "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "checked": "false",
+         "expanded": "false"
+        },
+        "texts": [
+         "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "Metni oku"
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Kod Gönder"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "ready": {
+   "figmaNodeId": "29:507",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/ready.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "C1@ready",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Telefon Numaran"
+      },
+      "texts": [
+       "Telefon Numaran"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "default"
+        },
+        "texts": [
+         "+90",
+         "532 123 45 67",
+         "Telefon numarası"
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · kvkk",
+        "component": "Input/ConsentCheckbox",
+        "manifest": "ConsentCheckbox",
+        "props": {
+         "legalText": "1. TARAFLAR — İşbu sözleşme, bir tarafta DomatApp ile diğer tarafta alıcı arasında... (hukuk tarafından sağlanacak metin)",
+         "expandable": true,
+         "label": "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "checked": "true",
+         "expanded": "false"
+        },
+        "texts": [
+         "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "Metni oku"
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "texts": [
+         "Kod Gönder"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "phone-invalid": {
+   "figmaNodeId": "29:536",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/phone-invalid.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "C1@phone-invalid",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Telefon Numaran"
+      },
+      "texts": [
+       "Telefon Numaran"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "error"
+        },
+        "texts": [
+         "+90",
+         "532 12",
+         "Telefon numarası",
+         "Geçerli bir cep telefonu numarası gir (5XX XXX XX XX)."
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · kvkk",
+        "component": "Input/ConsentCheckbox",
+        "manifest": "ConsentCheckbox",
+        "props": {
+         "legalText": "1. TARAFLAR — İşbu sözleşme, bir tarafta DomatApp ile diğer tarafta alıcı arasında... (hukuk tarafından sağlanacak metin)",
+         "expandable": true,
+         "label": "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "checked": "true",
+         "expanded": "false"
+        },
+        "texts": [
+         "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "Metni oku"
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Kod Gönder"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "kvkk-expanded": {
+   "figmaNodeId": "29:564",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/kvkk-expanded.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "C1@kvkk-expanded",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Telefon Numaran"
+      },
+      "texts": [
+       "Telefon Numaran"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "empty"
+        },
+        "texts": [
+         "Telefon numarası"
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · kvkk",
+        "component": "Input/ConsentCheckbox",
+        "manifest": "ConsentCheckbox",
+        "props": {
+         "legalText": "<KVKK aydınlatma metni — hukuk tarafından sağlanacak; telefon, ad-soyad, e-posta, adres ve ödeme/fatura bilgisini kapsar>",
+         "expandable": true,
+         "label": "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "checked": "false",
+         "expanded": "true"
+        },
+        "texts": [
+         "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "Metni gizle",
+         "<KVKK aydınlatma metni — hukuk tarafından sağlanacak; telefon, ad-soyad, e-posta, adres ve ödeme/fatura bilgisini kapsar>"
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Kod Gönder"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "sending": {
+   "figmaNodeId": "29:593",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/sending.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "C1@sending",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Telefon Numaran"
+      },
+      "texts": [
+       "Telefon Numaran"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "default"
+        },
+        "texts": [
+         "+90",
+         "532 123 45 67",
+         "Telefon numarası"
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · kvkk",
+        "component": "Input/ConsentCheckbox",
+        "manifest": "ConsentCheckbox",
+        "props": {
+         "legalText": "1. TARAFLAR — İşbu sözleşme, bir tarafta DomatApp ile diğer tarafta alıcı arasında... (hukuk tarafından sağlanacak metin)",
+         "expandable": true,
+         "label": "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "checked": "true",
+         "expanded": "false"
+        },
+        "texts": [
+         "KVKK Aydınlatma Metni'ni okudum, kişisel verilerimin işlenmesine açık rıza veriyorum.",
+         "Metni oku"
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "true"
+        },
+        "texts": []
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

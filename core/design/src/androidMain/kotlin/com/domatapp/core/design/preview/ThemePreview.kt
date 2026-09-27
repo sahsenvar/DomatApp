@@ -15,12 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.design.theme.spacing
 
-@Preview
+@Preview(showBackground = true, name = "Static Light")
 @Composable
 private fun DomatThemeStaticLightPreview() {
     DomatTheme(darkTheme = false, dynamicColor = false) {
@@ -28,7 +28,7 @@ private fun DomatThemeStaticLightPreview() {
     }
 }
 
-@Preview
+@Preview(showBackground = true, name = "Static Dark")
 @Composable
 private fun DomatThemeStaticDarkPreview() {
     DomatTheme(darkTheme = true, dynamicColor = false) {
@@ -36,7 +36,7 @@ private fun DomatThemeStaticDarkPreview() {
     }
 }
 
-@Preview
+@Preview(showBackground = true, name = "Dynamic Light")
 @Composable
 private fun DomatThemeDynamicLightPreview() {
     DomatTheme(darkTheme = false, dynamicColor = true) {
@@ -44,7 +44,7 @@ private fun DomatThemeDynamicLightPreview() {
     }
 }
 
-@Preview
+@Preview(showBackground = true, name = "Dynamic Dark")
 @Composable
 private fun DomatThemeDynamicDarkPreview() {
     DomatTheme(darkTheme = true, dynamicColor = true) {

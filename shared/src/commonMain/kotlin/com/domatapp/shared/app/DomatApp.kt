@@ -16,6 +16,7 @@ import com.domatapp.core.navigation.gezginJson
 import com.domatapp.core.navigation.gezginTopology
 import com.domatapp.core.presentation.compose.LocalSnackbarHostState
 import com.domatapp.feature.auth.presentation.navigation.authGraphEntries
+import com.domatapp.feature.checkout.presentation.navigation.checkoutGraphEntries
 import com.domatapp.feature.home.presentation.navigation.mainGraphEntries
 import com.domatapp.feature.onboarding.presentation.navigation.onboardingGraphEntries
 import dev.gezgin.core.compose.GezginDisplay
@@ -72,6 +73,7 @@ fun DomatApp(onRootBack: () -> Unit) {
                     onboardingGraphEntries()
                     authGraphEntries()
                     mainGraphEntries()
+                    checkoutGraphEntries()
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.domatapp.feature.auth.presentation.screen.component
 
+import com.domatapp.core.design.theme.spacing
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -18,8 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
-import com.domatapp.core.design.theme.DomatColors
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.generated.resources.Res
@@ -36,9 +35,9 @@ fun GoogleSignInButton(
     Surface(
         onClick = onClick,
         modifier = modifier.fillMaxWidth().height(56.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = DomatColors.White,
-        border = BorderStroke(1.dp, DomatColors.Slate200),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         shadowElevation = 1.dp,
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -47,19 +46,19 @@ fun GoogleSignInButton(
                 contentDescription = stringResource(Res.string.cd_google_icon),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .padding(start = 20.dp)
+                    .padding(start = MaterialTheme.spacing.sp5)
                     .size(24.dp),
             )
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
-                color = DomatColors.Slate900,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun GoogleSignInButtonPreview() {
     DomatTheme {

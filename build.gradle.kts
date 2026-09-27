@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.androidKotlinMultiplatformLibrary) apply false
     alias(libs.plugins.androidLint) apply false
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.roborazzi) apply false
 }
 
 // Applied here rather than per-module: static analysis is a cross-cutting, repo-wide concern, not

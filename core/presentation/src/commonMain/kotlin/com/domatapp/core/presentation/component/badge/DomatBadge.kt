@@ -8,11 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import com.domatapp.core.design.theme.DomatColors
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import com.domatapp.core.design.theme.DomatTheme
+import com.domatapp.core.design.theme.domatColors
+import com.domatapp.core.design.theme.spacing
 
 enum class BadgeVariant { Primary, Warning, Error, Dark, Info, Success }
 
@@ -22,13 +21,15 @@ fun DomatBadge(
     variant: BadgeVariant = BadgeVariant.Primary,
     modifier: Modifier = Modifier,
 ) {
+    val colors = MaterialTheme.colorScheme
+    val extended = MaterialTheme.domatColors
     val (containerColor, contentColor) = when (variant) {
-        BadgeVariant.Primary -> DomatColors.Malachite to DomatColors.Slate900
-        BadgeVariant.Warning -> DomatColors.Orange400 to DomatColors.White
-        BadgeVariant.Error -> DomatColors.Red500 to DomatColors.White
-        BadgeVariant.Dark -> DomatColors.Slate900 to DomatColors.White
-        BadgeVariant.Info -> DomatColors.Blue100 to DomatColors.Blue900
-        BadgeVariant.Success -> DomatColors.Emerald100 to DomatColors.Emerald600
+        BadgeVariant.Primary -> colors.primary to colors.onPrimary
+        BadgeVariant.Warning -> extended.warningContainer to extended.onWarningContainer
+        BadgeVariant.Error -> colors.error to colors.onError
+        BadgeVariant.Dark -> colors.inverseSurface to colors.inverseOnSurface
+        BadgeVariant.Info -> colors.tertiaryContainer to colors.onTertiaryContainer
+        BadgeVariant.Success -> extended.successContainer to extended.onSuccessContainer
     }
 
     Text(
@@ -38,11 +39,11 @@ fun DomatBadge(
         modifier = modifier
             .clip(CircleShape)
             .background(containerColor)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = MaterialTheme.spacing.sp2, vertical = MaterialTheme.spacing.sp1),
     )
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun DomatBadgePreview() {
     DomatTheme {

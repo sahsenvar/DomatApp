@@ -1,0 +1,18 @@
+{
+ "tool": "Figma",
+ "fileKey": "5hpUTmJJ1ie3E9boGSPXje",
+ "fileUrl": "https://www.figma.com/design/5hpUTmJJ1ie3E9boGSPXje",
+ "page": "Screens · Akış C",
+ "frames": {
+  "default": "29:479",
+  "ready": "29:507",
+  "phone-invalid": "29:536",
+  "kvkk-expanded": "29:564",
+  "sending": "29:593"
+ },
+ "library": "Components sayfası (aynı dosya, yayınlanmamış yerel kütüphane)",
+ "exportedAt": "2026-09-26T19:40Z",
+ "cardVersion": "design/cards/C1.yaml",
+ "tokensSource": "design/tokens/DESIGN.md v1.0",
+ "componentsManifest": "design/components.yaml v1.2"
+}

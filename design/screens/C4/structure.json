@@ -1,0 +1,1525 @@
+{
+ "screen": "C4",
+ "note": "Figma use_figma ile dışa aktarıldı; \"manifest\" alanı design/components.yaml anahtarıdır. Katman adı \"<Bileşen> · <bölge-id>\" biçimindedir; bölge-id ekran kartındaki regions[].id ile eşleşir.",
+ "states": {
+  "first-order": {
+   "figmaNodeId": "7:16",
+   "size": [
+    390,
+    1416
+   ],
+   "image": "states/first-order.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "DomatTextField",
+    "InfoBanner",
+    "InlineNote",
+    "PrimaryButton",
+    "ScreenHeader",
+    "SummaryRow"
+   ],
+   "tokensAtScreenLevel": [
+    "color/background",
+    "color/on-surface",
+    "color/outline-variant",
+    "color/secondary-container",
+    "color/surface",
+    "color/surface-variant",
+    "radius/md",
+    "spacing/sp1",
+    "spacing/sp2",
+    "spacing/sp3",
+    "spacing/sp4",
+    "spacing/sp6",
+    "typography/title-large"
+   ],
+   "tree": {
+    "layer": "C4@first-order",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Ödeme"
+      },
+      "manifest": "ScreenHeader"
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "FormSection · personal-info",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Kişisel Bilgiler",
+          "style": "title-large"
+         },
+         {
+          "layer": "TextField · firstName",
+          "component": "Input/TextField",
+          "props": {
+           "value": "Elif",
+           "showSupporting": false,
+           "label": "Ad",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "TextField · lastName",
+          "component": "Input/TextField",
+          "props": {
+           "value": "Yılmaz",
+           "showSupporting": false,
+           "label": "Soyad",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "TextField · email",
+          "component": "Input/TextField",
+          "props": {
+           "supportingText": "Sipariş özetini e-postayla da almak istersen.",
+           "showSupporting": true,
+           "value": "elif.yilmaz@ornek.com",
+           "label": "E-posta (isteğe bağlı)",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "ConsentCheckbox · marketingConsent",
+          "component": "Input/ConsentCheckbox",
+          "props": {
+           "expandable": false,
+           "label": "Kampanya ve duyurulardan e-postayla haberdar olmak istiyorum.",
+           "checked": "false",
+           "expanded": "false"
+          },
+          "manifest": "ConsentCheckbox"
+         },
+         {
+          "layer": "InlineNote · kvkk-reminder",
+          "component": "Feedback/InlineNote",
+          "props": {
+           "text": "Bu bilgiler, kayıt olurken onayladığın KVKK aydınlatma metni kapsamında işlenir.",
+           "tone": "neutral"
+          },
+          "manifest": "InlineNote"
+         }
+        ]
+       },
+       {
+        "layer": "FormSection · order-summary",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Sipariş Özeti",
+          "style": "title-large"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺96,00",
+           "detail": "3 kg",
+           "label": "Domates",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺54,00",
+           "detail": "2 kg",
+           "label": "Salatalık",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺38,00",
+           "detail": "2 kg",
+           "label": "Kuru Soğan",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "divider",
+          "type": "RECTANGLE"
+         },
+         {
+          "layer": "SummaryRow · total",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": false,
+           "amount": "₺188,00",
+           "label": "Toplam (en fazla)",
+           "emphasis": "true"
+          },
+          "manifest": "SummaryRow"
+         }
+        ]
+       },
+       {
+        "layer": "InfoBanner · provision-explainer",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Şimdi ₺188,00 kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak.",
+         "tone": "neutral"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "FormSection · payment-method",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Ödeme Yöntemi",
+          "style": "title-large"
+         },
+         {
+          "layer": "TextField · cardNumber",
+          "component": "Input/TextField",
+          "props": {
+           "value": "5528 7900 1234 4821",
+           "showSupporting": false,
+           "label": "Kart numarası",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "expiry-cvv",
+          "layout": "HORIZONTAL",
+          "children": [
+           {
+            "layer": "TextField · cardExpiry",
+            "component": "Input/TextField",
+            "props": {
+             "value": "08/28",
+             "showSupporting": false,
+             "label": "Son kullanma",
+             "state": "default"
+            },
+            "manifest": "DomatTextField"
+           },
+           {
+            "layer": "TextField · cvv",
+            "component": "Input/TextField",
+            "props": {
+             "value": "•••",
+             "showSupporting": false,
+             "label": "CVV",
+             "state": "default"
+            },
+            "manifest": "DomatTextField"
+           }
+          ]
+         },
+         {
+          "layer": "ConsentCheckbox · saveCard",
+          "component": "Input/ConsentCheckbox",
+          "props": {
+           "expandable": false,
+           "label": "Kartımı sakla, sonraki siparişlerde tekrar girmeyeyim.",
+           "checked": "false",
+           "expanded": "false"
+          },
+          "manifest": "ConsentCheckbox"
+         }
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · distance-contract",
+        "component": "Input/ConsentCheckbox",
+        "props": {
+         "expandable": true,
+         "label": "Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum.",
+         "checked": "false",
+         "expanded": "false"
+        },
+        "manifest": "ConsentCheckbox"
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · pay",
+        "component": "Button/Primary",
+        "props": {
+         "text": "Öde ve Siparişi Tamamla · ₺188,00",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "manifest": "PrimaryButton"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "returning": {
+   "figmaNodeId": "7:125",
+   "size": [
+    390,
+    982
+   ],
+   "image": "states/returning.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "DomatTextField",
+    "InfoBanner",
+    "PaymentCardOption",
+    "PrimaryButton",
+    "ScreenHeader",
+    "SummaryRow",
+    "TextLink"
+   ],
+   "tokensAtScreenLevel": [
+    "color/background",
+    "color/on-surface",
+    "color/outline-variant",
+    "color/primary",
+    "color/surface",
+    "color/surface-variant",
+    "radius/md",
+    "spacing/sp1",
+    "spacing/sp2",
+    "spacing/sp3",
+    "spacing/sp4",
+    "spacing/sp6",
+    "typography/title-large"
+   ],
+   "tree": {
+    "layer": "C4@returning",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Ödeme"
+      },
+      "manifest": "ScreenHeader"
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "FormSection · order-summary",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Sipariş Özeti",
+          "style": "title-large"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺96,00",
+           "detail": "3 kg",
+           "label": "Domates",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺54,00",
+           "detail": "2 kg",
+           "label": "Salatalık",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺38,00",
+           "detail": "2 kg",
+           "label": "Kuru Soğan",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "divider",
+          "type": "RECTANGLE"
+         },
+         {
+          "layer": "SummaryRow · total",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": false,
+           "amount": "₺188,00",
+           "label": "Toplam (en fazla)",
+           "emphasis": "true"
+          },
+          "manifest": "SummaryRow"
+         }
+        ]
+       },
+       {
+        "layer": "InfoBanner · provision-explainer",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Şimdi ₺188,00 kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak.",
+         "tone": "neutral"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "FormSection · payment-method",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Ödeme Yöntemi",
+          "style": "title-large"
+         },
+         {
+          "layer": "PaymentCardOption · saved-card",
+          "component": "Payment/CardOption",
+          "props": {
+           "last4": "•••• 4821",
+           "brand": "MC",
+           "selected": "true"
+          },
+          "manifest": "PaymentCardOption"
+         },
+         {
+          "layer": "TextField · cvv",
+          "component": "Input/TextField",
+          "props": {
+           "showSupporting": false,
+           "value": "•••",
+           "label": "CVV",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "TextLink · use-other-card",
+          "component": "Button/TextLink",
+          "props": {
+           "text": "Farklı kart kullan",
+           "enabled": "true"
+          },
+          "manifest": "TextLink"
+         }
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · distance-contract",
+        "component": "Input/ConsentCheckbox",
+        "props": {
+         "expandable": true,
+         "label": "Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum.",
+         "checked": "true",
+         "expanded": "false"
+        },
+        "manifest": "ConsentCheckbox"
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · pay",
+        "component": "Button/Primary",
+        "props": {
+         "text": "Öde ve Siparişi Tamamla · ₺188,00",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "manifest": "PrimaryButton"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "second-order": {
+   "figmaNodeId": "7:192",
+   "size": [
+    390,
+    1114
+   ],
+   "image": "states/second-order.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "DomatTextField",
+    "InfoBanner",
+    "PaymentCardOption",
+    "PrimaryButton",
+    "ScreenHeader",
+    "SummaryRow",
+    "TextLink"
+   ],
+   "tokensAtScreenLevel": [
+    "color/background",
+    "color/on-surface",
+    "color/outline-variant",
+    "color/primary",
+    "color/surface",
+    "color/surface-variant",
+    "color/tertiary-container",
+    "radius/md",
+    "spacing/sp1",
+    "spacing/sp2",
+    "spacing/sp3",
+    "spacing/sp4",
+    "spacing/sp6",
+    "typography/title-large"
+   ],
+   "tree": {
+    "layer": "C4@second-order",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Ödeme"
+      },
+      "manifest": "ScreenHeader"
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "InfoBanner · second-order-banner",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": true,
+         "body": "₺188,00 ayrıca bloke edilecek. İlk siparişinle birlikte #DAL1 altında tek teslimatta buluşacaklar.",
+         "title": "Bu, bu haftaki 2. siparişin.",
+         "tone": "info"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "FormSection · order-summary",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Sipariş Özeti",
+          "style": "title-large"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺96,00",
+           "detail": "3 kg",
+           "label": "Domates",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺54,00",
+           "detail": "2 kg",
+           "label": "Salatalık",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺38,00",
+           "detail": "2 kg",
+           "label": "Kuru Soğan",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "divider",
+          "type": "RECTANGLE"
+         },
+         {
+          "layer": "SummaryRow · total",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": false,
+           "amount": "₺188,00",
+           "label": "Toplam (en fazla)",
+           "emphasis": "true"
+          },
+          "manifest": "SummaryRow"
+         }
+        ]
+       },
+       {
+        "layer": "InfoBanner · provision-explainer",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Şimdi ₺188,00 kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak.",
+         "tone": "neutral"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "FormSection · payment-method",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Ödeme Yöntemi",
+          "style": "title-large"
+         },
+         {
+          "layer": "PaymentCardOption · saved-card",
+          "component": "Payment/CardOption",
+          "props": {
+           "last4": "•••• 4821",
+           "brand": "MC",
+           "selected": "true"
+          },
+          "manifest": "PaymentCardOption"
+         },
+         {
+          "layer": "TextField · cvv",
+          "component": "Input/TextField",
+          "props": {
+           "showSupporting": false,
+           "value": "•••",
+           "label": "CVV",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "TextLink · use-other-card",
+          "component": "Button/TextLink",
+          "props": {
+           "text": "Farklı kart kullan",
+           "enabled": "true"
+          },
+          "manifest": "TextLink"
+         }
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · distance-contract",
+        "component": "Input/ConsentCheckbox",
+        "props": {
+         "expandable": true,
+         "label": "Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum.",
+         "checked": "true",
+         "expanded": "false"
+        },
+        "manifest": "ConsentCheckbox"
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · pay",
+        "component": "Button/Primary",
+        "props": {
+         "text": "Öde ve Siparişi Tamamla · ₺188,00",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "manifest": "PrimaryButton"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "cancellation-passed": {
+   "figmaNodeId": "7:272",
+   "size": [
+    390,
+    1222
+   ],
+   "image": "states/cancellation-passed.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "DomatTextField",
+    "InfoBanner",
+    "PaymentCardOption",
+    "PrimaryButton",
+    "ScreenHeader",
+    "SummaryRow",
+    "TextLink"
+   ],
+   "tokensAtScreenLevel": [
+    "color/background",
+    "color/on-surface",
+    "color/outline-variant",
+    "color/primary",
+    "color/surface",
+    "color/surface-variant",
+    "color/tertiary-container",
+    "color/warning-container",
+    "radius/md",
+    "spacing/sp1",
+    "spacing/sp2",
+    "spacing/sp3",
+    "spacing/sp4",
+    "spacing/sp6",
+    "typography/title-large"
+   ],
+   "tree": {
+    "layer": "C4@cancellation-passed",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Ödeme"
+      },
+      "manifest": "ScreenHeader"
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "InfoBanner · second-order-banner",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": true,
+         "body": "₺188,00 ayrıca bloke edilecek. İlk siparişinle birlikte #DAL1 altında tek teslimatta buluşacaklar.",
+         "title": "Bu, bu haftaki 2. siparişin.",
+         "tone": "info"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "InfoBanner · cancellation-warning",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Bu ekleme, iptal hakkı kapanmış bir teslimata eklenecek — bu siparişi daha sonra iptal edemezsin.",
+         "tone": "warning"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "FormSection · order-summary",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Sipariş Özeti",
+          "style": "title-large"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺96,00",
+           "detail": "3 kg",
+           "label": "Domates",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺54,00",
+           "detail": "2 kg",
+           "label": "Salatalık",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺38,00",
+           "detail": "2 kg",
+           "label": "Kuru Soğan",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "divider",
+          "type": "RECTANGLE"
+         },
+         {
+          "layer": "SummaryRow · total",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": false,
+           "amount": "₺188,00",
+           "label": "Toplam (en fazla)",
+           "emphasis": "true"
+          },
+          "manifest": "SummaryRow"
+         }
+        ]
+       },
+       {
+        "layer": "InfoBanner · provision-explainer",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Şimdi ₺188,00 kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak.",
+         "tone": "neutral"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "FormSection · payment-method",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Ödeme Yöntemi",
+          "style": "title-large"
+         },
+         {
+          "layer": "PaymentCardOption · saved-card",
+          "component": "Payment/CardOption",
+          "props": {
+           "last4": "•••• 4821",
+           "brand": "MC",
+           "selected": "true"
+          },
+          "manifest": "PaymentCardOption"
+         },
+         {
+          "layer": "TextField · cvv",
+          "component": "Input/TextField",
+          "props": {
+           "showSupporting": false,
+           "value": "•••",
+           "label": "CVV",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "TextLink · use-other-card",
+          "component": "Button/TextLink",
+          "props": {
+           "text": "Farklı kart kullan",
+           "enabled": "true"
+          },
+          "manifest": "TextLink"
+         }
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · distance-contract",
+        "component": "Input/ConsentCheckbox",
+        "props": {
+         "expandable": true,
+         "label": "Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum.",
+         "checked": "true",
+         "expanded": "false"
+        },
+        "manifest": "ConsentCheckbox"
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · pay",
+        "component": "Button/Primary",
+        "props": {
+         "text": "Öde ve Siparişi Tamamla · ₺188,00",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "manifest": "PrimaryButton"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "below-minimum": {
+   "figmaNodeId": "8:231",
+   "size": [
+    390,
+    1038
+   ],
+   "image": "states/below-minimum.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "DomatTextField",
+    "InfoBanner",
+    "PaymentCardOption",
+    "ScreenHeader",
+    "SecondaryButton",
+    "SummaryRow",
+    "TextLink"
+   ],
+   "tokensAtScreenLevel": [
+    "color/background",
+    "color/inverse-surface",
+    "color/on-surface",
+    "color/outline-variant",
+    "color/primary",
+    "color/surface",
+    "color/surface-variant",
+    "color/warning-container",
+    "radius/md",
+    "spacing/sp1",
+    "spacing/sp3",
+    "spacing/sp4",
+    "spacing/sp6",
+    "typography/title-large"
+   ],
+   "tree": {
+    "layer": "C4@below-minimum",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Ödeme"
+      },
+      "manifest": "ScreenHeader"
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "FormSection · order-summary",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Sipariş Özeti",
+          "style": "title-large"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺32,00",
+           "detail": "1 kg",
+           "label": "Domates",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺10,00",
+           "detail": "1 demet",
+           "label": "Maydanoz",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "divider",
+          "type": "RECTANGLE"
+         },
+         {
+          "layer": "SummaryRow · total",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": false,
+           "amount": "₺42,00",
+           "label": "Toplam (en fazla)",
+           "emphasis": "true"
+          },
+          "manifest": "SummaryRow"
+         }
+        ]
+       },
+       {
+        "layer": "InfoBanner · provision-explainer",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Şimdi ₺42,00 kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak.",
+         "tone": "neutral"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "FormSection · payment-method",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Ödeme Yöntemi",
+          "style": "title-large"
+         },
+         {
+          "layer": "PaymentCardOption · saved-card",
+          "component": "Payment/CardOption",
+          "props": {
+           "last4": "•••• 4821",
+           "brand": "MC",
+           "selected": "true"
+          },
+          "manifest": "PaymentCardOption"
+         },
+         {
+          "layer": "TextField · cvv",
+          "component": "Input/TextField",
+          "props": {
+           "value": "•••",
+           "showSupporting": false,
+           "label": "CVV",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "TextLink · use-other-card",
+          "component": "Button/TextLink",
+          "props": {
+           "text": "Farklı kart kullan",
+           "enabled": "true"
+          },
+          "manifest": "TextLink"
+         }
+        ]
+       },
+       {
+        "layer": "ConsentCheckbox · distance-contract",
+        "component": "Input/ConsentCheckbox",
+        "props": {
+         "expandable": true,
+         "label": "Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum.",
+         "checked": "false",
+         "expanded": "false"
+        },
+        "manifest": "ConsentCheckbox"
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "InfoBanner · below-minimum",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Bu sepet biraz küçük kaldı. En az ₺60,00'lık bir sipariş verebilirsin — her siparişin işlem maliyeti sabit olduğu için küçük tutarlarda zarar ediyoruz.",
+         "tone": "warning"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "SecondaryButton · back-to-cart",
+        "component": "Button/Secondary",
+        "props": {
+         "text": "Sepete Dön ve Ürün Ekle",
+         "enabled": "true"
+        },
+        "manifest": "SecondaryButton"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "card-declined": {
+   "figmaNodeId": "8:306",
+   "size": [
+    390,
+    1146
+   ],
+   "image": "states/card-declined.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "DomatTextField",
+    "InfoBanner",
+    "PaymentCardOption",
+    "PrimaryButton",
+    "ScreenHeader",
+    "SummaryRow",
+    "TextLink"
+   ],
+   "tokensAtScreenLevel": [
+    "color/background",
+    "color/error-container",
+    "color/on-surface",
+    "color/outline-variant",
+    "color/primary",
+    "color/surface",
+    "color/surface-variant",
+    "radius/md",
+    "spacing/sp1",
+    "spacing/sp2",
+    "spacing/sp3",
+    "spacing/sp4",
+    "spacing/sp6",
+    "typography/title-large"
+   ],
+   "tree": {
+    "layer": "C4@card-declined",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Ödeme"
+      },
+      "manifest": "ScreenHeader"
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "FormSection · order-summary",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Sipariş Özeti",
+          "style": "title-large"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺96,00",
+           "detail": "3 kg",
+           "label": "Domates",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺54,00",
+           "detail": "2 kg",
+           "label": "Salatalık",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺38,00",
+           "detail": "2 kg",
+           "label": "Kuru Soğan",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "divider",
+          "type": "RECTANGLE"
+         },
+         {
+          "layer": "SummaryRow · total",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": false,
+           "amount": "₺188,00",
+           "label": "Toplam (en fazla)",
+           "emphasis": "true"
+          },
+          "manifest": "SummaryRow"
+         }
+        ]
+       },
+       {
+        "layer": "InfoBanner · provision-explainer",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Şimdi ₺188,00 kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak.",
+         "tone": "neutral"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "FormSection · payment-method",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Ödeme Yöntemi",
+          "style": "title-large"
+         },
+         {
+          "layer": "PaymentCardOption · saved-card",
+          "component": "Payment/CardOption",
+          "props": {
+           "last4": "•••• 4821",
+           "brand": "MC",
+           "selected": "true"
+          },
+          "manifest": "PaymentCardOption"
+         },
+         {
+          "layer": "TextField · cvv",
+          "component": "Input/TextField",
+          "props": {
+           "value": "•••",
+           "showSupporting": false,
+           "label": "CVV",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "TextLink · use-other-card",
+          "component": "Button/TextLink",
+          "props": {
+           "text": "Farklı kart kullan",
+           "enabled": "true"
+          },
+          "manifest": "TextLink"
+         }
+        ]
+       },
+       {
+        "layer": "InfoBanner · card-error",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": true,
+         "showTitle": true,
+         "body": "Bankan şu anda ödeme isteğini kabul etmiyor. Kartından para çekilmedi; bilgilerin korunuyor.",
+         "title": "Ödeme alınamadı",
+         "tone": "error"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "ConsentCheckbox · distance-contract",
+        "component": "Input/ConsentCheckbox",
+        "props": {
+         "expandable": true,
+         "label": "Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum.",
+         "checked": "true",
+         "expanded": "false"
+        },
+        "manifest": "ConsentCheckbox"
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · pay",
+        "component": "Button/Primary",
+        "props": {
+         "text": "Öde ve Siparişi Tamamla · ₺188,00",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "manifest": "PrimaryButton"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "card-declined-3x": {
+   "figmaNodeId": "8:386",
+   "size": [
+    390,
+    1126
+   ],
+   "image": "states/card-declined-3x.png",
+   "componentsUsed": [
+    "ConsentCheckbox",
+    "DomatTextField",
+    "InfoBanner",
+    "PaymentCardOption",
+    "PrimaryButton",
+    "ScreenHeader",
+    "SummaryRow",
+    "TextLink"
+   ],
+   "tokensAtScreenLevel": [
+    "color/background",
+    "color/error-container",
+    "color/on-surface",
+    "color/outline-variant",
+    "color/primary",
+    "color/surface",
+    "color/surface-variant",
+    "radius/md",
+    "spacing/sp1",
+    "spacing/sp2",
+    "spacing/sp3",
+    "spacing/sp4",
+    "spacing/sp6",
+    "typography/title-large"
+   ],
+   "tree": {
+    "layer": "C4@card-declined-3x",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Ödeme"
+      },
+      "manifest": "ScreenHeader"
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "FormSection · order-summary",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Sipariş Özeti",
+          "style": "title-large"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺96,00",
+           "detail": "3 kg",
+           "label": "Domates",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺54,00",
+           "detail": "2 kg",
+           "label": "Salatalık",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "SummaryRow · item",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": true,
+           "amount": "₺38,00",
+           "detail": "2 kg",
+           "label": "Kuru Soğan",
+           "emphasis": "false"
+          },
+          "manifest": "SummaryRow"
+         },
+         {
+          "layer": "divider",
+          "type": "RECTANGLE"
+         },
+         {
+          "layer": "SummaryRow · total",
+          "component": "Data/SummaryRow",
+          "props": {
+           "showDetail": false,
+           "amount": "₺188,00",
+           "label": "Toplam (en fazla)",
+           "emphasis": "true"
+          },
+          "manifest": "SummaryRow"
+         }
+        ]
+       },
+       {
+        "layer": "InfoBanner · provision-explainer",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": false,
+         "showTitle": false,
+         "body": "Şimdi ₺188,00 kartında bloke edilecek. Hesabından çıkmayacak — Cumartesi öncesi sadece gerçek tutar çekilecek, kalan otomatik serbest bırakılacak.",
+         "tone": "neutral"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "FormSection · payment-method",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Ödeme Yöntemi",
+          "style": "title-large"
+         },
+         {
+          "layer": "PaymentCardOption · saved-card",
+          "component": "Payment/CardOption",
+          "props": {
+           "last4": "•••• 4821",
+           "brand": "MC",
+           "selected": "true"
+          },
+          "manifest": "PaymentCardOption"
+         },
+         {
+          "layer": "TextField · cvv",
+          "component": "Input/TextField",
+          "props": {
+           "value": "•••",
+           "showSupporting": false,
+           "label": "CVV",
+           "state": "default"
+          },
+          "manifest": "DomatTextField"
+         },
+         {
+          "layer": "TextLink · use-other-card",
+          "component": "Button/TextLink",
+          "props": {
+           "text": "Farklı kart kullan",
+           "enabled": "true"
+          },
+          "manifest": "TextLink"
+         }
+        ]
+       },
+       {
+        "layer": "InfoBanner · card-error",
+        "component": "Feedback/InfoBanner",
+        "props": {
+         "showActions": true,
+         "showTitle": true,
+         "body": "Farklı bir kart dener misin?",
+         "title": "Ödeme alınamadı",
+         "tone": "error"
+        },
+        "manifest": "InfoBanner"
+       },
+       {
+        "layer": "ConsentCheckbox · distance-contract",
+        "component": "Input/ConsentCheckbox",
+        "props": {
+         "expandable": true,
+         "label": "Mesafeli Satış Sözleşmesi'ni ve Ön Bilgilendirme Formu'nu okudum, onaylıyorum.",
+         "checked": "true",
+         "expanded": "false"
+        },
+        "manifest": "ConsentCheckbox"
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · pay",
+        "component": "Button/Primary",
+        "props": {
+         "text": "Öde ve Siparişi Tamamla · ₺188,00",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "manifest": "PrimaryButton"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "exportedAt": "2026-09-26T19:10Z"
+}

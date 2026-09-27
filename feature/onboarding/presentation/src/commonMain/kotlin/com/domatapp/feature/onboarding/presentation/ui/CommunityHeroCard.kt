@@ -1,5 +1,7 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
+import com.domatapp.core.design.theme.spacing
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +11,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,8 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.domatapp.core.design.theme.DomatColors
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 
@@ -35,12 +35,12 @@ internal fun CommunityHeroCard(uiModel: CommunityHeroCardUiModel) {
             .fillMaxWidth()
             .shadow(
                 elevation = 2.dp,
-                shape = RoundedCornerShape(12.dp),
+                shape = MaterialTheme.shapes.medium,
                 ambientColor = Color.Black.copy(alpha = 0.05f),
                 spotColor = Color.Black.copy(alpha = 0.05f),
             )
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White),
+            .clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -48,7 +48,7 @@ internal fun CommunityHeroCard(uiModel: CommunityHeroCardUiModel) {
                 .matchParentSize()
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(DomatColors.Malachite5, Color.Transparent),
+                        colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f), Color.Transparent),
                     ),
                 ),
         )
@@ -58,7 +58,7 @@ internal fun CommunityHeroCard(uiModel: CommunityHeroCardUiModel) {
                 .align(Alignment.TopStart)
                 .offset(x = (-40).dp, y = (-40).dp)
                 .blur(32.dp)
-                .background(DomatColors.Malachite5, CircleShape),
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f), CircleShape),
         )
         Box(
             modifier = Modifier
@@ -66,29 +66,23 @@ internal fun CommunityHeroCard(uiModel: CommunityHeroCardUiModel) {
                 .align(Alignment.BottomEnd)
                 .offset(x = 40.dp, y = 40.dp)
                 .blur(32.dp)
-                .background(DomatColors.Malachite10, CircleShape),
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
         )
 
         Column(
             modifier = Modifier.padding(vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp6),
         ) {
-            OverlappingAvatars(
-                primary20 = DomatColors.Malachite20,
-                primary30 = DomatColors.Malachite30,
-                primary = DomatColors.Malachite,
-            )
+            OverlappingAvatars()
             TruckWithPriceIndicator(
                 uiModel = uiModel,
-                primary = DomatColors.Malachite,
-                borderLight = DomatColors.Slate100,
             )
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun CommunityHeroCardPreview() {
     DomatTheme {

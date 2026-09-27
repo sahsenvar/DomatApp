@@ -1,5 +1,7 @@
 package com.domatapp.feature.onboarding.presentation.ui
 
+import com.domatapp.core.design.theme.spacing
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,7 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.presentation.component.button.ButtonSize
@@ -29,10 +31,10 @@ internal fun OnboardingBottomBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 20.dp, bottom = 40.dp),
+            .padding(horizontal = MaterialTheme.spacing.sp6)
+            .padding(top = MaterialTheme.spacing.sp5, bottom = MaterialTheme.spacing.sp10),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp5),
     ) {
         ProgressDots(
             totalDots = uiModel.totalDots,
@@ -47,7 +49,7 @@ internal fun OnboardingBottomBar(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun OnboardingBottomBarPreview() {
     DomatTheme {

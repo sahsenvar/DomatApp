@@ -1,0 +1,70 @@
+id: C2
+title: OTP Doğrulama
+source: DomatApp_Akis_C_Giris_Odeme_v1.4.md#C2
+route: { name: CheckoutGraph.OtpVerifyRoute, args: [phoneNumber: String], status: proposed }
+purpose: >
+  Numaranın gerçek sahibi olduğunu kanıtlamak; hesap burada bulunur ya da oluşturulur.
+  Doğrulama başarılı olur olmaz sepet devri (cart/merge) arka planda tetiklenir.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.c2_title, showBack: true }
+  - id: description
+    component: text
+    style: body-medium / on-surface-variant
+    text: str.c2_description   # {0} = maskeli numara
+  - id: change-number
+    component: TextLink
+    props: { text: str.c2_change_number }
+  - id: code
+    component: OtpCodeField
+    props: { value: "", state: default }
+  - id: resend
+    component: TextLink
+    props: { text: str.c2_resend, enabled: "cooldownSeconds == 0" }
+    companion: { component: text, style: body-small / on-surface-variant, text: str.c2_resend_countdown }
+  - id: linked-account
+    component: InfoBanner
+    props: { tone: info, body: str.c2_linked_account }
+    visibleWhen: "linkedToExistingAccount == true (doğrulama sonrası, geçişten hemen önce kısa süre)"
+# Not: Birincil buton yok — 6. hane girildiğinde doğrulama otomatik başlar.
+
+states:
+  - id: default
+    description: Boş kod, geri sayım çalışıyor (Tekrar gönder pasif).
+  - id: verifying
+    description: 6 hane girildi, doğrulama sürüyor (hücreler pasif + küçük ilerleme göstergesi).
+  - id: error
+    description: Yanlış kod; OtpCodeField state=error + str.c2_error_wrong_code.
+  - id: resend-available
+    description: Geri sayım bitti, "Kodu Tekrar Gönder" aktif.
+  - id: linked-account
+    description: Mevcut hesaba bağlandı bilgisi (InfoBanner info).
+
+data:
+  uiState: ["maskedPhone: String", "code: String", "isVerifying: Boolean", "isError: Boolean", "cooldownSeconds: Int", "attemptsLeft: Int", "showLinkedAccountNote: Boolean"]
+actions: [CodeChanged(code), ResendClicked, ChangeNumberClicked, BackClicked]
+navigation:
+  - { on: ChangeNumberClicked, action: back, to: C1 }
+  - { on: "verify ok + merge ok + adres yok", replaceTo: C3 }
+  - { on: "verify ok + merge ok + adres var", replaceTo: C4 }
+  - { on: "merge 409 window_closed", replaceTo: WindowClosed }
+api: ["POST /v1/auth/otp/verify", "POST /v1/cart/merge", "GET /v1/addresses/me", "GET /v1/app-config (otpResendCooldownSeconds, otpMaxAttempts)"]
+
+strings:
+  c2_title: "Kodu Gir"
+  c2_description: "%1$s numarasına bir kod gönderdik."
+  c2_change_number: "Numarayı Değiştir"
+  c2_resend: "Kodu Tekrar Gönder"
+  c2_resend_countdown: "%1$d sn sonra tekrar gönderebilirsin"
+  c2_error_wrong_code: "Kod hatalı. Tekrar dener misin?"
+  c2_linked_account: "Bu numarayla daha önce bir hesap açmışsın, ona bağlandık."
+
+open:
+  - "c2_title ve c2_error_wrong_code akış dokümanında birebir yok; öneri."
+  - "otpMaxAttempts dolduğunda ne gösterileceği akışta tanımlı değil (§7 Soru 9 ile birlikte netleşmeli)."
+
+# Tasarımdaki örnek veri (metin tutarlılık kontrolü bunları kabul eder).
+sampleData: { maskedPhone: "+90 532 *** ** 67", code: ["4", "8", "2", "9", "1", "5"], cooldownSeconds: 45 }

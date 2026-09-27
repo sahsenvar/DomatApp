@@ -1,7 +1,8 @@
 package com.domatapp.feature.auth.presentation.screen.component
 
-import androidx.compose.foundation.Image
+import com.domatapp.core.design.theme.spacing
 import androidx.compose.foundation.background
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -17,33 +18,35 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
-import com.domatapp.core.design.theme.DomatColors
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
+
+private val BorderWidth = 1.dp
 
 @Composable
 fun IconBadge(
     text: String,
     iconPainter: Painter,
     modifier: Modifier = Modifier,
-    containerColor: Color = DomatColors.Malachite20,
-    borderColor: Color = DomatColors.Malachite30,
-    contentColor: Color = DomatColors.Malachite,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    borderColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+    contentColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     Row(
         modifier = modifier
             .clip(CircleShape)
             .background(containerColor)
-            .border(1.dp, borderColor, CircleShape)
-            .padding(horizontal = 13.dp, vertical = 5.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .border(BorderWidth, borderColor, CircleShape)
+            .padding(horizontal = MaterialTheme.spacing.sp3 + BorderWidth, vertical = MaterialTheme.spacing.sp1 + BorderWidth),
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp2),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(
+        Icon(
             painter = iconPainter,
             contentDescription = null,
-            modifier = Modifier.size(13.dp),
+            tint = contentColor,
+            modifier = Modifier.size(16.dp),
         )
         Text(
             text = text.uppercase(),
@@ -53,7 +56,7 @@ fun IconBadge(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun IconBadgePreview() {
     DomatTheme {

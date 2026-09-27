@@ -1,15 +1,15 @@
 package com.domatapp.core.presentation.component.button
 
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.domatapp.core.design.theme.DomatColors
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 
@@ -32,19 +32,19 @@ fun DomatIconButton(
         onClick = onClick,
         modifier = modifier.size(sizeDp),
         enabled = enabled,
-        shape = RoundedCornerShape(percent = 50),
+        shape = CircleShape,
         colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = DomatColors.Slate100,
-            contentColor = DomatColors.Slate900,
-            disabledContainerColor = DomatColors.Slate200,
-            disabledContentColor = DomatColors.CoolGray400,
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            disabledContainerColor = MaterialTheme.colorScheme.outlineVariant,
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
         ),
     ) {
         Icon(imageVector = icon, contentDescription = contentDescription)
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun DomatIconButtonPreview() {
     val previewIcon = ImageVector.Builder(

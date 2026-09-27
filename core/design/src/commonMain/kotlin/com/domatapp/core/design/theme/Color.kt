@@ -89,7 +89,7 @@ internal fun domatLightColorScheme(): ColorScheme = lightColorScheme(
     onTertiary = DomatColors.White,
     tertiaryContainer = DomatColors.Blue100,
     onTertiaryContainer = DomatColors.Blue900,
-    background = DomatColors.White,
+    background = DomatColors.MintWhite,
     onBackground = DomatColors.Slate900,
     surface = DomatColors.White,
     onSurface = DomatColors.Slate900,
@@ -101,6 +101,8 @@ internal fun domatLightColorScheme(): ColorScheme = lightColorScheme(
     onErrorContainer = DomatColors.Red800,
     outline = DomatColors.Slate300,
     outlineVariant = DomatColors.Slate200,
+    inverseSurface = DomatColors.Slate900,
+    inverseOnSurface = DomatColors.White,
 )
 
 internal fun domatDarkColorScheme(): ColorScheme = darkColorScheme(
@@ -128,4 +130,6 @@ internal fun domatDarkColorScheme(): ColorScheme = darkColorScheme(
     onErrorContainer = DomatColors.Red100,
     outline = DomatColors.Slate400,
     outlineVariant = DomatColors.Slate700,
+    inverseSurface = DomatColors.Slate100,
+    inverseOnSurface = DomatColors.Slate900,
 )

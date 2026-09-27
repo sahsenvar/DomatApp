@@ -1,5 +1,6 @@
 package com.domatapp.feature.onboarding.presentation.screen.community
 
+import com.domatapp.core.design.theme.spacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,8 +19,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import com.domatapp.core.design.theme.DomatColors
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
 import com.domatapp.core.resource.generated.resources.Res
@@ -42,20 +42,20 @@ internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(DomatColors.White),
+            .background(MaterialTheme.colorScheme.surface),
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.sp12))
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
+                    .padding(horizontal = MaterialTheme.spacing.sp8),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp4),
             ) {
                 CommunityHeroCard(uiModel = heroCard)
 
@@ -63,12 +63,12 @@ internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
                     text = buildAnnotatedString {
                         append(stringResource(Res.string.onboarding_community_title_line1))
                         append("\n")
-                        withStyle(SpanStyle(color = DomatColors.Malachite)) {
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                             append(stringResource(Res.string.onboarding_community_title_highlight))
                         }
                     },
                     style = MaterialTheme.typography.headlineLarge,
-                    color = DomatColors.Slate900,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -76,7 +76,7 @@ internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
                 Text(
                     text = stringResource(Res.string.onboarding_community_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = DomatColors.Slate600,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -87,7 +87,7 @@ internal fun OnboardingCommunityPageContent(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun OnboardingCommunityPageContentPreview() {
     DomatTheme {

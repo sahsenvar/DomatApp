@@ -12,16 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import com.domatapp.core.design.theme.DomatColors
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.domatapp.core.design.theme.DomatTheme
+import com.domatapp.core.design.theme.spacing
 
 @Composable
 fun ProgressSteps(
@@ -29,14 +29,14 @@ fun ProgressSteps(
     currentStep: Int,
     modifier: Modifier = Modifier,
 ) {
-    val primaryColor = DomatColors.Malachite
-    val inactiveColor = DomatColors.Slate200
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val inactiveColor = MaterialTheme.colorScheme.outlineVariant
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            .padding(vertical = MaterialTheme.spacing.sp3),
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sp3, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         repeat(totalSteps) { index ->
@@ -57,7 +57,7 @@ fun ProgressSteps(
                         modifier = Modifier
                             .width(width)
                             .height(6.dp)
-                            .clip(RoundedCornerShape(9999.dp))
+                            .clip(CircleShape)
                             .background(primaryColor),
                     )
                 }
@@ -72,7 +72,7 @@ fun ProgressSteps(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun ProgressStepsPreview() {
     DomatTheme {

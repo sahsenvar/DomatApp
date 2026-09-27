@@ -8,6 +8,35 @@ DomatApp is a **Kotlin Multiplatform (KMP)** application targeting Android and i
 
 This is a reversal. Until Gezgin gained iOS targets, the rule here was "Jetpack Compose for Android, 100% native SwiftUI for iOS, UI code is NOT shared" - because the navigation layer had no iOS klib, so routes, screens and the `@ScreenWrapper` could not leave `androidMain`, and iOS drove its own SwiftUI `NavigationStack`. That SwiftUI tree never became functional (its `LoginView` was a placeholder with the ViewModel wiring written out in comments), and with `gezgin-core` publishing `iosArm64` / `iosSimulatorArm64` there is no longer a reason to write every screen twice. The SwiftUI feature views, the hand-rolled `NavigationRouter` and the Swift design system were deleted; `iosApp` is now a shell - `iOSApp.swift`, a `UIViewControllerRepresentable`, and the one Swift file Kotlin genuinely cannot replace (Google sign-in, see *Authentication Architecture*).
 
+## Design → Code (read before building any screen)
+
+UI work starts from the design contract in `design/` — see `design/README.md`. In short:
+
+- `design/tokens/DESIGN.md` is the **single source of truth** for colors, typography, spacing and radii.
+  `:core:design` (Compose theme) and the Figma variables are derived from it; change the token file first.
+- `design/components.yaml` maps every Figma component to its Compose symbol and parameters. It stands in
+  for Figma Code Connect. **If a design uses a component listed there, call that composable — never
+  re-implement it inside a screen.** Components with `status: new|change|promote` are written/changed in
+  `:core:presentation/component/` first, then used.
+- `design/screens/<ID>/` is the approved design package for a screen (`annotations.md`, `card.yaml`,
+  `structure.json`, `states/*.png`). Read it in that order; use the PNGs for visual verification.
+  The live Figma file (`source.json`) is only for details the package does not cover.
+- Screen code must not contain `Color(0x…)`, `colorResource(...)`, `RoundedCornerShape(<n>.dp)` or raw
+  spacing `dp`. Use `MaterialTheme.colorScheme / domatColors / spacing / shapes / typography`.
+  Component-internal *sizes* (button height, icon size, border width) may stay inside component files.
+- Strings come from the card's `strings:` keys into `core/resource/src/commonMain/composeResources/values/strings.xml`.
+- Contract rules (numbered, each linked to the learning that produced it): `design/README.md`.
+- Skills (`.claude/skills/`, auto-discovered): `figma-screens` (card → Figma → package),
+  `figma-to-compose` (package → Compose), `design-verify` (Roborazzi + diff + text check + visual review),
+  `design-system-change` (component/icon/token changes: spec → Figma → code → affected screens),
+  `design-chain-retro` (review the learning log and propose skill/contract/check updates).
+- **Learning loop:** every design skill ends by logging the failures it hit in `ai/design/learnings.yaml`
+  (English fields, Turkish content; validate with `python3 ai/design/scripts/learnings.py check`) and, for
+  screens, first-pass numbers in `ai/design/screen-metrics.yaml`. Skills are not edited ad hoc — changes go
+  through `design-chain-retro` and Sahan's approval.
+
+Note: shared UI components live in `:core:presentation` (`component/`), the theme in `:core:design`.
+
 ## Build Commands
 
 ### Android
@@ -20,7 +49,18 @@ This is a reversal. Until Gezgin gained iOS targets, the rule here was "Jetpack 
 
 # Check dependencies
 ./gradlew :composeApp:dependencies
+
+# Render every @Preview with Roborazzi (Robolectric, JVM — no emulator) and diff a screen against its design package
+./gradlew :composeApp:recordRoborazziDebug
+python3 ai/design/scripts/compare_design_package.py C4
 ```
+
+Roborazzi setup (`composeApp/build.gradle.kts`): ComposablePreviewScanner generates one Robolectric test per
+`@Preview` in `com.domatapp` (private previews included), `sdk = 36`, device `w390dp-h844dp-xhdpi` (2x — same
+scale as the design PNGs). Two settings are load-bearing: `application = android.app.Application` (the real
+`DomatApplication` would start Koin once per test → `KoinApplicationAlreadyStartedException`) and the JDK 21
+`--add-opens/--add-exports` jvmArgs (Robolectric's `FileDescriptor` access). Behind a Maven Central mirror, pass
+`-Probolectric.dependency.repo.url=<mirror>` so Robolectric can fetch its android-all jar.
 
 ### iOS
 Open `/iosApp` directory in Xcode or use the IDE's run configuration. The iOS app consumes the `Shared.framework` built from the `:shared` module.
@@ -42,7 +82,7 @@ The project follows a strict layered architecture:
   :core:remote/           → Network layer (Ktor REST via KtorfitX) + the shared Json
   :core:config/           → Preferences platform bridge (`preferencesContext()`) + DataStore deps
   :core:navigation/       → Gezgin navigation graph (@NavGraph routes + declared edges)
-  :core:resource/         → Shared strings/drawables/fonts (Compose Resources) + colors.xml
+  :core:resource/         → Shared strings/drawables/fonts (Compose Resources)
   :core:localization/     → i18n support
   :core:analytics/        → Provider-agnostic event tracking facade. Deliberately empty - no
                              provider SDK chosen yet. Do not add a dependency here speculatively;
@@ -675,12 +715,17 @@ gone.
   Compose UI runs here, so every icon is committed as an Android vector drawable XML, not as `.svg`.
 - **There is no color resource type.** Compose Resources 1.12.0 ships `StringResource`,
   `PluralStringResource`, `StringArrayResource`, `DrawableResource` and `FontResource` — that is the
-  whole list. Hence `DomatColors` in Kotlin (see above); do not reintroduce `colors.xml`.
+  whole list, and colors are not resources at all. They live in `:core:design` as theme tokens
+  derived from `design/tokens/DESIGN.md`, read via `MaterialTheme.colorScheme` /
+  `MaterialTheme.domatColors`, with the raw palette in `DomatColors` for the handful of values
+  Material 3 does not model. `colors.xml` was deleted once the last `colorResource(R.color.x)` call
+  was migrated; do not reintroduce it.
 - **`androidResources.enable = true` is set by `KmpLibraryConventionPlugin`.** Android resource
   processing is off by default under `com.android.kotlin.multiplatform.library`. Moko's plugin used
   to switch it on as a side effect; with Moko gone the build has to ask for it explicitly, or
-  Compose Resources' Android asset packaging is skipped. It no longer has anything to do with
-  `colors.xml`.
+  Compose Resources' Android asset packaging is skipped. Nothing reads
+  `com.domatapp.core.resource.R` today, so it is kept for Compose Resources' packaging and any
+  future Android-only resource.
 - **Filenames become Kotlin identifiers.** Moko's mandatory `@1x` PNG suffix is illegal here
   (`img_hero_login@1x.png` → `img_hero_login.png`); density variants use a qualifier directory
   (`drawable-xhdpi/`) instead.
@@ -1036,6 +1081,9 @@ All dependencies are managed in `gradle/libs.versions.toml`:
 ## Testing
 
 Test source sets are currently disabled across core and feature modules. Do not automatically add test dependencies or generate test files unless explicitly requested.
+
+Exception: `:composeApp` has Roborazzi screenshot tests, **generated** from `@Preview`s — no hand-written test
+files. A screen preview named `<ID>@<state>` is what the design comparison script matches.
 
 ## CI (`.github/workflows/ci.yml`)
 

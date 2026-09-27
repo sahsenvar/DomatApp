@@ -1,0 +1,324 @@
+{
+ "screen": "C5",
+ "note": "Figma use_figma ile dışa aktarıldı; \"manifest\" alanı design/components.yaml anahtarıdır. Katman adı \"<Bileşen> · <bölge-id>\" biçimindedir; bölge-id ekran kartındaki regions[].id ile eşleşir. \"texts\" = örnekte görünen metinler (metin tutarlılık kontrolü bunları kullanır).",
+ "states": {
+  "first-order": {
+   "figmaNodeId": "30:900",
+   "size": [
+    390,
+    911
+   ],
+   "image": "states/first-order.png",
+   "componentsUsed": [
+    "CommunityProgressCard",
+    "GhostButton",
+    "InfoRow",
+    "InlineNote",
+    "SecondaryButton",
+    "StatusHero",
+    "SummaryRow"
+   ],
+   "tree": {
+    "layer": "C5@first-order",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "StatusHero · hero",
+        "component": "Feedback/StatusHero",
+        "manifest": "StatusHero",
+        "props": {
+         "subtitle": "Cumartesi, kapının önünde.",
+         "title": "Siparişin alındı!",
+         "tone": "success"
+        },
+        "texts": [
+         "Siparişin alındı!",
+         "Cumartesi, kapının önünde."
+        ]
+       },
+       {
+        "layer": "FormSection · delivery",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Teslimat",
+          "style": "title-large"
+         },
+         {
+          "layer": "InfoRow · delivery-code",
+          "component": "Data/InfoRow",
+          "manifest": "InfoRow",
+          "props": {
+           "value": "#DAL1",
+           "label": "Teslimat kodu",
+           "trailingAction": "false"
+          },
+          "texts": [
+           "Teslimat kodu",
+           "#DAL1"
+          ]
+         },
+         {
+          "layer": "InfoRow · delivery-day",
+          "component": "Data/InfoRow",
+          "manifest": "InfoRow",
+          "props": {
+           "value": "Cumartesi, 3 Ekim",
+           "label": "Tahmini teslimat",
+           "trailingAction": "false"
+          },
+          "texts": [
+           "Tahmini teslimat",
+           "Cumartesi, 3 Ekim"
+          ]
+         }
+        ]
+       },
+       {
+        "layer": "FormSection · payment",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Ödeme",
+          "style": "title-large"
+         },
+         {
+          "layer": "SummaryRow · blocked-amount",
+          "component": "Data/SummaryRow",
+          "manifest": "SummaryRow",
+          "props": {
+           "showDetail": false,
+           "amount": "₺188,00",
+           "detail": "3 kg",
+           "label": "Bloke edilen tutar",
+           "emphasis": "true"
+          },
+          "texts": [
+           "Bloke edilen tutar",
+           "₺188,00"
+          ]
+         },
+         {
+          "layer": "InlineNote · provision-reminder",
+          "component": "Feedback/InlineNote",
+          "manifest": "InlineNote",
+          "props": {
+           "text": "Bu tutar Cumartesi öncesi hesabından çekilmeyecek, sadece gerçek tutar çekilecek.",
+           "tone": "neutral"
+          },
+          "texts": [
+           "Bu tutar Cumartesi öncesi hesabından çekilmeyecek, sadece gerçek tutar çekilecek."
+          ]
+         }
+        ]
+       },
+       {
+        "layer": "CommunityProgressCard · community",
+        "component": "Community/ProgressCard",
+        "manifest": "CommunityProgressCard",
+        "props": {
+         "caption": "Bir sonraki kademeye 12 sipariş kaldı — kg fiyatı ₺2 daha düşecek.",
+         "title": "Topluluğa katkın",
+         "progress": "50"
+        },
+        "texts": [
+         "Topluluğa katkın",
+         "Bir sonraki kademeye 12 sipariş kaldı — kg fiyatı ₺2 daha düşecek."
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · actions",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "SecondaryButton · share-whatsapp",
+        "component": "Button/Secondary",
+        "manifest": "SecondaryButton",
+        "props": {
+         "showIcon": true,
+         "text": "WhatsApp'ta Paylaş",
+         "enabled": "true"
+        },
+        "texts": [
+         "WhatsApp'ta Paylaş"
+        ]
+       },
+       {
+        "layer": "GhostButton · back-to-market",
+        "component": "Button/Ghost",
+        "manifest": "GhostButton",
+        "props": {
+         "text": "Pazar'a Dön",
+         "enabled": "true"
+        },
+        "texts": [
+         "Pazar'a Dön"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "addition": {
+   "figmaNodeId": "30:938",
+   "size": [
+    390,
+    851
+   ],
+   "image": "states/addition.png",
+   "componentsUsed": [
+    "CommunityProgressCard",
+    "GhostButton",
+    "InfoRow",
+    "InlineNote",
+    "StatusHero",
+    "SummaryRow"
+   ],
+   "tree": {
+    "layer": "C5@addition",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "StatusHero · hero",
+        "component": "Feedback/StatusHero",
+        "manifest": "StatusHero",
+        "props": {
+         "subtitle": "Cumartesi, kapının önünde.",
+         "title": "Eklemen tamamlandı!",
+         "tone": "success"
+        },
+        "texts": [
+         "Eklemen tamamlandı!",
+         "Cumartesi, kapının önünde."
+        ]
+       },
+       {
+        "layer": "FormSection · delivery",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Teslimat",
+          "style": "title-large"
+         },
+         {
+          "layer": "InfoRow · delivery-code",
+          "component": "Data/InfoRow",
+          "manifest": "InfoRow",
+          "props": {
+           "value": "#DAL1",
+           "label": "Teslimat kodu",
+           "trailingAction": "false"
+          },
+          "texts": [
+           "Teslimat kodu",
+           "#DAL1"
+          ]
+         },
+         {
+          "layer": "InfoRow · delivery-day",
+          "component": "Data/InfoRow",
+          "manifest": "InfoRow",
+          "props": {
+           "value": "Cumartesi, 3 Ekim",
+           "label": "Tahmini teslimat",
+           "trailingAction": "false"
+          },
+          "texts": [
+           "Tahmini teslimat",
+           "Cumartesi, 3 Ekim"
+          ]
+         }
+        ]
+       },
+       {
+        "layer": "FormSection · payment",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Ödeme",
+          "style": "title-large"
+         },
+         {
+          "layer": "SummaryRow · blocked-amount",
+          "component": "Data/SummaryRow",
+          "manifest": "SummaryRow",
+          "props": {
+           "showDetail": false,
+           "amount": "₺188,00",
+           "detail": "3 kg",
+           "label": "Bloke edilen tutar",
+           "emphasis": "true"
+          },
+          "texts": [
+           "Bloke edilen tutar",
+           "₺188,00"
+          ]
+         },
+         {
+          "layer": "InlineNote · provision-reminder",
+          "component": "Feedback/InlineNote",
+          "manifest": "InlineNote",
+          "props": {
+           "text": "Bu tutar Cumartesi öncesi hesabından çekilmeyecek, sadece gerçek tutar çekilecek.",
+           "tone": "neutral"
+          },
+          "texts": [
+           "Bu tutar Cumartesi öncesi hesabından çekilmeyecek, sadece gerçek tutar çekilecek."
+          ]
+         }
+        ]
+       },
+       {
+        "layer": "CommunityProgressCard · community",
+        "component": "Community/ProgressCard",
+        "manifest": "CommunityProgressCard",
+        "props": {
+         "caption": "Bir sonraki kademeye 12 sipariş kaldı — kg fiyatı ₺2 daha düşecek.",
+         "title": "Topluluğa katkın",
+         "progress": "75"
+        },
+        "texts": [
+         "Topluluğa katkın",
+         "Bir sonraki kademeye 12 sipariş kaldı — kg fiyatı ₺2 daha düşecek."
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · actions",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "GhostButton · back-to-market",
+        "component": "Button/Ghost",
+        "manifest": "GhostButton",
+        "props": {
+         "text": "Pazar'a Dön",
+         "enabled": "true"
+        },
+        "texts": [
+         "Pazar'a Dön"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

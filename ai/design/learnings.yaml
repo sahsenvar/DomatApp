@@ -1,0 +1,432 @@
+# Tasarım zinciri öğrenim günlüğü (akış → kart → Figma → paket → kod → doğrulama)
+#
+# Alan adları İngilizce, içerik Türkçe. Her skill'in son adımı bu dosyaya kayıt eklemektir.
+# Doğrulama ve rapor:  python3 ai/design/scripts/learnings.py check | report
+#
+# Alanlar:
+#   id              L-<3 hane>, artan
+#   date            ilk görüldüğü gün (YYYY-MM-DD)
+#   stage_caused    hatanın YAPILDIĞI aşama
+#   stage_detected  hatanın FARK EDİLDİĞİ aşama
+#                   aşamalar: flow | card | figma | package | code | verify | tooling
+#   type            contract-gap      sözleşmede kural/bilgi yoktu
+#                   process-skipped   kural vardı, uygulanmadı
+#                   tool-pitfall      aracın beklenmedik davranışı
+#                   misinterpretation kural/veri yanlış yorumlandı
+#                   environment       ortam/altyapı sorunu (derleme, ağ, JDK)
+#   symptom         ne görüldü
+#   root_cause      neden oldu
+#   fix             o an ne yapıldı
+#   occurrences     kaç kez görüldü (aynı kök neden tekrar görülürse artır, yeni kayıt açma)
+#   seen_in         görüldüğü ekran/iş listesi
+#   measure         kalıcı önlem (yoksa null). kind: check | contract | skill | code | note
+#                   ref: dosya yolu ya da skill adı (#bölüm)
+#   status          open (önlem yok) | mitigated (önlem var) | retired (artık geçerli değil)
+#
+# Terfi kuralı: occurrences >= 2 ve measure null ise retro'da önlem önerilir.
+# Önlem tercih sırası: check > contract > skill > note.
+
+entries:
+
+  - id: L-001
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: verify
+    type: contract-gap
+    symptom: "Figma'daki metin alanında etiket kutunun içinde, kodda M3 outlined (etiket kenarlıkta). Kart seçimindeki radyo Figma'da özel halka, kodda M3 RadioButton."
+    root_cause: "Kodda zaten var olan (existing) bileşenlerin Figma karşılığı koddaki görünümden bağımsız çizildi."
+    fix: "Figma kütüphanesi koda hizalandı: M3 outlined metin alanı, M3 radyo (20 dp halka + 12 dp nokta)."
+    occurrences: 2
+    seen_in: [C4 DomatTextField, C4 PaymentCardOption]
+    measure: {kind: contract, ref: "design/README.md#8"}
+    status: mitigated
+
+  - id: L-002
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: verify
+    type: tool-pitfall
+    symptom: "Her metin bloğu Figma'dakinden 1–4 dp kısa; kayma ekran boyunca birikiyor."
+    root_cause: "Compose satır yüksekliğinin ilk ve son satırını kırpıyor (LineHeightStyle varsayılanı), Figma kırpmıyor."
+    fix: "Tüm yazı stillerine LineHeightStyle(Center, Trim.None)."
+    occurrences: 1
+    seen_in: [C4]
+    measure: {kind: code, ref: "core/design/.../theme/Typography.kt (FigmaLineHeight)"}
+    status: mitigated
+
+  - id: L-003
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: verify
+    type: process-skipped
+    symptom: "C4@card-declined-3x: tasarımdaki gövde metni ve buton sırası karttan farklı."
+    root_cause: "Figma'ya karttaki strings yerine serbest metin yazıldı."
+    fix: "Figma karta hizalandı (kart kazanır)."
+    occurrences: 1
+    seen_in: [C4]
+    measure: {kind: check, ref: "ai/design/scripts/check_design_texts.py"}
+    status: mitigated
+
+  - id: L-004
+    date: 2026-09-26
+    stage_caused: tooling
+    stage_detected: verify
+    type: contract-gap
+    symptom: "C4 kör testinde görsel uygunluk ölçülemedi."
+    root_cause: "Önizlemelerden ekran görüntüsü üreten altyapı yoktu."
+    fix: "Roborazzi + ComposablePreviewScanner kuruldu; compare_design_package.py yazıldı."
+    occurrences: 1
+    seen_in: [C4]
+    measure: {kind: check, ref: "ai/design/scripts/compare_design_package.py"}
+    status: mitigated
+
+  - id: L-005
+    date: 2026-09-26
+    stage_caused: package
+    stage_detected: verify
+    type: contract-gap
+    symptom: "Yeni bileşenlerde ikon 24↔20, yazı bodyLarge↔bodyMedium, rozet boyutu, boşluklar Figma'dan farklı."
+    root_cause: "Bileşenlerin iç ölçüleri manifestte yoktu; kod AI'ı tahmin etti."
+    fix: "Kod Figma'ya hizalandı; components.yaml'a spec blokları eklendi."
+    occurrences: 1
+    seen_in: [C4 InfoBanner, C4 PaymentCardOption, C4 SummaryRow, C4 ScreenHeader]
+    measure: {kind: contract, ref: "design/README.md#7"}
+    status: mitigated
+
+  - id: L-006
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: verify
+    type: contract-gap
+    symptom: "Figma'da TextLink 28 dp, onay kutusu satırı 40 dp; kodda 48 dp."
+    root_cause: "Erişilebilirlik kuralı tasarım kütüphanesine uygulanmamıştı."
+    fix: "Figma'da minHeight 48."
+    occurrences: 1
+    seen_in: [C4]
+    measure: {kind: contract, ref: "design/README.md#10"}
+    status: mitigated
+
+  - id: L-007
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: verify
+    type: contract-gap
+    symptom: "Tasarımda CVV ve e-posta alanı 'focused' çizilmiş; önizleme odak gösteremediği için fark çıktı."
+    root_cause: "Odak bir kullanıcı etkileşimi, ekran durumu değil."
+    fix: "Tasarım durumlarında focused kaldırıldı."
+    occurrences: 1
+    seen_in: [C4]
+    measure: {kind: contract, ref: "design/README.md#4"}
+    status: mitigated
+
+  - id: L-008
+    date: 2026-09-26
+    stage_caused: tooling
+    stage_detected: verify
+    type: environment
+    symptom: "Karşılaştırma yanlış render'ı seçti (eski yükseklikteki PNG), iki C4 durumu yanlışlıkla FAIL."
+    root_cause: "Gradle derleme önbelleği Roborazzi çıktı klasörünü eski dosyalarla geri yüklüyor; en yeni dosya kuralı yetmedi."
+    fix: "Betik, boyutu tasarımla eşleşen render'ı tercih ediyor."
+    occurrences: 2
+    seen_in: [C4, Akış C doğrulaması]
+    measure: {kind: check, ref: "ai/design/scripts/compare_design_package.py"}
+    status: mitigated
+
+  - id: L-009
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "Klonlanan TextField varyantında (state=empty) etiket 'Ad' kaldı, yardımcı metin görünmedi."
+    root_cause: "Figma'da varyant klonlanınca componentPropertyReferences kopyalanmıyor."
+    fix: "Referanslar elle yeniden bağlandı."
+    occurrences: 1
+    seen_in: [Input/TextField]
+    measure: {kind: skill, ref: "figma-screens#tuzaklar"}
+    status: mitigated
+
+  - id: L-010
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "Bileşen yükseklikleri 10 px'te kaldı / içerik kırpıldı."
+    root_cause: "resize() auto-layout boyutlandırmasını FIXED yapıyor."
+    fix: "resize sonrası primaryAxisSizingMode/counterAxisSizingMode = AUTO."
+    occurrences: 2
+    seen_in: [Input/TextField (pilot), 6 yeni bileşen]
+    measure: {kind: skill, ref: "figma-screens#tuzaklar"}
+    status: mitigated
+
+  - id: L-011
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: verify
+    type: tool-pitfall
+    symptom: "Pasif buton/bağlantı yazısı ekranlarda koyu; bileşende %38."
+    root_cause: "Değişkene bağlı dolgunun opaklığı bileşen örneklerine geçmiyor (örnek 1.0 gösteriyor)."
+    fix: "Pasif görünüm düğüm opaklığı 0,38 ile verildi; 9 PNG yeniden dışa aktarıldı."
+    occurrences: 1
+    seen_in: [C1, C2, C3, C4]
+    measure: {kind: contract, ref: "design/README.md#11"}
+    status: mitigated
+
+  - id: L-012
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "resetOverrides sonrası ekran katman adları 'Button/Primary' oldu."
+    root_cause: "resetOverrides katman adı override'ını da siliyor."
+    fix: "Adlar geri yazıldı."
+    occurrences: 1
+    seen_in: [Akış C ekranları]
+    measure: {kind: skill, ref: "figma-screens#tuzaklar"}
+    status: mitigated
+
+  - id: L-013
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: package
+    type: tool-pitfall
+    symptom: "structure.json dışa aktarımı yarıda kesildi."
+    root_cause: "use_figma çıktısı 20 KB ile sınırlı."
+    fix: "Dışa aktarım ekran başına (ya da ekran grubu başına) bölündü; çıktı uzunluğu kontrol edildi."
+    occurrences: 2
+    seen_in: [C4, Akış C]
+    measure: {kind: skill, ref: "figma-screens#paket"}
+    status: mitigated
+
+  - id: L-014
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "use_figma betiği 'no such property _hug' hatası verdi."
+    root_cause: "Figma düğümlerine özel alan eklenemez."
+    fix: "Meta veriler Map ile tutuldu."
+    occurrences: 1
+    seen_in: [Akış C ekran kurucu]
+    measure: {kind: skill, ref: "figma-screens#kurucu"}
+    status: mitigated
+
+  - id: L-015
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: contract-gap
+    symptom: "Boş form alanları Figma'da değerli alan gibi (etiket kenarlıkta) çizilecekti; kodda M3 etiketi içeride gösterir."
+    root_cause: "Kodun boş-alan davranışı Figma kütüphanesinde modellenmemişti."
+    fix: "Input/TextField state=empty varyantı eklendi."
+    occurrences: 1
+    seen_in: [C1, C3]
+    measure: {kind: contract, ref: "design/README.md#5"}
+    status: mitigated
+
+  - id: L-016
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: verify
+    type: tool-pitfall
+    symptom: "C3 dropdown-open durumunda menü ekran görüntüsünde yok."
+    root_cause: "Robolectric/Roborazzi önizleme görüntüsü popup pencerelerini içermez."
+    fix: "DomatDropdownOpenPreviewLayout (statik düzen, odak taklidiyle)."
+    occurrences: 1
+    seen_in: [C3]
+    measure: {kind: contract, ref: "design/README.md#6"}
+    status: mitigated
+
+  - id: L-017
+    date: 2026-09-26
+    stage_caused: tooling
+    stage_detected: verify
+    type: environment
+    symptom: "Roborazzi kaydı JDK 21'de FileDescriptor erişim hatası ve KoinApplicationAlreadyStartedException ile düştü."
+    root_cause: "Robolectric JDK iç API'lerine erişiyor; gerçek DomatApplication her testte Koin başlatıyor."
+    fix: "--add-opens/--add-exports jvmArgs; robolectricConfig application = android.app.Application."
+    occurrences: 1
+    seen_in: [Roborazzi kurulumu]
+    measure: {kind: code, ref: "composeApp/build.gradle.kts (testOptions, roborazzi)"}
+    status: mitigated
+
+  - id: L-018
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "Hata veren use_figma betiğinin ilk yarısının uygulandığı sanıldı; radyo değişikliği yoktu."
+    root_cause: "use_figma çağrısı işlemsel: hata olursa çağrıdaki tüm değişiklikler geri alınır."
+    fix: "Adımlar tekrarlanabilir (idempotent) yazılıp yeniden çalıştırıldı."
+    occurrences: 1
+    seen_in: [Figma kütüphane hizalaması]
+    measure: {kind: skill, ref: "figma-screens#tuzaklar"}
+    status: mitigated
+
+  - id: L-019
+    date: 2026-09-26
+    stage_caused: verify
+    stage_detected: verify
+    type: tool-pitfall
+    symptom: "Pasif yazı rengi farkı %0,5'lik fark oranıyla eşiği rahat geçti; gözle fark edildi."
+    root_cause: "Metrik alan tabanlı; küçük alandaki renk/opaklık farkı oranı etkilemiyor."
+    fix: "Fark sayfalarına gözle bakıldı."
+    occurrences: 1
+    seen_in: [C2, C3]
+    measure: {kind: skill, ref: "design-verify#goz-kontrolu"}
+    status: mitigated
+
+  - id: L-020
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: package
+    type: tool-pitfall
+    symptom: "Boş telefon alanının structure.json metinlerinde gizli 'Elif' değeri çıktı."
+    root_cause: "İçerik opacity 0 ile gizlenmişti; görünür metin taraması yakaladı."
+    fix: "Gizleme visible=false ile yapıldı."
+    occurrences: 1
+    seen_in: [C1]
+    measure: {kind: skill, ref: "figma-screens#tuzaklar"}
+    status: mitigated
+
+  - id: L-021
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: figma
+    type: contract-gap
+    symptom: "ic_arrow_back ve ic_lock eski özel çizim, diğer ikonlar Material Symbols."
+    root_cause: "İkon seti kararı yoktu."
+    fix: "Tek sete geçildi (2026-09-26): 23 özel çizimden 19'u Material Symbols Rounded karşılığıyla değişti (16 kaynak dosya, 4 kopya birleşti); ic_google, ic_trust_wallet_badge ve img_effortless_illustration muaf (marka/illüstrasyon)."
+    occurrences: 1
+    seen_in: [C4, ScreenHeader, LocationSelection, Login, Onboarding]
+    measure: {kind: contract, ref: "design/README.md#12 + components.yaml icons.rules"}
+    status: mitigated
+
+  - id: L-022
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: verify
+    type: process-skipped
+    symptom: "ScreenHeader'ın core'a taşınması LocationSelection başlığının görünümünü değiştirdi."
+    root_cause: "Promote/change sırasında etkilenen ekranlar listelenmedi ve kontrol edilmedi."
+    fix: "Fark raporlandı; LocationSelection'ın yeni bileşenlere geçişine karar verildi."
+    occurrences: 1
+    seen_in: [LocationSelection]
+    measure: {kind: skill, ref: "design-system-change#etkilenen-ekranlar"}
+    status: mitigated
+
+  - id: L-023
+    date: 2026-09-26
+    stage_caused: card
+    stage_detected: package
+    type: contract-gap
+    symptom: "C1, C2, C3 metin kontrolünde örnek değerler (telefon, blok adları, OTP rakamları) hata verdi."
+    root_cause: "Kartlarda sampleData yoktu."
+    fix: "Kartlara sampleData eklendi."
+    occurrences: 1
+    seen_in: [C1, C2, C3, WindowClosed]
+    measure: {kind: check, ref: "ai/design/scripts/check_card.py"}
+    status: mitigated
+
+  - id: L-024
+    date: 2026-09-26
+    stage_caused: tooling
+    stage_detected: code
+    type: environment
+    symptom: "Bulut ortamında Maven Central 429 döndü; ayrıca Mac VM (arm64, 3 GB) Android derleyemiyor."
+    root_cause: "Ortam kısıtları."
+    fix: "Google Maven Central aynası (init script); derleme bulut kopyasında."
+    occurrences: 1
+    seen_in: [bulut derlemesi]
+    measure: {kind: note, ref: "design-verify#ortam"}
+    status: mitigated
+
+  - id: L-025
+    date: 2026-09-26
+    stage_caused: card
+    stage_detected: card
+    type: process-skipped
+    symptom: "C1 kartında telefon alanının etiketi (c1_phone_label) bölgeye bağlı değildi; c1_kvkk_read_more hiç kullanılmıyordu (ortak consent_read_text kullanılıyor)."
+    root_cause: "Kart elle yazılırken bölge ↔ strings bağları kontrol edilmedi."
+    fix: "Etiket bölgeye bağlandı; kullanılmayan anahtar karttan ve strings.xml'den çıkarıldı."
+    occurrences: 1
+    seen_in: [C1]
+    measure: {kind: check, ref: "ai/design/scripts/check_card.py"}
+    status: mitigated
+
+  - id: L-026
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "Icon/share bileşeninin çizimi değiştirilince SecondaryButton içindeki ikon koyulaştı (inverse-on-surface yerine on-surface)."
+    root_cause: "Bileşenin çocukları silinip yenisi eklenince örneklerdeki dolgu override'ları eski düğümlere bağlı olduğu için kaybolur."
+    fix: "Button/Secondary içindeki ikon yeniden renklendirildi; C5@first-order PNG'si yeniden indirildi."
+    occurrences: 1
+    seen_in: [Icon/share, Button/Secondary, C5]
+    measure: null
+    status: open
+
+  - id: L-027
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: code
+    type: contract-gap
+    symptom: "Drawable'larda renk gömülüydü; aynı ikonun renk varyantları ayrı dosyaydı (_white, _green) ve çağıranlar Image() ile renksiz çiziyordu."
+    root_cause: "İkon kuralı yoktu; Figma'dan dışa aktarılan renkli SVG'ler olduğu gibi eklenmişti."
+    fix: "Tüm ikonlar siyah dolgu + Icon(tint = token); renk varyantı dosyaları silindi."
+    occurrences: 1
+    seen_in: [LocationSelection, Login, Onboarding]
+    measure: {kind: contract, ref: "design/components.yaml icons.rules"}
+    status: mitigated
+
+  - id: L-028
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: code
+    type: contract-gap
+    symptom: "Onboarding'de dolu yeşil (primary) zemin üzerinde beyaz ikon: kontrast ≈1,4:1."
+    root_cause: "Renk token rolü (onPrimary) yerine sabit beyaz kullanılmıştı."
+    fix: "onPrimary (koyu) ile tint; görünür değişiklik raporlandı."
+    occurrences: 1
+    seen_in: [OverlappingAvatars, OnboardingPricing]
+    measure: {kind: code, ref: "SupplyChainRow.kt, OverlappingAvatars.kt"}
+    status: mitigated
+
+  - id: L-029
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: code
+    type: contract-gap
+    symptom: "Onboarding (ve auth'un bir kısmı) hâlâ colorResource(R.color.*) ve sabit dp/RoundedCornerShape kullanıyor; token sistemine taşınmamış."
+    root_cause: "Token sistemi (DESIGN.md) sonradan geldi; eski ekranlar paketleri olmadığı için doğrulamaya girmedi."
+    fix: "Onboarding (5 sayfa + bileşenleri) ve Login/auth bileşenleri token'lara taşındı: renkler colorScheme rollerine (malachite_5/10/30 → primary.copy(alpha)), köşeler shapes'e, boşluklar spacing'e. Ölçek dışı değerler en yakın token'a çekildi (11→12, 3→4 dp); 1 dp kenarlıklı 13 dp dolgu 'sp3 + BorderWidth' ile piksel aynı tutuldu. Token karşılığı olmayan slate_400/500 → onSurfaceVariant, slate_100 kenarlık → outlineVariant. Önce/sonra Roborazzi farkı ≤ %1, hepsi bu kasıtlı değişiklikler. Artık kullanılmayan colors.xml silindi."
+    occurrences: 1
+    seen_in: [Onboarding, Login]
+    measure: {kind: check, ref: "design-verify token grep; repo genelinde colorResource/R.color kalmadı, colors.xml silindi"}
+    status: mitigated
+
+  - id: L-030
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: verify
+    type: tool-pitfall
+    symptom: "Material Symbols'e geçen kalkan ikonu aynı dp'de gözle belirgin küçük kaldı."
+    root_cause: "Eski ikonlar sıkı kırpılmış çizimdi; Material Symbols 24'lük kutuda iç boşluk bırakır. Aynı boyut ≠ aynı görünür büyüklük."
+    fix: "88 → 108 dp; öncesi/sonrası görüntüyle doğrulandı."
+    occurrences: 1
+    seen_in: [OnboardingTrust]
+    measure: null
+    status: open
+
+  - id: L-031
+    date: 2026-09-26
+    stage_caused: code
+    stage_detected: code
+    type: contract-gap
+    symptom: "Onboarding (Welcome, Community başlık vurgusu) ve Login (KVKK/ToS bağlantıları) beyaz zemin üzerinde primary renkli metin kullanıyor; DESIGN.md 'Don't' kuralını ihlal ediyor (kontrast ~1,6:1)."
+    root_cause: "Bu ekranların kartı ve tasarım paketi yok; token sistemi ve kurallardan önce yazıldılar, hiçbir doğrulamadan geçmediler."
+    fix: "Token geçişinde görünüm korundu (primary olarak bırakıldı); düzeltme tasarım kararı gerektiriyor — Akış A kartları çıkarılınca ele alınacak."
+    occurrences: 1
+    seen_in: [Onboarding, Login]
+    measure: null
+    status: open
