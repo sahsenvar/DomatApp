@@ -990,6 +990,10 @@ directory and the task ordering for that; a module that runs KSP without applyin
   which holds them.
 - **Not in Gezgin (deliberate V2 items):** multiple/independent back stacks (per-tab history) and
   deep-link/URL route dispatch. Do not design around them being available.
+- **The snapshot is re-resolved on every build.** The root `build.gradle.kts` sets
+  `cacheChangingModulesFor(0, SECONDS)`: Gradle's default 24-hour cache for a `-SNAPSHOT`, combined
+  with CI restoring `~/.gradle`, can keep serving a stale Gezgin snapshot after a fix is published.
+  Gezgin publishes snapshots only when its `snapshot.yml` workflow is dispatched by hand.
 - **`@ExperimentalGezginMigrationApi`** gates `BottomSheetDragHandleMode` only, is documented as
   migration-only and may be removed — do not opt into it for new bottom-sheet UX.
 
