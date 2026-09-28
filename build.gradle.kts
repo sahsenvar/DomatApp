@@ -1,5 +1,6 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import java.util.concurrent.TimeUnit
 
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
@@ -35,5 +36,15 @@ subprojects {
         setSource(projectDir)
         include("**/*.kt")
         exclude("**/build/**", "**/resources/**")
+    }
+}
+
+// Gezgin is pinned to 0.3.0-SNAPSHOT, and Gradle caches a changing module's resolution for 24 hours
+// by default. CI restores ~/.gradle from an earlier run, so a freshly published snapshot (for
+// example one carrying a processor fix) would not be picked up until that window expires. Gezgin is the
+// only changing module in the build, so re-checking on every resolution costs one metadata request.
+subprojects {
+    configurations.configureEach {
+        resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.SECONDS)
     }
 }
