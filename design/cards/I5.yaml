@@ -1,0 +1,65 @@
+id: I5
+title: Yasal / Sözleşmeler
+source: DomatApp_Akis_I_Hesap_v1.1.md#I5
+route: { name: AccountGraph.LegalListRoute, status: proposed }
+purpose: >
+  Kullanım Koşulları, KVKK Aydınlatma Metni ve Mesafeli Satış Sözleşmesi + Ön Bilgilendirme Formu'na her zaman
+  (misafir dahil) erişim; her belgenin güncel sürüm tarihi görünür, kabul edilmiş belgelerde sürüm geçmişine giriş.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.i5_title, showBack: true }
+  - id: intro
+    component: text
+    style: body-medium / on-surface-variant
+    text: str.i5_intro
+  - id: documents
+    component: FormSection
+    props: { title: str.i5_section_title }
+    content:
+      - component: ListRow
+        repeat: "documents (GET /v1/legal/documents)"
+        props: { title: "{document.title}", subtitle: "str.i5_current_version({document.currentVersionEffectiveDate})", trailing: chevron }
+      - component: TextLink
+        repeat: "documents where type in [kvkk, distanceSales]"
+        visibleWhen: "signedIn && legalAcceptances(type).isNotEmpty()"
+        props: { text: str.i5_version_history }
+        note: "İlgili satırın hemen altında, satırla aynı yatay girinti."
+
+states:
+  - id: signed-in
+    description: "3 belge; KVKK ve Mesafeli Satış altında 'Sürüm geçmişi' linki."
+  - id: guest
+    description: "Misafir: 3 belge, sürüm geçmişi linki yok (kabul kaydı yok)."
+
+data:
+  uiState:
+    - "documents: List<LegalDocumentUi(id, title, type, currentVersionEffectiveDate)>"
+    - "historyAvailableFor: Set<DocumentType>"
+actions: [BackClicked, DocumentClicked(id), VersionHistoryClicked(id)]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: DocumentClicked, goTo: I6, args: [documentId] }
+  - { on: VersionHistoryClicked, goTo: I6, args: [documentId, "openVersionPicker: true"], note: "I6 sürüm seçici açık hâlde başlar (öneri)." }
+api: ["GET /v1/legal/documents", "GET /v1/users/me/legal-acceptances (yalnızca girişli)"]
+
+strings:
+  i5_title: "Yasal / Sözleşmeler"
+  i5_intro: "Bu belgelere istediğin zaman tekrar erişebilirsin."
+  i5_section_title: "Belgeler"
+  i5_current_version: "Güncel sürüm: %1$s"
+  i5_version_history: "Sürüm geçmişi"
+
+sampleData:
+  documents:
+    - { id: terms, title: "Kullanım Koşulları", type: terms, currentVersionEffectiveDate: "16 Eylül 2026" }
+    - { id: kvkk, title: "KVKK Aydınlatma Metni", type: kvkk, currentVersionEffectiveDate: "16 Eylül 2026" }
+    - { id: distance-sales, title: "Mesafeli Satış Sözleşmesi + Ön Bilgilendirme Formu", type: distanceSales, currentVersionEffectiveDate: "16 Eylül 2026" }
+
+open:
+  - "i5_section_title ('Belgeler') akışta yok, öneri."
+  - "'Sürüm geçmişi' linki misafirde ve tek sürüm kabul etmiş kullanıcıda gösterilsin mi? I5 her zaman diyor, I6 seçiciyi yalnızca birden fazla kabul edilmiş sürümde gösteriyor — çelişki; kart: yalnızca girişli + kabul kaydı varsa."
+  - "Sürüm geçmişi politikası §8 Soru 2 ile Sahan + avukat onayı bekliyor."
+  - "Belge başlıkları sunucudan geliyor (sampleData); strings.xml'e alınmadı."

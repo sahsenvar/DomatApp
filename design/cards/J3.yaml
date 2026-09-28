@@ -1,0 +1,100 @@
+id: J3
+title: Adres Bilgisi (kayıtta atlanabilir / checkout'ta zorunlu)
+source: DomatApp_Akis_J_Giris_Kayit_v1.0.md#J3
+route: { name: AuthFlowGraph.AddressRoute, args: [mode: Register | Checkout], status: proposed }
+supersedes: C3
+purpose: >
+  Site zaten bilinir; blok (kapalı liste), daire ve teslimat notunu almak. Kayıt modunda "Şimdi değil" ile
+  atlanabilir; adresi olmayan kullanıcı checkout'a girerse aynı ekran zorunlu (mode=Checkout) açılır.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: "str.j3_title_register | str.j3_title_checkout", showBack: "mode == Checkout" }
+  - id: snackbar
+    component: Snackbar
+    visibleWhen: "mode == Register && ilk açılış"
+    props: { text: str.j3_account_created }
+  - id: intro
+    component: text
+    visibleWhen: "mode == Register"
+    style: body-medium / on-surface-variant
+    text: str.j3_intro
+  - id: site
+    component: InfoRow
+    props: { label: str.j3_site_label, value: "{siteName}" }
+  - id: address-form
+    component: FormSection
+    props: { title: str.j3_form_title }
+    content:
+      - component: DomatDropdown
+        props: { label: str.j3_block_label, value: null, footerOption: str.j3_block_not_found }
+      - component: DomatTextField
+        visibleWhen: "blockNotFoundSelected"
+        props: { label: str.j3_block_free_label }
+      - component: InlineNote
+        visibleWhen: "blockNotFoundSelected"
+        props: { tone: warning, text: str.j3_block_manual_review }
+      - component: DomatTextField
+        props: { label: str.j3_apartment_label, keyboard: number }
+      - component: DomatTextField
+        props: { label: str.j3_note_label, supportingText: str.j3_note_helper, multiline: true }
+  - id: invoice
+    component: InlineNote
+    visibleWhen: "mode == Checkout && firstOrder"
+    props: { tone: neutral, text: str.j3_invoice_pending }
+  - id: cta
+    component: BottomActionBar
+    content:
+      - component: PrimaryButton
+        props: { text: "str.j3_cta_register | str.j3_cta_checkout", size: Large, enabled: "blockSelected && apartmentFilled", loading: "saving" }
+      - component: GhostButton
+        visibleWhen: "mode == Register"
+        props: { text: str.j3_skip }
+
+states:
+  - id: default
+    description: "Kayıt modu: 'Hesabın oluşturuldu' snackbar'ı, boş form, Kaydet pasif, 'Şimdi değil' var."
+  - id: dropdown-open
+    description: Blok listesi açık, en altta "Listede bulamadım".
+  - id: block-not-found
+    description: Serbest blok alanı + elle kontrol uyarısı.
+  - id: filled
+    description: Kayıt modu, form dolu, Kaydet aktif.
+  - id: checkout-mode
+    description: "Checkout'tan adres eksik diye açıldı: başlık 'Teslimat Adresi', geri var, 'Şimdi değil' yok, buton 'Devam Et', fatura notu."
+
+data:
+  uiState: ["mode: Register | Checkout", "siteName: String", "blocks: List<Block>", "selectedBlockId: String?", "blockFreeText: String", "apartmentNo: String", "deliveryNote: String", "isFirstOrder: Boolean", "isSaving: Boolean"]
+actions: [BlockSelected(id), BlockNotFoundSelected, BlockFreeTextChanged, ApartmentChanged, NoteChanged, SaveClicked, SkipClicked, BackClicked]
+navigation:
+  - { on: "SaveClicked | SkipClicked (mode=Register)", effect: "AuthFlow biter → çağırana dön (Hesap → I1 girişli; Checkout → adres yoksa J3 checkout modu, varsa C4)" }
+  - { on: "SaveClicked (mode=Checkout)", goTo: "CheckoutGraph.PaymentRoute (C4)" }
+  - { on: BackClicked, back: true, note: "Yalnızca checkout modunda" }
+api: ["GET /v1/sites/{siteId}/blocks", "PUT /v1/addresses/me"]
+
+strings:
+  j3_title_register: "Adresini ekle"
+  j3_title_checkout: "Teslimat Adresi"
+  j3_account_created: "Hesabın oluşturuldu."
+  j3_intro: "Siparişlerinde tekrar sorulmasın. İstersen sonra da ekleyebilirsin."
+  j3_site_label: "Site"
+  j3_form_title: "Adres bilgileri"
+  j3_block_label: "Blok"
+  j3_block_not_found: "Listede bulamadım"
+  j3_block_free_label: "Blok adı"
+  j3_block_manual_review: "Bu bilgiyi elle kontrol edeceğiz, teslimat gününe kadar seninle iletişime geçebiliriz."
+  j3_apartment_label: "Daire no"
+  j3_note_label: "Teslimat notu (isteğe bağlı)"
+  j3_note_helper: "Dağıtıcımız bu notu teslimat listesinde görür."
+  j3_invoice_pending: "Fatura bilgin bir sonraki adımda alınacak."
+  j3_cta_register: "Kaydet"
+  j3_cta_checkout: "Devam Et"
+  j3_skip: "Şimdi değil"
+
+sampleData: { siteName: "Dalyan Sitesi", blocks: ["A Blok", "B Blok", "C Blok"], apartmentNo: "12", deliveryNote: "Kapı zili çalışmıyor, lütfen arayın." }
+
+open:
+  - "Kayıt modunda 'Şimdi değil' diyen kullanıcıya Hesap'ta adres hatırlatması (J §7 Soru 2)."
+  - "Kayıt modu metinleri (başlık, giriş cümlesi, 'Şimdi değil') öneri."

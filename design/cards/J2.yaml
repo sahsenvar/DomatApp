@@ -1,0 +1,64 @@
+id: J2
+title: Kod Doğrulama (OTP)
+source: DomatApp_Akis_J_Giris_Kayit_v1.0.md#J2
+route: { name: AuthFlowGraph.OtpVerifyRoute, args: [phoneNumber: String], status: proposed }
+supersedes: C2
+purpose: >
+  Numaranın sahibini doğrulamak. Hesap burada bulunur ya da oluşturulur (yanıtta isNewUser, hasAddress).
+  Cihazda sepet varsa doğrulama sonrası POST /v1/cart/merge arka planda tetiklenir.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.j2_title, showBack: true }
+  - id: description
+    component: text
+    style: body-medium / on-surface-variant
+    text: "str.j2_description({maskedPhone})"
+  - id: change-number
+    component: TextLink
+    props: { text: str.j2_change_number }
+  - id: code
+    component: OtpCodeField
+    props: { value: "", state: default, errorText: str.j2_error_wrong_code }
+  - id: resend
+    component: TextLink
+    props: { text: str.j2_resend, enabled: "cooldownSeconds == 0" }
+    companion: { component: text, style: body-small / on-surface-variant, text: "str.j2_resend_countdown({cooldownSeconds})" }
+# Birincil buton yok — 6. hane girilince doğrulama otomatik başlar.
+
+states:
+  - id: default
+    description: Boş kod, geri sayım çalışıyor.
+  - id: verifying
+    description: 6 hane girildi, doğrulama sürüyor.
+  - id: error
+    description: Yanlış kod; OtpCodeField state=error + j2_error_wrong_code.
+  - id: resend-available
+    description: Geri sayım bitti, "Kodu Tekrar Gönder" aktif.
+
+data:
+  uiState: ["maskedPhone: String", "code: String", "isVerifying: Boolean", "isError: Boolean", "cooldownSeconds: Int"]
+actions: [CodeChanged(code), ResendClicked, ChangeNumberClicked, BackClicked]
+navigation:
+  - { on: ChangeNumberClicked, back: true, note: "J1'e döner" }
+  - { on: "verify ok + isNewUser", replaceTo: "AuthFlowGraph.AddressRoute(mode=Register) (J3)" }
+  - { on: "verify ok + !isNewUser", effect: "AuthFlow biter → ResultFlow<AuthResult>; çağıran devam eder (Hesap → I1, Checkout → adres yoksa J3 checkout modu, varsa C4)" }
+  - { on: "merge 409 window_closed && origin=Checkout", replaceTo: "CheckoutGraph.WindowClosedRoute" }
+api: ["POST /v1/auth/otp/verify (isNewUser, hasAddress)", "POST /v1/cart/merge"]
+
+strings:
+  j2_title: "Kodu Gir"
+  j2_description: "%1$s numarasına bir kod gönderdik."
+  j2_change_number: "Numarayı Değiştir"
+  j2_resend: "Kodu Tekrar Gönder"
+  j2_resend_countdown: "%1$d sn sonra tekrar gönderebilirsin"
+  j2_error_wrong_code: "Kod hatalı. Tekrar dener misin?"
+  j2_welcome_back: "Tekrar hoş geldin!"
+
+sampleData: { maskedPhone: "+90 532 *** ** 67", code: ["4", "8", "2", "9", "1", "5"], cooldownSeconds: 45 }
+
+open:
+  - "Mevcut kullanıcıya dönüşte 'str.j2_welcome_back' snackbar'ı çağıran ekranda gösterilir (J §7 Soru 4)."
+  - "C2'deki 'mevcut hesaba bağlandık' bandı tek ekran modelinde kaldırıldı."

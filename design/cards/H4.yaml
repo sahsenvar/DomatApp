@@ -1,0 +1,72 @@
+id: H4
+title: Elle Kod Girişi
+source: claude/DomatApp_Akis_H_Dagitici_Arayuzu_v1.1.md#H4
+route: { name: EmployeeGraph.CodeEntryRoute, args: ["expectedDeliveryId: String?"], status: proposed }
+purpose: >
+  Müşterinin sözlü ilettiği 6 haneli kodu hızlıca girip tanımlama (lookup) adımını tetiklemek. QR'ın yedeği değil eşit ortağı.
+frame: { width: 390, height: 844 }
+
+regions:   # yukarıdan aşağı
+  - id: header
+    component: ScreenHeader
+    props: { title: str.h4_title, showBack: true }
+
+  - id: code
+    content:
+      - component: OtpCodeField
+        props: { length: 6, value: "{code}", state: "{codeState}" }
+        note: "3+3 gruplu (müşteri F1 gösterimiyle simetrik) — OtpCodeField'a `grouping` değişikliği gerekir (bkz. open). SMS autofill kapalı."
+      - { component: InlineNote, visibleWhen: "code-not-found", props: { tone: error, text: str.h4_error_not_found } }
+      - { component: InlineNote, visibleWhen: "not-in-tour", props: { tone: error, text: str.h4_error_not_in_tour } }
+      - { component: InlineNote, visibleWhen: "offline", props: { tone: warning, text: str.h4_error_offline } }
+
+  - id: keypad
+    component: NumericKeypad
+    props: { enabled: "!verifying" }
+    note: "H1 ile aynı bileşen; sistem klavyesi açılmaz."
+
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.h4_cta, size: Large, enabled: "code.length == 6", loading: "verifying" } }
+    note: "6. hanede otomatik gönderim; buton yalnızca hata sonrası elle yeniden deneme / erişilebilirlik için."
+
+states:
+  - id: empty
+    description: "Boş 6 hücre (state=default), Onayla pasif."
+  - id: verifying
+    description: "'482915' girildi, otomatik lookup: alan disabled, Onayla loading."
+  - id: code-not-found
+    description: "404: alan temizlenmiş + hata çerçevesi (state=error, boş), 'Bu kod bulunamadı, tekrar dener misin?'."
+  - id: not-in-tour
+    description: "409 not_in_todays_tour: alan temizlenmiş + hata, 'Bu kod bugünkü seferinde yok.'."
+  - id: offline
+    description: "Bağlantı yok: kod korunur (state=filled), uyarı notu, Onayla etkin (elle tekrar)."
+
+data:
+  uiState:
+    - "code: String"
+    - "codeState: default | filled | error | disabled"
+    - "verifying: Boolean"
+    - "lookupError: NotFound | NotInTour | Offline | null"
+actions: [DigitPressed(d), BackspacePressed, SubmitClicked, BackClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: "lookup 200", replaceTo: "EmployeeGraph.DeliveryConfirmRoute (H5, mode=verify)", args: [lookupResult] }
+  - { on: "lookup 409 already_redeemed", replaceTo: "EmployeeGraph.DeliveryConfirmRoute (H5, mode=alreadyRedeemed)", args: [deliveredAt, courierName] }
+api: ["POST /v1/courier/deliveries/lookup-by-code { method: shortCode, deliveryCode?, shortCode } → 200 | 404 code_not_found | 409 already_redeemed | 409 not_in_todays_tour (rate-limit yalnızca sunucuda)"]
+
+strings:
+  h4_title: "Teslimat Kodunu Gir"
+  h4_error_not_found: "Bu kod bulunamadı, tekrar dener misin?"
+  h4_error_not_in_tour: "Bu kod bugünkü seferinde yok."
+  h4_error_offline: "İnternet yok. Kodu tanımlamak için bağlantı gerekli."
+  h4_cta: "Onayla"
+
+sampleData: { code: "482915" }
+
+open:
+  - "API çelişkisi: lookup-by-code (method=shortCode) gövdesi 'deliveryCode + shortCode' istiyor, ama H4 yalnızca 6 hane alıyor ve 'Kod ile Ara' girişinde deliveryCode bilinmiyor (EC H2#4 'sunucu doğrudan bulur' diyor). Ya deliveryCode opsiyonel olmalı ya da H4'e #DAL alanı eklenmeli."
+  - "OtpCodeField 3+3 gruplama: mevcut spec eşit gap sp2; ortada sp4 boşluk için `grouping` props'u (change) gerekiyor."
+  - "Otomatik gönderim §8 soru 10'da onay bekliyor; açık 'Onayla' dokunuşu seçilirse CTA birincil olur."
+  - "Çevrimdışı metin akışta yok, öneri."

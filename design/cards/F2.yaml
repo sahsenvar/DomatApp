@@ -1,0 +1,59 @@
+id: F2
+title: Teslimat Seçici
+source: claude/DomatApp_Akis_F_Teslimat_v1.0.md#F2
+route: { name: "MainGraph.KareKodRoute → DeliveryPickerSheet", status: proposed, noBack: true }
+purpose: >
+  Nadir çoklu-aktif-teslimat durumunda (2+ delivery_pending) kullanıcının doğru teslimatın kodunu bilinçli
+  seçmesi. Yalnızca F1'deki 'değiştir' ile açılır; tek teslimatta hiç görünmez.
+frame: { width: 390, height: 844 }
+note: "Bottom sheet popup'tır; önizleme ve tasarımda F1 (active-multiple) + scrim üzerinde statik çizilir (kural 6)."
+
+regions:
+  - id: backdrop
+    note: "Arkada F1 active-multiple çerçevesi, üstünde scrim (%32 scrim rengi)."
+  - id: sheet
+    component: "BottomSheet"
+    props: { title: str.f2_title }
+    content:
+      - component: SelectionCard
+        repeat: "deliveries"
+        props: { selected: "{isCurrent}", highlighted: "{isAutoSelected}" }
+        content:
+          - { component: text, style: title-medium, text: "{deliveryCode}" }
+          - { component: text, style: body-medium, color: on-surface-variant, text: "str.f2_this_saturday | str.f2_last_saturday" }
+          - { component: text, style: body-small, color: on-surface-variant, text: "str.f2_item_count({itemCount})" }
+        note: "Otomatik seçilen (en acil) en üstte ve hafif vurgulu çerçeveli. Satır min 72 dp."
+
+states:
+  - id: default
+    description: "İki aktif teslimat: #DAL1 (Geçen Cumartesi, gecikmiş, otomatik seçilen, vurgulu, şu an gösterilen) ve #DAL2 (Bu Cumartesi)."
+  - id: current-is-other
+    description: "Kullanıcı daha önce #DAL2'yi seçmiş: #DAL1 hâlâ en üstte vurgulu (otomatik), #DAL2 seçili işaretli."
+
+data:
+  uiState:
+    - "deliveries: List<DeliveryOptionUi(deliveryId, deliveryCode, dayLabel, itemCount, isAutoSelected, isCurrent)>"
+actions: [DeliverySelected(deliveryId), SheetDismissed]
+navigation:
+  - { on: DeliverySelected, back: true, args: [deliveryId], note: "Sheet kapanır; F1 o deliveryId ile yeniden yüklenir. karekod_last_selected_delivery_id yazılır." }
+  - { on: SheetDismissed, back: true }
+api: ["GET /v1/deliveries?status=delivery_pending", "Yerel: handoff_codes (redemptionStatus active olanlar)", "DataStore karekod_last_selected_delivery_id"]
+
+strings:
+  f2_title: "Hangi teslimat?"
+  f2_this_saturday: "Bu Cumartesi"
+  f2_last_saturday: "Geçen Cumartesi"
+  f2_item_count: "%1$d ekleme"
+
+sampleData:
+  deliveries:
+    - { deliveryId: "dlv_01", deliveryCode: "#DAL1", dayLabel: "Geçen Cumartesi", itemCount: 3, isAutoSelected: true, isCurrent: true }
+    - { deliveryId: "dlv_02", deliveryCode: "#DAL2", dayLabel: "Bu Cumartesi", itemCount: 1, isAutoSelected: false, isCurrent: false }
+
+open:
+  - "F2'nin MVP'de kalıp kalmayacağı Sahan onayına açık (akış §8 s.4)."
+  - "Kalem özeti akışta '3 ekleme' — 'ekleme' mi (sipariş/ekleme sayısı) 'kalem' mi kastediliyor? Belirsiz; akıştaki sözcük korundu."
+  - "Gün etiketi yalnızca 'Bu Cumartesi' / 'Geçen Cumartesi' örnekleri var; diğer tarihler (2+ hafta önce) için biçim tanımsız."
+  - "'Şu an gösterilen' ile 'otomatik seçilen' ayrı görsel işaretler mi? Akış yalnızca vurgulu çerçeveyi tanımlıyor; current-is-other durumu öneri (akışta yok)."
+  - "SelectionCard katalogda prop'suz; 'selected' + 'highlighted' prop'ları ve içerik slotu tanımlanmalı (change)."
+  - "Başlık dışında sheet'te kapatma/tutamaç (drag handle) metni yok; M3 varsayılanı varsayıldı."

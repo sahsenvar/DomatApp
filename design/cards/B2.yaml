@@ -1,0 +1,133 @@
+id: B2
+title: Ürün Detay
+source: DomatApp_Akis_B_Kesif_Sepet_v1.0.md#B2
+route: { name: MainGraph.ProductDetailRoute, args: [productId: String], status: proposed }
+purpose: >
+  Tek ürünü ve varyantlarını incelemek, kademe mekaniğini şeffaf görmek, doğru varyant/miktarı sepete eklemek.
+  Sepete ekleme gerçek sayaca yazmaz; yalnızca kişisel önizleme gösterir (B2 Edge Case 1, Seçenek 1).
+frame: { width: 390, height: "hug (kaydırılabilir; Sepete Ekle çubuğu sabit)" }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: "{productName}", showBack: true }
+  - id: countdown
+    component: CountdownBanner
+    props: { text: "str.b2_countdown({remaining})", tone: "{countdownTone}" }
+    note: ">1 dk kala dakikada bir, ≤1 dk kala saniyede bir güncellenir; son 1 saatte tone=urgent. Arka planda durur."
+  - id: image
+    component: DomatImage
+    props: { size: hero }
+  - id: info
+    content:
+      - { component: text, style: headline-medium, text: "{productName}" }
+      - { component: text, style: body-medium, text: "{origin}" }
+  - id: variants
+    content:
+      - { component: text, style: title-small, text: str.b2_variant_label }
+      - { component: ChoiceChip, repeat: "variants", props: { text: "{variantName}", selected: "{id == selectedVariantId}" } }
+  - id: price
+    content:
+      - { component: text, style: headline-large, text: "{unitPrice}" }
+      - { component: text, style: body-medium, text: "str.b2_per_kg({perKg})" }
+  - id: quantity
+    content:
+      - { component: text, style: title-small, text: str.b2_quantity_label }
+      - { component: QuantityStepper, props: { value: "{quantity}", size: medium } }
+    note: "Sepette bu varyant varsa değer oradan önceden dolar; tekrar eklemek satırı günceller (Edge Case 4)."
+  - id: participants
+    component: InlineNote
+    props: { tone: neutral, text: str.b2_participants }
+  - id: tier
+    component: TierCard
+    props: { title: "str.b2_tier_active({tierName})", rowTags: [str.b2_tier_now, str.b2_tier_if_you_add], note: str.b2_tier_price_note, subtitle: "{currentTierSubtitle}", expanded: "{tierExpanded}" }
+    note: "Sepete eklenince otomatik açılır; gerçek kademe (current) ile 'sen eklersen' (preview) yan yana, farklı renkte."
+  - id: preview
+    component: InlineNote
+    visibleWhen: "addedToCart"
+    props: { tone: neutral, text: str.b2_preview }
+  - id: capacity
+    component: InfoBanner
+    visibleWhen: "maxCapacityKg != null && capacityFull"
+    props: { tone: warning, body: str.b2_capacity_full }
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.b2_add_to_cart, textWhenAdded: str.b2_added, enabled: "!capacityFull" } }
+    note: "Sabit (sticky). WhatsApp mini butonu bu ekranda GİZLİ. Eklenince kısa onay: metin 'Sepete eklendi' + check."
+
+states:
+  - id: default
+    description: "Tarla seçili, miktar 1, kademe kartı kapalı."
+  - id: tier-expanded
+    description: "Kullanıcı kademe kartına dokundu: tüm kademeler + eşikler."
+  - id: added
+    description: "Sepete eklendi: buton onayı, kişisel önizleme, kademe kartı açık (current + preview)."
+  - id: capacity-full
+    description: "Haftalık kapasite doldu: yumuşak uyarı, buton pasif."
+  - id: last-minute
+    description: "Kapanışa 1 dakikadan az: geri sayım saniyelik ve urgent."
+
+data:
+  uiState:
+    - "productName: String"
+    - "origin: String"
+    - "variants: List<VariantUi>"
+    - "selectedVariantId: String"
+    - "unitPrice: String"
+    - "perKgPrice: String"
+    - "quantity: Int"
+    - "participantCount: Int"
+    - "tiers: List<TierRowUi>"
+    - "tierExpanded: Boolean"
+    - "preview: PreviewUi?"
+    - "capacityFull: Boolean"
+    - "countdownText: String"
+    - "countdownTone: Normal | Urgent"
+    - "addState: Idle | Added"
+actions: [BackClicked, VariantSelected, QuantityIncreased, QuantityDecreased, TierCardToggled, AddToCartClicked]
+navigation:
+  - { on: BackClicked, back: true }
+api: ["GET /v1/products/{productId}?neighborhoodId={id} (20 sn polling)", "GET /v1/neighborhoods/{id}/window", "POST /v1/cart/preview", "POST /v1/events (product_viewed, cart_item_added)"]
+
+strings:
+  b2_variant_label: "Çeşit"
+  b2_quantity_label: "Miktar"
+  b2_per_kg: "(≈ ₺%1$s/kg)"
+  b2_participants: "Bu hafta %1$d komşu katıldı"
+  b2_countdown: "Siparişler %1$s sonra kapanıyor"
+  b2_tier_active: "%1$s aktif"
+  b2_tier_now: "Şu an"
+  b2_tier_if_you_add: "Sen eklersen"
+  b2_tier_price_note: "Fiyat yalnızca düşer; kapanışta ulaşılan en iyi kademe geçerli olur."
+  b2_preview: "Sen eklersen: %1$s kademeye geçilir, fiyat ₺%2$s/kg'a iner."
+  b2_capacity_full: "Bu hafta bu üründe kapasitemiz doldu — gelecek hafta tekrar burada."
+  b2_add_to_cart: "Sepete Ekle"
+  b2_added: "Sepete eklendi"
+
+sampleData:
+  productName: "Domates"
+  origin: "Çanakkale · bu hafta Bayrampaşa Hal'den"
+  variants: [{ id: tarla, name: "Tarla" }, { id: ceri, name: "Çeri" }]
+  selectedVariantId: tarla
+  unitPrice: "₺96 / file (3 kg)"
+  perKgPrice: "(≈ ₺32/kg)"
+  quantity: 1
+  participantCount: 23
+  countdownText: "Siparişler 1 gün 4 sa 12 dk sonra kapanıyor"
+  countdownLastMinute: "Siparişler 0:42 sonra kapanıyor"
+  currentTierTitle: "2. kademe aktif"
+  currentTierSubtitle: "₺32/kg · 3. kademeye 18 kg kaldı"
+  tiers:
+    - { label: "1. kademe", threshold: "0–50 kg", price: "₺36/kg", state: reached }
+    - { label: "2. kademe", threshold: "50–100 kg", price: "₺32/kg", state: current }
+    - { label: "3. kademe", threshold: "100+ kg", price: "₺28/kg", state: preview }
+  preview: { tier: "3.", price: "28" }
+
+open:
+  - "Geri sayımın 'sayfanın en üstünde' olması: başlık çubuğu (geri) üstte, geri sayım hemen altında tam genişlik çizildi."
+  - "Menşe satırı ('Çanakkale · bu hafta Bayrampaşa Hal'den') akışta yok; şeffaflık ilkesiyle (Nav §8) öneri."
+  - "Miktar birim etiketi (file/kutu) stepper'da ayrı gösterilmedi; fiyat satırında birim var."
+  - "'Sepete eklendi' onay metni ve kademe kartı başlık/alt satır metinleri akışta yok — öneri."
+  - "Önceden dolu miktarla tekrar eklemede buton metni ('Sepeti güncelle'?) akışta tanımsız; şimdilik 'Sepete Ekle'."
+  - "Tier eşikleri (kg) ve fiyatlar örnek veridir."

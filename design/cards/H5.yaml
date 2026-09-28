@@ -1,0 +1,161 @@
+id: H5
+title: Teslimat Onayı (Kimlik Doğrulandı → Teslim Edildi)
+source: claude/DomatApp_Akis_H_Dagitici_Arayuzu_v1.1.md#H5
+route: { name: EmployeeGraph.DeliveryConfirmRoute, args: ["mode: Verify | Preview | AlreadyRedeemed", "deliveryId: String"], status: proposed }
+purpose: >
+  Lookup'ın döndürdüğü kişiyi ve (yalnızca ödemesi çekilmiş) kalemlerini göstermek; dağıtıcı elindeki paketle karşılaştırdıktan
+  sonra ayrı ve bilinçli bir 'Teslim Edildi' eylemiyle redeem adımını tetiklemek. Çevrimdışıysa kayıt kuyruğa iyimser yazılır.
+frame: { width: 390, height: "hug" }
+
+regions:   # yukarıdan aşağı
+  - id: header
+    component: ScreenHeader
+    props: { title: str.h5_title, showBack: true }
+
+  - id: identity
+    content:
+      - { component: text, style: headline-medium, text: "str.h5_address({blockName}, {apartmentNo})" }
+      - { component: text, style: body-large, text: "{customerFirstName} · {deliveryCode}", note: "on-surface-variant" }
+    note: "Her zaman lookup'ın döndürdüğü GERÇEK kişi — dağıtıcının H2'de dokunduğu satırdan bağımsız (EC2: doğal uyumsuzluk uyarısı)."
+
+  - id: already-redeemed
+    component: InfoBanner
+    visibleWhen: "mode == AlreadyRedeemed"
+    props:
+      tone: error
+      title: str.h5_redeemed_title
+      body: "str.h5_redeemed_body({deliveredAtTime}) | str.h5_redeemed_body_by({deliveredAtTime}, {courierName})"
+    content:
+      - { component: InlineNote, props: { tone: error, text: str.h5_redeemed_hint } }
+    note: "Kalem listesinin YERİNE gösterilir; fraud tespiti yok, yalnızca bilgi."
+
+  - id: delivery-note
+    component: InfoBanner
+    visibleWhen: "deliveryNote != null && mode != AlreadyRedeemed"
+    props: { tone: info, icon: sticky_note_2, title: str.h5_note_title, body: "{deliveryNote}" }
+
+  - id: orders
+    visibleWhen: "mode != AlreadyRedeemed && visibleItems.isNotEmpty()"
+    component: FormSection
+    repeat: "orders"
+    props: { title: "str.h5_order_title({orderSequenceInWindow})" }
+    content:
+      - { component: SummaryRow, repeat: "order.items (chargedAmount != null)", props: { label: "{productName}", detail: "{variant}", amount: "{quantityLabel}" } }
+    note: "İstemci de chargedAmount == null kalemleri ayrıca filtreler (EC8, çift katman). SummaryRow.amount burada miktar taşır, para değil."
+
+  - id: total
+    visibleWhen: "mode != AlreadyRedeemed && visibleItems.isNotEmpty()"
+    component: text
+    style: title-large
+    text: "str.h5_total_items({visibleItemCount})"
+
+  - id: no-items
+    component: InfoBanner
+    visibleWhen: "mode != AlreadyRedeemed && visibleItems.isEmpty()"
+    props: { tone: error, body: str.h5_no_items }
+
+  - id: mismatch
+    component: TextLink
+    visibleWhen: "mode == Verify"
+    props: { text: str.h5_mismatch_link }
+
+  - id: result
+    component: InfoBanner
+    visibleWhen: "state in [delivered, delivered-pending-sync]"
+    props: { tone: success, title: str.h5_delivered_title, body: "str.h5_delivered_pending_sync (yalnızca kuyruktaysa)" }
+    note: "Onaydan hemen sonra CTA'nın yerinde görünür; ~1 sn sonra otomatik H2'ye dönülür."
+
+  - id: cta
+    component: BottomActionBar
+    visibleWhen: "state not in [delivered, delivered-pending-sync]"
+    content:
+      - component: HoldToConfirmButton
+        visibleWhen: "mode == Verify"
+        props: { text: str.h5_cta_deliver, helper: str.h5_cta_hold_hint, progress: "{holdProgress}", enabled: "visibleItems.isNotEmpty()" }
+      - { component: PrimaryButton, visibleWhen: "mode == Preview", props: { text: str.h5_preview_scan, size: Large, leadingIcon: qr_code_scanner } }
+      - { component: SecondaryButton, visibleWhen: "mode == AlreadyRedeemed", props: { text: str.h5_back_to_list } }
+
+states:
+  - id: verify
+    description: "Lookup 200: A Blok, Daire 12 · Elif · #DAL1; not kutusu; 1. sipariş (Domates Tarla 2 file, Salatalık 1 file) + 2. sipariş (Elma 1 file); 'Toplam 3 ürün'; Teslim Edildi (basılı tut) etkin."
+  - id: holding
+    description: "Teslim Edildi basılı tutuluyor: dolgu %60 ilerlemiş (etkileşim durumu, odak değil)."
+  - id: delivered
+    description: "Redeem 200 (ya da 409 already_delivered — aynı ele alınır): başarı bandı 'Teslim Edildi ✓', otomatik H2."
+  - id: delivered-pending-sync
+    description: "Çevrimdışı: redemption_queue'ya yazıldı; 'Teslim Edildi ✓' + '(senkronize bekleniyor)'; otomatik H2."
+  - id: preview
+    description: "H2 satırından: aynı liste, teslim butonu yok; 'Okut / Kod Gir' birincil; yanlış-adres linki yok."
+  - id: already-redeemed
+    description: "Lookup 409 already_redeemed: kalem listesi yerine kırmızı bant (saat + Mehmet tarafından) + WhatsApp ipucu; 'Listeye Dön'."
+  - id: no-items
+    description: "Filtre sonrası kalem kalmadı: hata bandı, Teslim Edildi pasif (%38)."
+
+data:
+  uiState:
+    - "mode: Verify | Preview | AlreadyRedeemed"
+    - "blockName: String; apartmentNo: String; customerFirstName: String; deliveryCode: String"
+    - "deliveryNote: String?"
+    - "orders: List<OrderUi>  // orderSequenceInWindow, items (chargedAmount != null)"
+    - "visibleItemCount: Int"
+    - "redemptionToken: String?"
+    - "deliveredAtTime: String?; courierName: String?"
+    - "holdProgress: Float"
+    - "submitState: Idle | Delivered | DeliveredPendingSync"
+actions: [BackClicked, HoldStarted, HoldCancelled, DeliverConfirmed, MismatchClicked, PreviewScanClicked, BackToListClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: "DeliverConfirmed → delivered | delivered-pending-sync", backTo: "EmployeeGraph.TourRoute (H2)", note: "Satır iyimser olarak delivered; offline ise kuyruk rozeti artar." }
+  - { on: PreviewScanClicked, goTo: "EmployeeGraph.ScanRoute (H3)", args: [expectedDeliveryId] }
+  - { on: BackToListClicked, backTo: "EmployeeGraph.TourRoute (H2)" }
+  - { on: MismatchClicked, effect: "WhatsApp intent, önceden doldurulmuş: str.h5_mismatch_whatsapp(deliveryCode)" }
+api:
+  - "GET /v1/courier/deliveries/{deliveryId} (mode=Preview; token üretmez)"
+  - "POST /v1/courier/deliveries/redeem { deliveryId, redemptionToken, confirmedAtLocal, courierName? } → 200 | 409 already_delivered (başarı sayılır) | 410 token_expired (sessizce lookup tekrar)"
+  - "Offline: redemption_queue INSERT (syncStatus=pending)"
+
+strings:
+  h5_title: "Teslimat Onayı"
+  h5_address: "%1$s, Daire %2$s"
+  h5_redeemed_title: "Bu teslimat zaten tamamlandı."
+  h5_redeemed_body: "Bu teslimat bugün %1$s'te teslim edildi olarak işaretlenmiş."
+  h5_redeemed_body_by: "Bu teslimat bugün %1$s'te teslim edildi olarak işaretlenmiş (%2$s tarafından)."
+  h5_redeemed_hint: "Aynı ürün iki kez teslim edilmemeli — eğer bu bir hataysa Sahan'a WhatsApp'tan yaz."
+  h5_note_title: "Teslimat notu"
+  h5_order_title: "%1$d. sipariş"
+  h5_total_items: "Toplam %1$d ürün"
+  h5_no_items: "Bu teslimatta gösterilecek ürün yok — bu bir hata olabilir, Sahan'a bildir"
+  h5_mismatch_link: "Bu kişi/adres yanlış görünüyor"
+  h5_mismatch_whatsapp: "%1$s için adres/kişi bilgisi tutarsız görünüyor, kontrol eder misin?"
+  h5_cta_deliver: "Teslim Edildi"
+  h5_cta_hold_hint: "Onaylamak için basılı tut"
+  h5_delivered_title: "Teslim Edildi ✓"
+  h5_delivered_pending_sync: "(senkronize bekleniyor)"
+  h5_preview_scan: "Okut / Kod Gir"
+  h5_back_to_list: "Listeye Dön"
+
+sampleData:
+  blockName: "A Blok"
+  apartmentNo: "12"
+  customerFirstName: "Elif"
+  deliveryCode: "#DAL1"
+  deliveryNote: "Kapı zili çalışmıyor, lütfen arayın."
+  orders:
+    - orderSequenceInWindow: 1
+      items:
+        - { productName: "Domates", variant: "Tarla", quantityLabel: "2 file" }
+        - { productName: "Salatalık", variant: "Standart", quantityLabel: "1 file" }
+    - orderSequenceInWindow: 2
+      items:
+        - { productName: "Elma", variant: "Standart", quantityLabel: "1 file" }
+  visibleItemCount: 3
+  deliveredAtTime: "09:42"
+  courierName: "Mehmet"
+  holdProgress: 0.6
+
+open:
+  - "Yanlışlıkla basmaya karşı 'basılı tutma VEYA iki aşamalı onay' akışta seçilmemiş; basılı tutma (HoldToConfirmButton, ~800 ms) seçildi — onay gerekiyor. 'Onaylamak için basılı tut' metni öneri."
+  - "Saat eki: '%1$s'te' kalıbı her saat için doğru değil (09:42'de, 10:30'da) — ek kodda üretilmeli."
+  - "'Toplam 3 ürün' kalem sayısı mı (satır) yoksa adet toplamı mı (2 file domates = 2?) tanımsız; örnekte kalem satırı sayıldı."
+  - "EC7 ara çözümü 'Not Ekle' (POST …/note) kesin değil (§8 soru 4) — karta eklenmedi. Teslim edilemedi durumu yok."
+  - "Başlık 'Teslimat Onayı', 'Listeye Dön', 'Bu teslimat zaten tamamlandı.' (Doğrulama Notu'ndan uyarlandı), not başlığı ve başarı sonrası otomatik dönüş süresi akışta yok, öneri. Önizleme modunun CTA'sı akışta tanımsız."

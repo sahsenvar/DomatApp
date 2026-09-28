@@ -1,0 +1,165 @@
+id: D1
+title: Siparişler (Ana Liste)
+source: DomatApp_Akis_D_Siparis_Durumu_v1.1.md#D1
+route: { name: MainGraph.OrdersRoute, status: proposed }
+purpose: >
+  Kullanıcının tüm teslimatlarını (aktif + geçmiş) tek yerden görmesi; "param ne oldu, siparişim nerede"
+  sorusuna en az dokunuşla cevap. Alt barın "Siparişler" sekmesinin kökü (Nav §3.1).
+frame: { width: 390, height: 844 }
+
+regions:   # yukarıdan aşağı
+  - id: header
+    component: ScreenHeader
+    props: { title: str.d1_title, showBack: false }
+
+  - id: segment
+    component: SegmentedControl
+    visibleWhen: "!(activeEmpty && historyEmpty)"
+    props: { options: [str.d1_tab_active, str.d1_tab_history], selected: "{selectedTab}" }
+    note: "Varsayılan: aktif teslimat varsa Aktif, yoksa Geçmiş."
+
+  - id: active-list
+    visibleWhen: "selectedTab == active"
+    content:
+      - component: StatusCard
+        repeat: "activeDeliveries"
+        props:
+          variant: card
+          title: "{deliveryCode}"
+          badge: { text: "{statusLabel}", variant: "{statusBadgeVariant}" }
+          caption: "{summaryLine}"
+          chevron: true
+        note: >
+          Sıralama: iptal deadline'ı en yakın olan üstte (Edge case 1). 'Aktif' = window_open, awaiting_charge,
+          confirmed, partially_confirmed, all_failed, delivery_pending; delivered normalde Geçmiş'e düşer.
+        statusLabel: >
+          window_open → str.d1_status_window_open (Neutral) · awaiting_charge → str.d1_status_awaiting_charge (Info) ·
+          confirmed → str.d1_status_confirmed (Success) · partially_confirmed → str.d1_status_partially_confirmed (Warning) ·
+          all_failed → str.d1_status_all_failed (Error) · delivery_pending → str.d1_status_delivery_today | str.d1_status_delivery_soon (Delivery) ·
+          delivered → str.d1_status_delivered (DeliveryMuted) · cancelled → str.d1_status_cancelled (Muted)
+        summaryLine: >
+          window_open → "str.d1_line_blocked({orderCount}, {blockedAmount})" ·
+          awaiting_charge → str.d1_line_processing ·
+          confirmed/partially_confirmed → "str.d1_line_charged({orderCount}, {chargedAmount})" + (releasedAmount > 0 ? "str.d1_line_released_suffix({releasedAmount})" : "") +
+            (partially_confirmed ? " · str.d1_line_failed_count({failedCount})" : "") ·
+          delivery_pending → "str.d1_line_delivery_day({deliveryWeekday})" · delivered → str.d1_line_delivered ·
+          cancelled → "str.d1_line_cancelled · str.d1_line_block_released"
+        rule: "'Ödendi' kelimesi hiçbir yerde kullanılmaz (Edge case 2)."
+
+  - id: history-list
+    visibleWhen: "selectedTab == history"
+    content:
+      - component: StatusCard
+        repeat: "historyDeliveries"
+        props:
+          variant: row
+          title: "{dateLabel}"
+          badge: { text: "{statusLabel}", variant: "{statusBadgeVariant}" }
+          amount: "{totalAmount}"
+          chevron: true
+        note: "Kronolojik ters; kompakt satır (tarih + durum rozeti + toplam tutar)."
+
+  - id: returns-link
+    component: TextLink
+    visibleWhen: "hasReturnRequests"
+    props: { text: str.d1_returns_link }
+    note: "Akış G4 giriş noktası (G §8 soru 5) — yerleşim D akışında yok, öneri."
+
+  - id: empty
+    visibleWhen: "activeEmpty && historyEmpty"
+    content:
+      - { component: StatusHero, props: { tone: neutral, icon: receipt_long, title: str.d1_empty_title } }
+      - { component: SecondaryButton, props: { text: str.d1_empty_cta } }
+
+  - id: whatsapp
+    component: WhatsAppFab
+
+  - id: nav
+    component: BottomNavBar
+    props: { selected: orders, ordersDot: "{hasUnseenStatusChange}" }
+    note: "ordersDot = last_seen_delivery_status_{deliveryId} != sunucu durumu (D5 Edge case 10). BottomNavBar'a prop eklenmeli (change)."
+
+states:
+  - id: active-window-open
+    description: "Aktif sekmesi: tek kart #DAL1 · gri 'Bekleniyor' · '2 ekleme · ₺188,00 kartında bekletiliyor'."
+  - id: active-partial
+    description: "Çekim sonrası: #DAL1 amber 'Kısmen Onaylandı' · '2 ekleme · ₺135,00 çekildi, ₺53,00 serbest bırakıldı · 1 kalem düştü'; alt barda Siparişler'de kırmızı nokta."
+  - id: active-overlap
+    description: "Edge case 1: yeni pencere açık (#DAL1 Bekleniyor) + geçen haftanın teslimatı henüz teslim işaretlenmemiş (Teslimat Yakında); iptal deadline'ı yakın olan üstte."
+  - id: history
+    description: "Geçmiş sekmesi: 3 kompakt satır (Teslim Edildi, Teslim Edildi, İptal Edildi) + 'İade Taleplerim' linki."
+  - id: empty
+    description: "Hiç teslimat yok: segment gizli, boş durum + 'Pazar'a Git'."
+
+data:
+  uiState:
+    - "selectedTab: Active | History"
+    - "activeDeliveries: List<DeliveryCardUi>"
+    - "historyDeliveries: List<DeliveryRowUi>"
+    - "hasReturnRequests: Boolean"
+    - "hasUnseenStatusChange: Boolean"
+    - "isRefreshing: Boolean"
+actions: [TabSelected(tab), DeliveryClicked(deliveryId), ReturnsClicked, GoToMarketClicked, WhatsAppClicked, Refresh, NavTabClicked]
+navigation:
+  - { on: DeliveryClicked, goTo: "MainGraph.DeliveryDetailRoute (D2)", args: [deliveryId] }
+  - { on: GoToMarketClicked, goTo: "MainGraph.HomeRoute (B1)", note: "Sekme geçişi (Pazar)" }
+  - { on: ReturnsClicked, goTo: "İade Taleplerim (G4)" }
+  - { on: WhatsAppClicked, effect: "WhatsApp destek sohbeti (intent)" }
+  - { on: NavTabClicked, goTo: "Pazar (B1) · KareKod (F) · Hesap (I)" }
+api:
+  - "GET /v1/deliveries?status=active|history&cursor&limit"
+  - "GET /v1/deliveries/current (aktif önizleme)"
+  - "Foreground'a gelince + pull-to-refresh ile yenilenir; WebSocket yok (§6.2)"
+
+strings:
+  d1_title: "Siparişler"
+  d1_tab_active: "Aktif"
+  d1_tab_history: "Geçmiş"
+  d1_status_window_open: "Bekleniyor"
+  d1_status_awaiting_charge: "İşleniyor"
+  d1_status_confirmed: "Onaylandı"
+  d1_status_partially_confirmed: "Kısmen Onaylandı"
+  d1_status_all_failed: "Ödeme Tamamlanamadı"
+  d1_status_delivery_today: "Teslimat Bugün"
+  d1_status_delivery_soon: "Teslimat Yakında"
+  d1_status_delivered: "Teslim Edildi"
+  d1_status_cancelled: "İptal Edildi"
+  d1_line_blocked: "%1$d ekleme · %2$s kartında bekletiliyor"
+  d1_line_processing: "Ödemen işleniyor"
+  d1_line_charged: "%1$d ekleme · %2$s çekildi"
+  d1_line_released_suffix: ", %1$s serbest bırakıldı"
+  d1_line_failed_count: "%1$d kalem düştü"
+  d1_line_delivery_day: "%1$s teslimat"
+  d1_line_delivered: "Teslim edildi"
+  d1_line_cancelled: "İptal edildi"
+  d1_line_block_released: "Bloke serbest bırakıldı"
+  d1_returns_link: "İade Taleplerim"
+  d1_empty_title: "Henüz siparişin yok"
+  d1_empty_cta: "Pazar'a Git"
+
+sampleData:
+  selectedTab: active
+  activeDeliveries:
+    - { deliveryCode: "#DAL1", statusLabel: "Bekleniyor", statusBadgeVariant: Neutral, summaryLine: "2 ekleme · ₺188,00 kartında bekletiliyor", orderCount: 2, blockedAmount: "₺188,00" }
+  activePartial:
+    - { deliveryCode: "#DAL1", statusLabel: "Kısmen Onaylandı", statusBadgeVariant: Warning, summaryLine: "2 ekleme · ₺135,00 çekildi, ₺53,00 serbest bırakıldı · 1 kalem düştü", chargedAmount: "₺135,00", releasedAmount: "₺53,00", failedCount: 1 }
+  activeOverlap:
+    - { deliveryCode: "#DAL1", statusLabel: "Teslimat Yakında", statusBadgeVariant: Delivery, summaryLine: "Cumartesi teslimat", deliveryWeekday: "Cumartesi" }
+    - { deliveryCode: "#DAL1", statusLabel: "Bekleniyor", statusBadgeVariant: Neutral, summaryLine: "1 ekleme · ₺96,00 kartında bekletiliyor" }
+  historyDeliveries:
+    - { dateLabel: "Cumartesi, 26 Eylül", statusLabel: "Teslim Edildi", statusBadgeVariant: DeliveryMuted, totalAmount: "₺171,00" }
+    - { dateLabel: "Cumartesi, 19 Eylül", statusLabel: "Teslim Edildi", statusBadgeVariant: DeliveryMuted, totalAmount: "₺84,00" }
+    - { dateLabel: "Cumartesi, 12 Eylül", statusLabel: "İptal Edildi", statusBadgeVariant: Muted, totalAmount: "₺0,00" }
+  hasReturnRequests: true
+  hasUnseenStatusChange: true
+
+open:
+  - "Ekran başlığı 'Siparişler' Nav §2/§3.1'deki sekme adından alındı; D1 başlık metni vermiyor."
+  - "Tutar biçimi: akış 'X TL' yazıyor, kartlar Akış C ile tutarlı olarak '₺188,00' biçimini kullanıyor — tek biçim kararı gerekli."
+  - "'cancelled' kartında akış hem 'İptal edildi' (D1 alt satır) hem 'Bloke serbest bırakıldı' (Edge case 2 kalıp 3) diyor; ikisi ' · ' ile birleştirildi — öneri."
+  - "'1 kalem düştü': düşme birimi sipariştir (§4.2), metin 'kalem' diyor — akıştan birebir alındı, terim tutarsızlığı Sahan'a."
+  - "Geçmiş satırında iptal edilen teslimatın 'toplam tutarı' ne gösterilir (₺0,00 mı, bloke edilen mi)? Akışta yok, öneri ₺0,00."
+  - "Teslimat kodu haftalar arası aynı mı (#DAL1)? Çakışma durumunda (active-overlap) iki kart aynı kodla görünüyor; ayırt edici bilgi (tarih) gerekebilir."
+  - "'İade Taleplerim' linki (G4 girişi) D akışında yok — G §8 soru 5; öneri: Geçmiş listesinin altında TextLink."
+  - "Yükleniyor / ağ hatası durumları akışta tanımlı değil (B1 kalıbı uygulanabilir)."
+  - "Boş durum ikonu (receipt_long) öneri."

@@ -1,0 +1,91 @@
+id: D4
+title: İptal Onay Diyaloğu
+source: DomatApp_Akis_D_Siparis_Durumu_v1.1.md#D4
+route: { name: "MainGraph.DeliveryDetailRoute → CancelDeliveryDialog (modal)", args: [deliveryId: String], status: proposed }
+purpose: >
+  'Teslimat bütünü' iptal kuralını net, geri dönüşü olmayan bir aksiyon olarak onaylatmak; "sadece son
+  eklediğim siparişi iptal ediyorum" yanılgısını önlemek. Kural başlık + gövde + sipariş özetiyle üç kez somutlaştırılır.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: backdrop
+    underlay: "D2@window-open"
+    note: "D2 (window-open) ekranı + scrim (%32 on-surface). Popup Robolectric'e girmez; statik önizleme düzeni (kural 6)."
+  - id: dialog
+    component: DomatDialog
+    props:
+      title: str.d4_title
+      body: "str.d4_body({deliveryCode}, {orderCount}, {totalBlockedAmount})"
+      bodyEmphasis: "TÜM (kalın)"
+      dismissText: str.d4_dismiss
+      confirmText: str.d4_confirm
+      confirmTone: destructive
+      confirmLoading: "{isSubmitting}"
+    content:
+      - component: SummaryRow
+        repeat: "orders"
+        visibleWhen: "orderCount > 1"
+        props: { label: "str.d4_order_sequence({orderSequenceInWindow})", detail: "{itemsSummary}", amount: "{provisionedAmount}" }
+      - { component: text, style: label-large, text: str.d4_reason_label }
+      - component: RadioOptionRow
+        repeat: "reasons"
+        props: { label: "{reasonLabel}", selected: "{selected}" }
+        reasonLabel: "str.d4_reason_changed_mind | str.d4_reason_mistake | str.d4_reason_price_product | str.d4_reason_other"
+        note: "Tek seçimlik, atlanabilir (Should — C3; §8 soru 5)."
+    note: "'Vazgeç' birincil ve güvenli varsayılan konumda; 'Evet, Teslimatı İptal Et' ikincil, kırmızı, düşük vurgu."
+
+states:
+  - id: default
+    description: "2 sipariş listelenir; sebep seçilmemiş."
+  - id: reason-selected
+    description: "'Fikrim değişti' seçili."
+  - id: submitting
+    description: "Onay butonu yükleniyor; diğer kontroller kilitli."
+  - id: single-order
+    description: "Tek sipariş: sipariş listesi gizli, gövde '1 adet'."
+
+data:
+  uiState:
+    - "deliveryCode: String"
+    - "orderCount: Int"
+    - "totalBlockedAmount: Money"
+    - "orders: List<OrderSummaryUi>"
+    - "selectedReason: CancelReason?"
+    - "isSubmitting: Boolean"
+actions: [ReasonSelected(reason), DismissClicked, ConfirmClicked]
+navigation:
+  - { on: DismissClicked, back: true, note: "D2'ye değişiklik olmadan döner." }
+  - { on: cancelSucceeded, backTo: "MainGraph.DeliveryDetailRoute (D2)", note: "D2 yenilenir → state cancelled." }
+  - { on: cancelRejected409, backTo: "MainGraph.DeliveryDetailRoute (D2)", note: "reason: cancellation_window_closed → D2 state window-open-cancel-closed ('İptal hakkı doldu'). already_cancelled/already_delivered → D2 yenilenir." }
+api:
+  - "POST /v1/deliveries/{deliveryId}/cancel { reasonCode?, reasonText? } — deadline sunucu saatine göre kontrol edilir"
+  - "DataStore pending_cancel_delivery_id: istek sırasında yazılır, sonuçla temizlenir"
+
+strings:
+  d4_title: "Bu teslimatı iptal etmek istediğine emin misin?"
+  d4_body: "%1$s altındaki TÜM siparişlerin (%2$d adet, toplam %3$s) iptal edilecek. Bloke edilen tutarların tamamı serbest bırakılacak. Bu işlem geri alınamaz."
+  d4_order_sequence: "%1$d. sipariş"
+  d4_reason_label: "İptal sebebi (isteğe bağlı)"
+  d4_reason_changed_mind: "Fikrim değişti"
+  d4_reason_mistake: "Yanlışlıkla sipariş verdim"
+  d4_reason_price_product: "Fiyat/ürün sorunu"
+  d4_reason_other: "Diğer"
+  d4_dismiss: "Vazgeç"
+  d4_confirm: "Evet, Teslimatı İptal Et"
+
+sampleData:
+  deliveryCode: "#DAL1"
+  orderCount: 2
+  totalBlockedAmount: "₺188,00"
+  orders:
+    - { orderSequenceInWindow: 1, itemsSummary: "Domates (Tarla) 1 file · Salatalık 1 file", provisionedAmount: "₺150,00" }
+    - { orderSequenceInWindow: 2, itemsSummary: "Kuru Soğan 2 kg", provisionedAmount: "₺38,00" }
+  singleOrder: { orderCount: 1, totalBlockedAmount: "₺150,00" }
+  reasons: ["Fikrim değişti", "Yanlışlıkla sipariş verdim", "Fiyat/ürün sorunu", "Diğer"]
+
+open:
+  - "'İptal sebebi (isteğe bağlı)' etiketi akışta yok, öneri. Sebep alanı Should (C3) — v1'de kalacak mı (§8 soru 5)?"
+  - "'Diğer' seçilince serbest metin (reasonText) alanı açılacak mı? API destekliyor, akış UI tanımlamıyor."
+  - "Tek siparişte gövde '1 adet' — dil doğal mı, ayrı tekil kalıp gerekir mi? Öneri."
+  - "48 saat iptal deadline'ı kesin kabul edildi (§8 soru 2 onay bekliyor)."
+  - "Sebep seçimi G2 ile tutarlı olsun diye RadioOptionRow (L-039)."

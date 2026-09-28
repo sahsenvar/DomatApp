@@ -1,0 +1,51 @@
+id: G6
+title: Talebi Geri Çek
+source: DomatApp_Akis_G_Iade_v1.1.md#G6
+route: { name: OrdersGraph.WithdrawReturnDialog, args: [returnId: String], status: proposed, presentation: dialog }
+purpose: >
+  Kullanıcının beklemedeki (pending) bir talebi WhatsApp'a yazmadan kendisi sonlandırması. Yalnızca pending iken
+  G5'ten açılır. Güvenli varsayılan "Vazgeç"tir. Sunucu otoriterdir: kurucu tam o anda karar verdiyse
+  409 already_reviewed → diyalog kapanır, G5 güncel durumla yenilenir (Edge Case 8).
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: backdrop
+    ref: "G5@pending"
+    note: "Arka planda G5 (pending) + scrim. Popup'lar Robolectric görüntüsüne girmez → statik düzen önizlemesi (kural 6)."
+  - id: dialog
+    component: DomatDialog
+    props:
+      title: str.g6_title
+      body: str.g6_body
+      dismissText: str.g6_dismiss
+      confirmText: str.g6_confirm
+      emphasis: dismiss
+      loading: "withdrawing (confirm)"
+    note: "'Vazgeç' birincil (dolu), 'Evet, Geri Çek' ikincil düşük vurgu. 'İptal' kelimesi hiçbir yerde geçmez."
+
+states:
+  - id: default
+    description: "G5 (#İAD-2381, Beklemede) üstünde scrim + onay diyaloğu; Vazgeç birincil."
+
+data:
+  uiState: ["returnId: String", "isWithdrawing: Boolean"]
+actions: [DismissClicked, ConfirmClicked, ScrimClicked]
+navigation:
+  - { on: DismissClicked, back: true }
+  - { on: ScrimClicked, back: true }
+  - { on: withdrawn, back: true, note: "G5 'withdrawn' durumuna yenilenir (Geri Çekildi)" }
+  - { on: "409 already_reviewed", back: true, note: "G5 güncel durumla (approved/rejected) yenilenir + G5 withdraw-conflict snackbar'ı" }
+api: ["POST /v1/returns/{returnId}/withdraw (body: {})"]
+
+strings:
+  g6_title: "Bu iade talebini geri çekmek istediğine emin misin?"
+  g6_body: "Bu işlem geri alınamaz. Aynı ürün için istersen daha sonra tekrar talep açabilirsin."
+  g6_dismiss: "Vazgeç"
+  g6_confirm: "Evet, Geri Çek"
+
+sampleData:
+  returnCode: "#İAD-2381"
+
+open:
+  - "Onaylandıktan sonra, istek sürerken 'Evet, Geri Çek' butonunda yükleme göstergesi akışta tanımlı değil — kart confirm üzerinde loading öneriyor (ayrı durum çizilmedi)."
+  - "Scrim'e dokunmanın diyaloğu kapatıp kapatmayacağı akışta yok; kart 'Vazgeç' ile aynı davranışı öneriyor."

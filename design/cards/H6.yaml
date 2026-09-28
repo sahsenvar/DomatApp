@@ -1,0 +1,72 @@
+id: H6
+title: Çevrimdışı Kuyruk
+source: claude/DomatApp_Akis_H_Dagitici_Arayuzu_v1.1.md#H6
+route: { name: EmployeeGraph.QueueSheet, status: proposed, presentation: bottomSheet }
+purpose: >
+  Cihazda bekleyen (sunucuya henüz ulaşmamış) 'teslim edildi' kayıtlarını şeffafça göstermek ve 'gönderildi mi' endişesini
+  gidermek. Geçmiş/log değil — yalnızca bekleyenler.
+frame: { width: 390, height: 844 }
+
+regions:   # H2 scrim üstünde, akış içinde çizilen bottom sheet
+  - id: sheet
+    component: BottomSheet
+    props: { title: "str.h6_title({queueCount})" }
+    content:
+      - { component: InfoBanner, props: { tone: info, icon: cloud_upload, body: str.h6_info } }
+      - component: StatusCard
+        repeat: "queueItems"
+        props:
+          title: "{deliveryCode} · {blockLabel}"
+          statusText: "str.h6_status_pending | str.h6_status_failed | str.h6_status_expired"
+          hint: "str.h6_failed_hint (yalnızca failed)"
+          tone: "{syncTone}"
+          time: "{confirmedAtLocal}"
+          action: "str.h6_expired_action (yalnızca tokenExpired)"
+        note: "Senkron olan kayıt listeden anında düşer; kayıt asla otomatik silinmez."
+      - component: PrimaryButton
+        props: { text: str.h6_send_now, size: Large, leadingIcon: sync, loading: "syncing" }
+
+states:
+  - id: pending
+    description: "3 kayıt (#DAL1 A Blok Daire 12, #DAL3 B Blok Daire 7, #DAL4 C Blok Daire 14) 'gönderiliyor...' — nötr ton."
+  - id: syncing
+    description: "Şimdi Gönder'e basıldı: buton loading, satırlar aynı."
+  - id: failed
+    description: "#DAL3 kırmızı 'Gönderilemedi, tekrar denenecek' + 'Bağlantını kontrol et.'; diğerleri bekliyor."
+  - id: token-expired
+    description: "#DAL4 (saatlerce offline) 410: uyarı tonu, 'onay süresi doldu' metni + 'Tekrar Okut' eylemi."
+
+data:
+  uiState:
+    - "queueCount: Int"
+    - "queueItems: List<QueueRowUi>  // deliveryId, deliveryCode, blockLabel, confirmedAtLocal, syncStatus: pending | syncing | failed | tokenExpired"
+    - "syncing: Boolean"
+actions: [SendNowClicked, RescanClicked(deliveryId), Dismissed]
+navigation:
+  - { on: Dismissed, back: true, note: "Aşağı kaydırma / scrim dokunuşu" }
+  - { on: "kuyruk boşaldı", back: true, note: "Rozet H2'den kaybolur (öneri)." }
+  - { on: RescanClicked, goTo: "EmployeeGraph.ScanRoute (H3)", args: [expectedDeliveryId], note: "Yeni lookup → H5 → redeem; eski kuyruk kaydı yenisiyle değiştirilir." }
+api: ["redemption_queue (yerel) gözlenir", "POST /v1/courier/deliveries/redeem (Şimdi Gönder / otomatik: üstel geri çekilme 10sn, 30sn, 1dk, sonra 2dk; sınırsız)"]
+
+strings:
+  h6_title: "Bekleyen Kayıtlar (%1$d)"
+  h6_info: "İnternet geldiğinde bu kayıtlar otomatik gönderilir. Hiçbir şey kaybolmaz."
+  h6_status_pending: "Az önce işaretlendi, gönderiliyor..."
+  h6_status_failed: "Gönderilemedi, tekrar denenecek"
+  h6_failed_hint: "Bağlantını kontrol et."
+  h6_status_expired: "Bu kaydın onay süresi doldu, tekrar okutman/girmen gerekiyor."
+  h6_expired_action: "Tekrar Okut"
+  h6_send_now: "Şimdi Gönder"
+
+sampleData:
+  queueCount: 3
+  queueItems:
+    - { deliveryCode: "#DAL1", blockLabel: "A Blok, Daire 12", confirmedAtLocal: "10:05", syncStatus: pending }
+    - { deliveryCode: "#DAL3", blockLabel: "B Blok, Daire 7", confirmedAtLocal: "10:12", syncStatus: failed }
+    - { deliveryCode: "#DAL4", blockLabel: "C Blok, Daire 14", confirmedAtLocal: "10:20", syncStatus: tokenExpired }
+
+open:
+  - "'Tekrar Okut' eylemi ve kuyruk boşalınca sheet'in kendiliğinden kapanması akışta yok, öneri. Müşteri kapıda değilse yeniden okutma mümkün değil (§8 soru 9) — çözüm WhatsApp."
+  - "'Az önce işaretlendi' metni zamanla yanlışlaşır (saatler önce işaretlenmiş kayıt); saat zaten satırda — metin 'İşaretlendi, gönderiliyor...' olabilir."
+  - "Aynı teslimat hem kuyrukta (tokenExpired) hem yeniden okutulursa eski kaydın silinmesi 'kayıt asla silinmez' ilkesine istisna — onay gerekiyor."
+  - "Bottom sheet katalogda yok (BottomSheet) — H7 modal olarak tam ekran çizildiği için yalnız H6 kullanıyor."

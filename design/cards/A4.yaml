@@ -1,0 +1,60 @@
+id: A4
+title: "Onboarding — Ekran 4: İade Sözü ve Başlangıç"
+source: DomatApp_Akis_A_Tanitim_Bolge_Bekleme_v1.2.md#A4
+route: { name: OnboardingGraph.OnboardingPagerRoute, status: proposed, noBack: true }
+purpose: >
+  Kalite güvencesini net bir sözle kapatmak ve kullanıcıyı Bölge Seçimi'ne (A5) yönlendirmek.
+  "Nasıl çalışıyoruz" bağlantısı yalnızca bu son ekranda yer alır.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: top
+    content:
+      - { component: ProgressDots, props: { totalDots: 4, activeIndex: 3 } }
+      - { component: TextLink, props: { text: str.a4_skip }, note: "Bu ekranda 'Başlayalım' ile aynı hedefe gider." }
+  - id: illustration
+    component: DomatImage
+    props: { asset: onboarding_photo_refund, size: hero }
+    note: "Telefonla ürün fotoğrafı çekme anı; basit ve sıcak illüstrasyon."
+  - id: title
+    component: text
+    style: headline-medium
+    text: str.a4_title
+  - id: body
+    component: text
+    style: body-large
+    text: str.a4_body
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.a4_start, size: Large } }
+      - { component: TextLink, props: { text: str.a4_how_it_works }, note: "Butonun altında, ortalı, düşük vurgu." }
+
+states:
+  - id: default
+    description: "4. (son) nokta aktif; fotoğraf çekme illüstrasyonu, iade sözü, 'Başlayalım' + altında 'Nasıl çalışıyoruz' bağlantısı."
+
+data:
+  uiState: ["pageIndex: Int  // 3"]
+actions: [StartClicked, SkipClicked, HowItWorksClicked, PageSwiped]
+navigation:
+  - { on: StartClicked, replaceTo: "OnboardingGraph.SiteSelectionRoute (A5)", args: [mode: FirstLaunch], note: "has_completed_onboarding = true. Referrer ile site çözüldüyse → MainGraph.HomeRoute (B1) + QR toast." }
+  - { on: SkipClicked, replaceTo: "OnboardingGraph.SiteSelectionRoute (A5)", args: [mode: FirstLaunch], note: "'Başlayalım' ile aynı hedef; kısayol, ayrı dal değil." }
+  - { on: HowItWorksClicked, goTo: "AccountGraph.HowItWorksRoute (Akış I — 'Nasıl çalışıyoruz')", note: "Geri dönüşte A4'e döner (öneri)." }
+  - { on: PageSwiped, goTo: "A3 (geri yön)" }
+api: []
+
+strings:
+  a4_skip: "Geç"
+  a4_title: "Basit. Adil. Şeffaf."
+  a4_body: "Beğenmezsen fotoğrafını çek, iade edelim."
+  a4_start: "Başlayalım"
+  a4_how_it_works: "Daha fazla bilgi: Nasıl çalışıyoruz →"
+
+sampleData: {}
+
+open:
+  - "a4_title akışta yok, öneri — mevcut koddaki onboarding_trust_title yeniden kullanıldı."
+  - "a4_body akışta 'tarzı' ile verildi; birebir alındı, kesin metin onayı bekliyor."
+  - "Kodla fark: mevcut Trust sayfası 'tutarı anında uygulama içi cüzdanınıza iade edilir' diyor — cüzdan Faz 2'ye gitti (Nav §3.1); akış 'fotoğrafını çek, iade edelim' — akış kazanır. Özellik listesi (Üretici adı/şehri görünür) akışta yok, kaldırılmalı."
+  - "'Nasıl çalışıyoruz' ekranının route'u (Akış I) henüz kartlanmadı; 'Nasıl çalışıyoruz'dan geri gelince A4'e mi dönülür akışta tanımsız. Son sayfada 'Geç' bağlantısı gereksiz olabilir (akış tutuyor)."

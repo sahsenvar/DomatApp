@@ -1,0 +1,99 @@
+id: A6
+title: Bekleme Listesi
+source: DomatApp_Akis_A_Tanitim_Bolge_Bekleme_v1.2.md#A6
+route: { name: OnboardingGraph.WaitlistRoute, args: ["siteNameQuery: String?"], status: proposed }
+purpose: >
+  Sitesi aktif listede olmayan kullanıcıdan talep sinyali toplamak (talep haritası) — hata/üzgünüz ekranı değil.
+  Yalnızca site adı zorunlu; telefon opsiyonel (OTP yok, lead kaydı). KVKK onayı yalnızca telefon girildiyse zorunlu.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: "", showBack: true }
+    note: "Başlıksız üst çubuk, yalnızca geri (A5'e). Başarı durumlarında da aynı."
+  - id: hero
+    component: StatusHero
+    visibleWhen: "state == Form"
+    props: { tone: neutral, icon: apartment, title: str.a6_title, subtitle: str.a6_body }
+    note: "Nötr, umutlu ton — hata ikonu/rengi kullanılmaz."
+  - id: form
+    visibleWhen: "state == Form"
+    content:
+      - component: DomatTextField
+        props: { label: str.a6_site_label, value: "{siteName}", state: "{siteName.isEmpty ? empty : default}", singleLine: true }
+        note: "A5'ten arama metniyle ön-dolu gelebilir."
+      - component: PhoneNumberField
+        props: { label: str.a6_phone_label, value: "{phone}", state: "{phoneError ? error : (phone.isEmpty ? empty : default)}" }
+        errorText: str.a6_phone_error
+      - { component: InlineNote, props: { tone: neutral, text: str.a6_phone_incentive } }
+      - component: ConsentCheckbox
+        visibleWhen: "phone.isNotEmpty"
+        props: { label: str.a6_kvkk_label, checked: "{kvkkChecked}", expandable: true, expanded: false, required: "{kvkkError}" }
+        legalText: str.a6_kvkk_legal_text
+        note: "Telefon boşken gizli (kişisel veri işlenmiyor); telefon girilince görünür ve zorunlu olur."
+  - id: success
+    visibleWhen: "state in [Submitted, AlreadySubmitted]"
+    content:
+      - { component: StatusHero, visibleWhen: "Submitted", props: { tone: success, title: str.a6_success_title } }
+      - { component: StatusHero, visibleWhen: "AlreadySubmitted", props: { tone: success, title: str.a6_already_title } }
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, visibleWhen: "state == Form", props: { text: str.a6_cta, size: Large, enabled: "{siteName.isNotBlank}", loading: "{submitting}" } }
+      - { component: PrimaryButton, visibleWhen: "state in [Submitted, AlreadySubmitted]", props: { text: str.a6_close, size: Large } }
+
+states:
+  - id: default
+    description: "Site adı A5'ten ön-dolu ('Mavişehir Evleri'), telefon boş, KVKK kutusu gizli; 'Haber Ver' aktif."
+  - id: with-phone
+    description: "Telefon girildi (532 123 45 67), KVKK kutusu görünür ve işaretli; 'Haber Ver' aktif."
+  - id: validation-error
+    description: "Telefon eksik/hatalı (532 12) → alan hatası; KVKK işaretsiz gönderim → onay kutusu hata görünümü."
+  - id: success
+    description: "Form yerine: onay ikonu + 'Kaydettik, teşekkürler' + 'Kapat'."
+  - id: already-submitted
+    description: "Aynı cihazdan aynı (normalize) site adı tekrar: sunucuya gidilmeden 'Zaten kaydettik, merak etme' + 'Kapat'."
+
+data:
+  uiState:
+    - "state: Form | Submitted | AlreadySubmitted"
+    - "siteName: String"
+    - "phone: String  // yalnızca rakamlar, en fazla 10"
+    - "phoneError: Boolean"
+    - "kvkkChecked: Boolean"
+    - "kvkkError: Boolean"
+    - "submitting: Boolean"
+actions: [BackClicked, SiteNameChanged, PhoneChanged, KvkkToggled, KvkkReadMoreClicked, SubmitClicked, CloseClicked]
+navigation:
+  - { on: CloseClicked, backTo: "OnboardingGraph.SiteSelectionRoute (A5)", note: "Arama modunda A5'e döner; boş/sahte Pazar ASLA gösterilmez." }
+  - { on: BackClicked, back: true, note: "A5'e (arama metni korunur)." }
+  - { on: SubmitClicked, goTo: "state success (POST /v1/waitlist 2xx) | already-submitted (waitlist_submitted_for eşleşirse, istek atılmaz)" }
+api: ["POST /v1/waitlist { siteAdiSerbestMetin, telefon?, cihazId, kaynak: qr | organik }", "DataStore: waitlist_submitted_for (normalize site adı)"]
+
+strings:
+  a6_title: "Henüz senin sitende değiliz, ama olacağız."
+  a6_body: "Hangi sitelerde talep olduğunu topluyoruz; en çok istenen siteler bir sonraki durağımız olacak."
+  a6_site_label: "Site / mahalle adı"
+  a6_phone_label: "Telefon numarası (isteğe bağlı)"
+  a6_phone_error: "Geçerli bir cep telefonu numarası gir (5XX XXX XX XX)."
+  a6_phone_incentive: "Bırakırsan, sitende başladığımızda ilk sana haber veririz."
+  a6_kvkk_label: "KVKK Aydınlatma Metni'ni okudum, telefon numaramın bu amaçla işlenmesine açık rıza veriyorum."
+  a6_kvkk_legal_text: "<Bekleme listesi KVKK aydınlatma metni — hukuk tarafından sağlanacak; yalnızca telefon numarası ve site adını kapsar>"
+  a6_cta: "Haber Ver"
+  a6_success_title: "Kaydettik, teşekkürler"
+  a6_already_title: "Zaten kaydettik, merak etme"
+  a6_close: "Kapat"
+
+sampleData:
+  siteName: "Mavişehir Evleri"
+  phonePrefix: "+90"
+  phoneValid: "532 123 45 67"
+  phoneInvalid: "532 12"
+
+open:
+  - "a6_title akışta 'Örnek başlık' olarak verildi; birebir alındı. a6_body akışta yok, öneri ('genişleme niyetini belirten kısa cümle')."
+  - "a6_site_label, a6_phone_label, a6_phone_error (C1 ile aynı), a6_kvkk_label/legal_text akışta yok, öneri. Bekleme listesi için ayrı bir KVKK aydınlatma metni hukuktan gelmeli."
+  - "KVKK kutusunun telefon boşken gizlenmesi yorumdur; akış yalnızca 'telefon girildiyse zorunlu' diyor. Alternatif: her zaman görünür, yalnızca zorunluluk değişir."
+  - "Başarı durumlarında alt metin (subtitle) yok; akış yalnızca başlık + Kapat veriyor. POST /v1/waitlist hata durumu (ağ yok) akışta tanımsız — Snackbar önerilebilir."
+  - "Kapat'ın A5'e dönüşünde arama metni temizlenir mi korunur mu akışta tanımsız."

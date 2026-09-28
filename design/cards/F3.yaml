@@ -1,0 +1,88 @@
+id: F3
+title: Teslim Edildi Bildirimi ve Durum Güncellemesi
+source: claude/DomatApp_Akis_F_Teslimat_v1.0.md#F3
+route: { name: MainGraph.KareKodRoute, args: ["deliveryId: String"], status: proposed }
+purpose: >
+  Akış H'nin 'teslim edildi' işaretlemesinin müşteri tarafına yansıması: F1 açıksa gövdenin canlı dönüşümü,
+  uygulama açık ama başka ekrandaysa in-app bildirim, kapalıysa push. Kalıcı iz D1/D2'deki delivered rozetidir
+  (Akış D). Teslim alınmış kod bir daha gösterilmez; F1'e sonradan girilirse de bu onay görünür.
+frame: { width: 390, height: 844 }
+theme: "F1 ile aynı beyaz zemin; geçiş anında parlaklık normale döner."
+
+regions:
+  - id: header
+    visibleWhen: "state in [delivered, delivered-other-active]"
+    content:
+      - { component: DomatIconButton, props: { icon: close, size: Medium } }
+      - { component: text, style: headline-small, text: "{deliveryCode}" }
+      - { component: TextLink, visibleWhen: "başka delivery_pending teslimat var", props: { text: str.f3_switch } }
+  - id: hero
+    visibleWhen: "state in [delivered, delivered-other-active]"
+    component: StatusHero
+    props: { tone: success, icon: check_circle, title: str.f3_delivered_title, subtitle: "str.f3_delivered_time({deliveredAt})" }
+    note: "Kod blokları yerini yumuşak geçişle (crossfade) büyük yeşil checkmark'a bırakır."
+  - id: cta
+    visibleWhen: "state in [delivered, delivered-other-active]"
+    component: BottomActionBar
+    content:
+      - { component: SecondaryButton, props: { text: str.f3_go_detail } }
+  - id: in-app-banner
+    visibleWhen: "state == in-app-banner"
+    component: Snackbar
+    props: { text: "str.f3_delivered_message({deliveryCode})", action: str.f3_banner_action }
+    note: "Host ekran B1 (Pazar) çerçevesi üzerinde; alt barın üstünde. Tamamına dokunmak da D2'yi açar; birkaç saniye sonra kendiliğinden kapanır."
+
+notifications:
+  - id: delivered-push
+    when: "Uygulama arka planda/kapalı"
+    title: str.f3_push_title
+    body: "str.f3_delivered_message({deliveryCode})"
+    deepLink: "MainGraph.DeliveryDetailRoute (D2)"
+
+states:
+  - id: delivered
+    description: "F1 açıkken dağıtıcı okuttu (ya da delivered teslimat için FAB'a basıldı): yeşil checkmark + 'Teslim Alındı' + teslim saati + 'Teslimat Detayına Git'."
+  - id: delivered-other-active
+    description: "Aynı onay, başka bir delivery_pending teslimat da var: başlık altında 'değiştir' (F2 üzerinden diğer koda ulaşılır)."
+  - id: in-app-banner
+    description: "Uygulama açık, kullanıcı Pazar'da (B1): alt barın üstünde '#DAL1 teslim alındı. Afiyet olsun!' bildirimi."
+
+data:
+  uiState:
+    - "deliveryCode: String"
+    - "deliveredAt: String   // HH:mm"
+    - "hasOtherActiveDelivery: Boolean"
+  trigger: "GET /v1/deliveries/{deliveryId} → status delivered ya da handoff-code redemptionStatus redeemed (polling veya hızlandırıcı push ile tetiklenir); bir kez alındıktan sonra ağ gerekmez."
+actions: [CloseClicked, GoToDetailClicked, SwitchDeliveryClicked, BannerClicked, BannerActionClicked, PushOpened]
+navigation:
+  - { on: CloseClicked, back: true }
+  - { on: GoToDetailClicked, goTo: "MainGraph.DeliveryDetailRoute (D2)", args: [deliveryId] }
+  - { on: SwitchDeliveryClicked, goTo: "F2 (bottom sheet)" }
+  - { on: BannerClicked, goTo: "MainGraph.DeliveryDetailRoute (D2)", args: [deliveryId] }
+  - { on: BannerActionClicked, goTo: "MainGraph.DeliveryDetailRoute (D2)", args: [deliveryId] }
+  - { on: PushOpened, goTo: "MainGraph.DeliveryDetailRoute (D2)", args: [deliveryId], note: "Deep link" }
+api: ["GET /v1/deliveries/{deliveryId}", "GET /v1/deliveries/{deliveryId}/handoff-code (redemptionStatus)", "POST /v1/devices/push-token (devralınan)"]
+
+strings:
+  f3_switch: "değiştir"
+  f3_delivered_title: "Teslim Alındı"
+  f3_delivered_time: "Teslim saati: %1$s"
+  f3_go_detail: "Teslimat Detayına Git"
+  f3_push_title: "Teslimatın Tamamlandı"
+  f3_delivered_message: "%1$s teslim alındı. Afiyet olsun!"
+  f3_banner_action: "Detay"
+
+sampleData:
+  deliveryId: "dlv_01"
+  deliveryCode: "#DAL1"
+  deliveredAt: "10:42"
+  hasOtherActiveDelivery: false
+  hostScreen: B1
+
+open:
+  - "Teslim saati satırının metni akışta yok ('+ teslim saati'), 'Teslim saati: %1$s' öneri."
+  - "In-app banner için akış 'banner' diyor; katalogdaki Snackbar (alt, otomatik kapanan) kullanıldı. Aksiyon metni 'Detay' akışta yok, öneri. Üstten inen banner istenirse yeni bileşen gerekir."
+  - "Teslim alınan kodun tamamen gizlenmesi (Karar B) Sahan onayına açık (akış §8 s.3)."
+  - "Canlı dönüşümün foreground polling aralığı (6 sn) onayı bekliyor (akış §8 s.2)."
+  - "delivered-other-active durumunda F2 listesinde teslim alınan teslimat görünmez (yalnızca delivery_pending); bu durumda 'değiştir' tek seçenekli bir liste açar — doğrudan diğer koda geçmek daha iyi olabilir."
+  - "Kim teslim aldı bilgisi (komşu/aile) Faz 2 — D2 kapsamı (Edge Case 9)."

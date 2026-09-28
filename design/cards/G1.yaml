@@ -1,0 +1,120 @@
+id: G1
+title: Kalem Seçimi
+source: DomatApp_Akis_G_Iade_v1.1.md#G1
+route: { name: OrdersGraph.ReturnItemSelectionRoute, args: [deliveryId: String], status: proposed }
+purpose: >
+  D2'deki "İade Talebi Oluştur" butonundan sonra, o teslimattaki kalemlerden hangilerinin iade talebine konu
+  olacağını seçtirmek (çoklu seçim, seçilenlerin tamamı tek ortak form — Edge Case 1, Seçenek B).
+  Veri: D2 ile aynı GET /v1/deliveries/{deliveryId} → orders[].items[]. Seçilebilir ⟺ refundable === true VE
+  alreadyReturned ∈ {null, rejected, withdrawn} (§4.2). Seçilebilir tam 1 kalem varsa bu ekran atlanır → G2.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.g1_title, showBack: true }
+  - id: delivery-ref
+    component: text
+    style: label-large
+    text: "str.g1_delivery_ref({deliveryCode})"
+    note: "Başlık altında, on-surface-variant."
+  - id: info
+    component: InlineNote
+    props: { tone: neutral, text: str.g1_info }
+    note: "Üstte, nötr ton; banner değil."
+  - id: items
+    content:
+      - component: SelectableItemRow
+        repeat: "items"
+        props:
+          title: "{productName} — {variant}"
+          detail: "{quantityLabel}"
+          amount: "{chargedAmount}"
+          caption: "str.g1_order_label({orderSequenceInWindow})"
+          selected: "{selected}"
+          enabled: "{selectable}"
+          disabledReason: "str.g1_not_refundable | str.g1_in_request | str.g1_refunded"
+          action: str.g1_view_request
+        note: >
+          disabledReason: refundable=false → g1_not_refundable; alreadyReturned pending|approved → g1_in_request;
+          refunded → g1_refunded. action (TextLink → G5) yalnızca alreadyReturned pending|approved|refunded iken.
+          rejected/withdrawn kalemler normal seçilebilir satırdır (yeniden deneme, Edge Case 5).
+  - id: draft-dialog
+    component: DomatDialog
+    visibleWhen: "return_draft_json mevcut (ekrana girişte, bir kez)"
+    props:
+      title: str.g1_draft_title
+      body: "str.g1_draft_other_delivery (yalnızca taslak başka bir deliveryId'ye aitse)"
+      confirmText: str.g1_draft_continue
+      dismissText: str.g1_draft_restart
+      emphasis: confirm
+    note: "Statik düzen olarak akış içinde çizilir (kural 6). G1 atlandığında aynı diyalog G2 girişinde gösterilir."
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: "str.g1_continue({selectedCount})", enabled: "selectedCount >= 1" } }
+
+states:
+  - id: default
+    description: "Üç kalem de seçilebilir, hiçbiri seçili değil; CTA pasif 'Devam Et (0 ürün seçili)'."
+  - id: selected
+    description: "Domates — Tarla ve Domates — Çeri seçili; CTA aktif 'Devam Et (2 ürün seçili)'."
+  - id: item-in-request
+    description: "Salatalık için onaylanmış bir talep var (#İAD-2379, alreadyReturned=approved): satır pasif (%38), gerekçe + 'Talebi Görüntüle' linki. Diğer iki kalem seçilebilir."
+  - id: item-not-refundable
+    description: "Salatalık refundable=false: satır pasif, jenerik 'Bu ürün şu an iade edilemiyor.' notu, link yok."
+  - id: draft-resume
+    description: "Yarım kalan taslak var: 'Devam Et / Sıfırdan Başla' diyaloğu (scrim üstünde)."
+  - id: draft-other-delivery
+    description: "Taslak başka bir teslimata ait: aynı diyalog + 'Önceki taslağın silinecek' uyarısı."
+
+data:
+  uiState:
+    - "deliveryCode: String"
+    - "items: List<ReturnableItemUi>  // itemId, title, quantityLabel, chargedAmount, orderSequenceInWindow, selectable, disabledReason?, linkedReturnId?"
+    - "selectedItemIds: Set<String>"
+    - "draftPrompt: None | Resume | ReplaceOtherDelivery"
+actions: [BackClicked, ItemToggled(itemId), ViewRequestClicked(returnId), ContinueClicked, DraftContinueClicked, DraftRestartClicked]
+navigation:
+  - { on: BackClicked, back: true, note: "D2'ye döner" }
+  - { on: ContinueClicked, goTo: G2, args: [deliveryId, selectedItemIds] }
+  - { on: ViewRequestClicked, goTo: G5, args: [returnId] }
+  - { on: DraftContinueClicked, goTo: G2, args: [draft.deliveryId, draft.itemIds], note: "Taslak alanları geri yüklenir" }
+  - { on: DraftRestartClicked, effect: "return_draft_json silinir; G1 boş seçimle kalır" }
+  - { on: "entry (D2 'İade Talebi Oluştur')", note: "Seçilebilir kalem sayısı == 1 ise D2 doğrudan G2'yi açar (G1 atlanır)." }
+api: ["GET /v1/deliveries/{deliveryId} (Akış D v1.1 — orders[].items[])"]
+
+strings:
+  g1_title: "Hangi ürün(ler) sorunluydu?"
+  g1_delivery_ref: "Teslimat %1$s"
+  g1_info: "Farklı sorunları olan ürünler için ayrı talep açman gerekebilir — aşağıdan seçtiğin ürünler için tek bir form dolduracaksın."
+  g1_order_label: "Bu teslimatın %1$d. siparişi"
+  g1_not_refundable: "Bu ürün şu an iade edilemiyor."
+  g1_in_request: "Bu ürün için açık bir iade talebin var."
+  g1_refunded: "Bu ürün iade edildi."
+  g1_view_request: "Talebi Görüntüle"
+  g1_continue: "Devam Et (%1$d ürün seçili)"
+  g1_draft_title: "Yarım kalan bir iade talebin var, devam etmek ister misin?"
+  g1_draft_other_delivery: "Önceki taslağın silinecek"
+  g1_draft_continue: "Devam Et"
+  g1_draft_restart: "Sıfırdan Başla"
+
+sampleData:
+  customerName: "Elif Yılmaz"
+  deliveryCode: "#DAL1"
+  deliveryDay: "Cumartesi, 3 Ekim"
+  items:
+    - { itemId: it_1, productName: "Domates", variant: "Tarla", quantityLabel: "2 file", chargedAmount: "₺172,00", orderSequenceInWindow: 1, refundable: true, alreadyReturned: null }
+    - { itemId: it_2, productName: "Domates", variant: "Çeri", quantityLabel: "1 kutu", chargedAmount: "₺41,00", orderSequenceInWindow: 1, refundable: true, alreadyReturned: null }
+    - { itemId: it_3, productName: "Salatalık", variant: "Standart", quantityLabel: "1 file", chargedAmount: "₺49,00", orderSequenceInWindow: 2, refundable: true, alreadyReturned: null }
+  itemInRequest: { itemId: it_3, alreadyReturned: approved, returnCode: "#İAD-2379" }
+  continueZero: "Devam Et (0 ürün seçili)"
+  continueTwo: "Devam Et (2 ürün seçili)"
+
+open:
+  - "Akış çelişkisi: §5 G1 'refundable === true filtresiyle görüntüler' diyor, §4.2 tablosu ise refundable=false kalemi 'devre dışı, gri, jenerik açıklama' ile gösteriyor. Kart §4.2'yi uyguladı (pasif satır) — hangisi geçerli?"
+  - "Bekleyen/onaylanan ('Bu ürün için açık bir iade talebin var.') ve iade edilen ('Bu ürün iade edildi.') kalem gerekçe metinleri akışta yok, öneri. Link metni G3'teki 'Talebi Görüntüle' ile aynı alındı."
+  - "Başlıktaki '#DAL1' referansının biçimi ('Teslimat %1$s' alt satırı) akışta yok, öneri."
+  - "Sipariş etiketi D3'teki 'Bu teslimatın 2. siparişi' kalıbından alındı; G1'de daha kısa bir biçim ('2. sipariş') istenebilir."
+  - "'Devam Et (0 ürün seçili)' pasif hâlde de sayı gösteriliyor; 0'da yalnızca 'Devam Et' denmesi tercih edilebilir — akışta tanımsız."
+  - "Varyantı olmayan üründe varyant adı ('Salatalık — Standart') akışta tanımsız (B3 ile aynı açık)."

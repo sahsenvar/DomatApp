@@ -430,3 +430,120 @@ entries:
     seen_in: [Onboarding, Login]
     measure: null
     status: open
+
+  - id: L-032
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "Akışlar ayrı sayfalardayken (Screens · Akış B / C) B3 'Siparişi Tamamla' → C1 prototip bağlantısı kurulamıyordu."
+    root_cause: "Figma prototip bağlantıları sayfalar arasında çalışmaz."
+    fix: "Tüm ekranlar tek 'Screens' sayfasına, her akış bir SECTION olacak şekilde taşındı; builder v2 section() ile çalışıyor."
+    occurrences: 1
+    seen_in: [B3, C1]
+    measure: { kind: code, ref: ".claude/skills/figma-screens/builder.js (SCREENS_PAGE='Screens', section())" }
+    status: mitigated
+
+  - id: L-033
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: contract-gap
+    symptom: "Sabit 844 çerçevede uzun içerik (B3 toplam satırı) alt çubuğun altında kalıyordu; hug çerçevede ise yapışkan CTA prototipte en sona düşüyordu."
+    root_cause: "Kaydırma davranışı modellenmemişti: tek çerçeve hem statik tasarım hem prototip görevi görüyor."
+    fix: "builder v2: root 390×844 sabit; body iç içe kaydırma (clipsContent + overflowDirection VERTICAL); bar/nav sabit. Statik görselde taşan kısım kesilir, prototipte kayar."
+    occurrences: 1
+    seen_in: [B2, B3, G2, G5, I1, I4]
+    measure: { kind: code, ref: ".claude/skills/figma-screens/builder.js#screen" }
+    status: mitigated
+
+  - id: L-034
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "setBoundVariable('characters', FLOAT değişken) hata verdi; sayaç (miktar, sepet rozeti) metne bağlanamadı."
+    root_cause: "Plugin API'de metin içeriğine yalnızca STRING değişken bağlanabiliyor."
+    fix: "Her sayaç FLOAT + STRING ikizi (proto/qtyB2 + proto/qtyB2Text); counter() artırır ve koşullu blokla metni günceller."
+    occurrences: 1
+    seen_in: [B1, B2, B3]
+    measure: { kind: code, ref: ".claude/skills/figma-screens/builder.js#counter" }
+    status: mitigated
+
+  - id: L-035
+    date: 2026-09-26
+    stage_caused: tooling
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "Diyalog eylem satırında Ghost düğme kırpıldı (G1 taslak diyaloğu), yıkıcı düğme metni kesildi (I1 çıkış)."
+    root_cause: "builder modal() düğmeleri varsayılan (sabit/geniş) boyutlarıyla ekliyordu."
+    fix: "Ajanlar elle HUG/sabit genişlik verdi; builder modal() artık tüm eylemleri HUG yapıyor, yıkıcıya sp4 yatay dolgu ekliyor."
+    occurrences: 2
+    seen_in: [G1, I1]
+    measure: { kind: code, ref: ".claude/skills/figma-screens/builder.js#modal" }
+    status: mitigated
+
+  - id: L-036
+    date: 2026-09-26
+    stage_caused: tooling
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "header:'' (başlıksız ama geri butonlu ekran, A6) ScreenHeader'ı sessizce düşürdü."
+    root_cause: "screen() 'if (o.header)' kontrolü boş dizeyi false sayıyordu."
+    fix: "Kontrol 'o.header != null' yapıldı."
+    occurrences: 1
+    seen_in: [A6]
+    measure: { kind: code, ref: ".claude/skills/figma-screens/builder.js#screen" }
+    status: mitigated
+
+  - id: L-037
+    date: 2026-09-26
+    stage_caused: card
+    stage_detected: figma
+    type: contract-gap
+    symptom: "Kartlar kütüphanede olmayan varyant/prop istedi; Figma'da en yakın varyantla yaklaşıldı: InlineNote error tonu yok (H), ConsentCheckbox hata/required yok (A6, I8), ListRow trailing action/external/emphasis yok (A5, I1), DomatBadge Delivery/Muted ve large yok (D2, G5), PrimaryButton ikon/tone=danger yok (D2, H, I8), StatusHero/InlineNote ikon prop'u yok (F1, G4), DomatIconButton'ın Figma karşılığı yok (F1, H3), PinDots boş+hata yok (H1), DeliveryRow not/yükleniyor yok (H2), SelectableItem caption/eylem yok (G1), ProgressSteps Figma'da yok (G5)."
+    root_cause: "Kart yazan ajan bileşen kataloğundan var olmayan varyant seçebiliyor; check_card yalnızca bileşen adını denetliyor, prop/varyant değerlerini değil."
+    fix: "Yaklaşımlar ajan raporlarında listelendi; kütüphane genişletmesi design-system-change ile yapılacak."
+    occurrences: 1
+    seen_in: [A5, A6, D2, F1, G1, G4, G5, H1, H2, H3, I1, I8]
+    measure: null
+    status: open
+
+  - id: L-038
+    date: 2026-09-26
+    stage_caused: flow
+    stage_detected: card
+    type: contract-gap
+    symptom: "Yer tutucudan sonra gelen Türkçe ekler şablonda sabit yazılmış: \"₺%1$s'dan\", \"%1$s'e kadar\", \"%1$s'den\" — yanlış ek üretiyor (Salı 22:00'e, Tuzla Pazarı'den)."
+    root_cause: "Akış dokümanları örnek metni tek bir değer için yazıyor; kart bunu şablona çeviriyor."
+    fix: "Kartların open listesine yazıldı; tasarımda örnek değere uygun ek elle verildi."
+    occurrences: 3
+    seen_in: [B1, D2, H7]
+    measure: null
+    status: open
+
+  - id: L-039
+    date: 2026-09-26
+    stage_caused: card
+    stage_detected: figma
+    type: misinterpretation
+    symptom: "Kart ile components.yaml farklı bileşen söylüyor: D4 nedenleri ChoiceChip (kart) vs RadioOptionRow (katalog); D5 banner InfoBanner (kart) vs InAppBanner (katalog); I8 PrimaryButton tone=danger vs DestructiveButton."
+    root_cause: "Kartlar paralel yazıldı, yeni bileşenler kartlardan sonra birleştirildi (konsolidasyon) — kartlar güncellenmedi."
+    fix: "Figma'da katalog bileşeni kullanıldı; D4/D5/I8 kartları kataloğa göre düzeltildi."
+    occurrences: 1
+    seen_in: [D4, D5, I8]
+    measure: { kind: note, ref: "retro önerisi: kart yazımı yeni bileşen konsolidasyonundan SONRA ya da konsolidasyonda kartlar da güncellenir" }
+    status: mitigated
+
+  - id: L-040
+    date: 2026-09-26
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "page.flowStartingPoints ataması 'duplicate input nodeIds' hatası verdi; Figma bağlantı kurulan çerçevelere kendiliğinden 'Flow N' başlangıcı ekliyor."
+    root_cause: "Figma prototip bağlantısı eklenince otomatik akış başlangıcı oluşturabiliyor."
+    fix: "Başlangıçlar en sonda tek seferde, nodeId'ye göre tekilleştirilip yeniden yazıldı (6 başlangıç)."
+    occurrences: 1
+    seen_in: [H1]
+    measure: { kind: note, ref: "figma-screens retro önerisi" }
+    status: mitigated

@@ -1,0 +1,138 @@
+id: D3
+title: Sipariş Kalem Detayı
+source: DomatApp_Akis_D_Siparis_Durumu_v1.1.md#D3
+route: { name: MainGraph.OrderDetailRoute, args: [orderId: String, deliveryId: String], status: proposed }
+purpose: >
+  Bir teslimat içindeki tek bir siparişin (kendi provizyonu/çekimi olan birim) tam mali dökümünü göstermek.
+frame: { width: 390, height: "hug" }
+
+regions:   # yukarıdan aşağı
+  - id: header
+    component: ScreenHeader
+    props: { title: "str.d3_title({orderNumber})", showBack: true }
+
+  - id: meta
+    content:
+      - { component: text, style: title-medium, text: "str.d3_sequence({orderSequenceInWindow})" }
+      - { component: text, style: body-small, text: "{orderedAt}", note: "on-surface-variant" }
+
+  - id: items
+    component: FormSection
+    props: { title: str.d3_items_title }
+    content:
+      - component: SummaryRow
+        repeat: "items"
+        props:
+          label: "{productName} ({variant})"
+          detail: "{quantityLabel} · {unitPrice}"
+          amount: "chargeStatus == charged ? str.d3_item_charged({chargedAmount}) : {lineCeilingAmount}"
+        note: "Birim fiyat = sipariş anındaki tavan fiyat. Çekildikten sonra kalem bazlı chargedAmount (v1.1) — yalnızca dağılımı gösterir; doğruluk kaynağı aşağıdaki kart."
+
+  - id: payment
+    component: FormSection
+    props: { title: str.d3_payment_title }
+    content:
+      - component: text
+        style: body-medium
+        visibleWhen: "chargeStatus == provisioned"
+        text: "str.d3_provisioned({provisionedAmount})"
+      - component: InfoBanner
+        visibleWhen: "chargeStatus == awaiting_charge"
+        props: { tone: info, body: str.d3_processing }
+      - component: text
+        style: body-medium
+        visibleWhen: "chargeStatus == charged"
+        text: "releasedAmount > 0 ? str.d3_charged_with_discount({newUnitPrice}, {chargedAmount}, {releasedAmount}) : str.d3_charged_plain({chargedAmount})"
+        note: "Edge case 7 — fark 0 ise kutlama cümlesi kurulmaz."
+      - component: InfoBanner
+        visibleWhen: "chargeStatus == charge_failed"
+        props: { tone: error, body: "str.d3_failed({provisionedAmount})" }
+      - component: TextLink
+        visibleWhen: "chargeStatus == charge_failed"
+        props: { text: str.d3_why }
+        note: "Genişleyebilir alan; banka tarafı detaylandırılmaz."
+      - component: InlineNote
+        visibleWhen: "chargeStatus == charge_failed && whyExpanded"
+        props: { tone: neutral, text: str.d3_why_body }
+      - component: text
+        style: body-medium
+        visibleWhen: "chargeStatus == cancelled"
+        text: "str.d3_cancelled({provisionedAmount})"
+      - { component: SummaryRow, props: { label: str.d3_blocked_label, amount: "{provisionedAmount}" } }
+      - { component: SummaryRow, visibleWhen: "chargeStatus == charged", props: { label: str.d3_charged_label, amount: "{chargedAmount}", emphasis: true } }
+      - { component: SummaryRow, visibleWhen: "releasedAmount > 0", props: { label: str.d3_released_label, amount: "{releasedAmount}" } }
+
+  - id: back-link
+    component: TextLink
+    props: { text: "str.d3_back_to_delivery({deliveryCode})" }
+
+states:
+  - id: provisioned
+    description: "Pencere açık: kalemler tavan fiyatla; 'Bloke edilen: ₺150,00. Bu tutar hesabından çekilmeyecek, sadece gerçek tutar çekilecek.'"
+  - id: charged-discount
+    description: "Çekildi, fark > 0: kalem satırlarında '₺84,00 çekildi' / '₺51,00 çekildi'; 'Hedef tuttu, fiyat ₺28/kg'a indi. Kartından ₺135,00 çekildi, ₺15,00 serbest bırakıldı.'"
+  - id: charged-no-discount
+    description: "Çekildi, fark = 0: yalnızca 'Kartından ₺150,00 çekildi.'; serbest bırakılan satırı yok."
+  - id: charge-failed
+    description: "2. sipariş (Kuru Soğan) düştü: hata bandı + 'Neden?' açık hâliyle kısa jenerik açıklama."
+  - id: cancelled
+    description: "'İptal edildi, ₺150,00 serbest bırakıldı.'"
+
+data:
+  uiState:
+    - "orderNumber: String"
+    - "orderSequenceInWindow: Int"
+    - "orderedAt: String"
+    - "deliveryCode: String"
+    - "chargeStatus: ChargeStatus"
+    - "items: List<OrderItemUi>  // itemId, productName, variant, quantity, unit, unitPrice, chargedAmount?"
+    - "provisionedAmount: Money"
+    - "chargedAmount: Money?"
+    - "releasedAmount: Money"
+    - "newUnitPrice: String?"
+    - "whyExpanded: Boolean"
+actions: [BackClicked, WhyToggled, BackToDeliveryClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: BackToDeliveryClicked, backTo: "MainGraph.DeliveryDetailRoute (D2)", args: [deliveryId] }
+api: ["GET /v1/orders/{orderId}", "GET /v1/deliveries/{deliveryId} (orders[].items)"]
+
+strings:
+  d3_title: "Sipariş %1$s"
+  d3_sequence: "Bu teslimatın %1$d. siparişi"
+  d3_items_title: "Kalemler"
+  d3_item_charged: "%1$s çekildi"
+  d3_payment_title: "Ödeme"
+  d3_provisioned: "Bloke edilen: %1$s. Bu tutar hesabından çekilmeyecek, sadece gerçek tutar çekilecek."
+  d3_processing: "Ödemen işleniyor, kısa süre içinde netleşecek."
+  d3_charged_with_discount: "Hedef tuttu, fiyat %1$s'a indi. Kartından %2$s çekildi, %3$s serbest bırakıldı."
+  d3_charged_plain: "Kartından %1$s çekildi."
+  d3_failed: "Ödeme tamamlanamadı, bu kalem teslimattan çıkarıldı. %1$s bloke serbest bırakıldı."
+  d3_why: "Neden?"
+  d3_why_body: "Bu genellikle bankan kaynaklı geçici bir sorundur. Bir sonraki hafta tekrar sipariş verebilirsin."
+  d3_cancelled: "İptal edildi, %1$s serbest bırakıldı."
+  d3_blocked_label: "Bloke edilen"
+  d3_charged_label: "Çekilen"
+  d3_released_label: "Serbest bırakılan"
+  d3_back_to_delivery: "%1$s teslimatına dön"
+
+sampleData:
+  orderNumber: "#10481"
+  orderSequenceInWindow: 1
+  orderedAt: "Pazartesi, 28 Eylül · 20:14"
+  deliveryCode: "#DAL1"
+  items:
+    - { productName: "Domates", variant: "Tarla", quantityLabel: "1 file (3 kg)", unitPrice: "₺96 / file", lineCeilingAmount: "₺96,00", chargedAmount: "₺84,00" }
+    - { productName: "Salatalık", variant: "Standart", quantityLabel: "1 file", unitPrice: "₺54 / file", lineCeilingAmount: "₺54,00", chargedAmount: "₺51,00" }
+  provisionedAmount: "₺150,00"
+  chargedAmount: "₺135,00"
+  releasedAmount: "₺15,00"
+  newUnitPrice: "₺28/kg"
+  failedOrder: { orderNumber: "#10482", orderSequenceInWindow: 2, items: [{ productName: "Kuru Soğan", variant: "Standart", quantityLabel: "2 kg", unitPrice: "₺19 / kg", lineCeilingAmount: "₺38,00" }], provisionedAmount: "₺38,00" }
+
+open:
+  - "Başlık 'Sipariş #10481', 'Kalemler', 'Ödeme' ve özet satır etiketleri akışta yok, öneri. Sipariş numarası biçimi tanımsız."
+  - "'Neden?' açıklama metni akışta yok ('kısa, jenerik'); öneri §8 soru 6'daki 'bankan kaynaklı geçici bir sorun' tonundan — avukat teyidi sorusu açık."
+  - "awaiting_charge için D3 metni yok; D2'nin 'Ödemen işleniyor...' metni kullanıldı (ayrı durum çizilmedi)."
+  - "Alt geri dönüş linki metni ('#DAL1 teslimatına dön') akışta yok, öneri."
+  - "Kalem bazlı chargedAmount dağıtım kuralı (§8 soru 8) açık; örnek değerler temsili."

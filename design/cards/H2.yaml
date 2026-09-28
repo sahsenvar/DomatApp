@@ -1,0 +1,120 @@
+id: H2
+title: Teslimat Listesi (Sefer Listesi)
+source: claude/DomatApp_Akis_H_Dagitici_Arayuzu_v1.1.md#H2
+route: { name: EmployeeGraph.TourRoute, status: proposed, noBack: true }
+purpose: >
+  Dağıtıcının günün tüm duraklarını saha (blok) sırasıyla tek bakışta görmesi ve her duraktan okutma/kod girişine
+  tek dokunuşla geçmesi. Uygulamanın ana ekranı.
+frame: { width: 390, height: 844 }
+
+regions:   # yukarıdan aşağı
+  - id: topbar
+    component: SummaryTopBar
+    props:
+      title: "{tourDateLabel}"
+      subtitle: "str.h2_progress({deliveredCount}, {totalCount})"
+      actions:
+        - { icon: cloud_upload, badgeCount: "{queueCount}", visibleWhen: "queueCount > 0", contentDescription: str.h2_cd_queue }
+        - { icon: settings, contentDescription: str.h2_cd_sourcing }
+    note: "Kuyruk ikonu yalnızca redemption_queue'da pending/failed kayıt varken görünür; failed varsa rozet error tonunda."
+
+  - id: list
+    repeat: "deliveries"
+    content:
+      - component: DeliveryListRow
+        props:
+          index: "{sequence}"
+          title: "str.h2_row_address({blockName}, {apartmentNo})"
+          subtitle: "{customerFirstName} · {deliveryCode}"
+          note: "{deliveryNote}"
+          meta: "str.h2_item_count({itemCount})"
+          status: "{rowStatus}"
+          statusText: "str.h2_status_pending | str.h2_status_delivered"
+          statusTime: "{deliveredAtTime}"
+          syncCaption: str.h2_status_pending_sync
+          dimmed: "{status == delivered}"
+          action: str.h2_row_action
+        note: >
+          Sıra sunucudan geldiği gibi (blockSortOrder); teslim edilen satır yerinde kalır, soluklaşır. Satır gövdesine dokunmak
+          H5 önizleme; sağdaki 'Okut / Kod Gir' H3'ü açar. Teslim edilmiş satırda eylem butonu gizlenir.
+    stateContent:
+      loading: "4 × DeliveryListRow state=loading (iskelet, metin yok)"
+    pullToRefresh: "GET /v1/courier/tour"
+
+  - id: status
+    visibleWhen: "state in [empty, network-error]"
+    content:
+      - { component: StatusHero, visibleWhen: "empty", props: { tone: neutral, icon: local_shipping, title: str.h2_empty_title, subtitle: str.h2_empty_body } }
+      - { component: StatusHero, visibleWhen: "network-error", props: { tone: error, icon: wifi_off, title: str.h2_error_title, subtitle: str.h2_error_body } }
+      - { component: SecondaryButton, visibleWhen: "network-error", props: { text: str.h2_error_retry, icon: refresh } }
+
+  - id: cta
+    component: BottomActionBar
+    visibleWhen: "state != network-error"
+    content:
+      - { component: PrimaryButton, props: { text: str.h2_search_by_code, size: Large, leadingIcon: dialpad } }
+
+states:
+  - id: loading
+    description: "İlk açılış / taze GET: iskelet satırlar, üst çubukta tarih ve sayaç yok."
+  - id: default
+    description: "4 durak (A4 Mehmet, A12 Elif, B7 Zeynep, C14 Ayşe); ilki teslim edildi (soluk, yeşil rozet + 09:42); sayaç '1 / 4 teslim edildi'; kuyruk ikonu yok."
+  - id: pending-sync
+    description: "Çevrimdışı işaretleme: A12 Elif satırı iyimser olarak 'Teslim Edildi ✓' + '(senkronize bekleniyor)' alt metni; üst çubukta kuyruk ikonu rozet 1."
+  - id: empty
+    description: "Bugün teslimat yok: nötr bilgi, Kod ile Ara yine görünür."
+  - id: network-error
+    description: "Liste çekilemedi (bellek-içi önbellek yok): hata + Tekrar dene."
+
+data:
+  uiState:
+    - "tourDateLabel: String"
+    - "deliveredCount: Int"
+    - "totalCount: Int"
+    - "queueCount: Int"
+    - "queueHasFailed: Boolean"
+    - "deliveries: List<TourRowUi>  // sequence, blockName, apartmentNo, customerFirstName, deliveryCode, deliveryNote?, itemCount, rowStatus: Pending | Delivered | DeliveredPendingSync, deliveredAtTime?"
+    - "listState: Loading | Content | Empty | NetworkError"
+actions: [QueueClicked, SourcingClicked, RowClicked(deliveryId), RowScanClicked(deliveryId), SearchByCodeClicked, Refreshed, RetryClicked]
+navigation:
+  - { on: RowClicked, goTo: "EmployeeGraph.DeliveryConfirmRoute (H5, mode=preview)", args: [deliveryId], note: "GET /v1/courier/deliveries/{deliveryId}; lookup tetiklenmez, teslim butonu yok." }
+  - { on: RowScanClicked, goTo: "EmployeeGraph.ScanRoute (H3)", args: [expectedDeliveryId], note: "Kamera izni yoksa doğrudan EmployeeGraph.CodeEntryRoute (H4)." }
+  - { on: SearchByCodeClicked, goTo: "EmployeeGraph.CodeEntryRoute (H4)" }
+  - { on: QueueClicked, goTo: "EmployeeGraph.QueueSheet (H6, bottom sheet)" }
+  - { on: SourcingClicked, goTo: "EmployeeGraph.SourcingLabelRoute (H7, modal)" }
+api: ["GET /v1/courier/tour (pull-to-refresh; sunucu blockSortOrder'a göre sıralı döner)", "redemption_queue (Room/SQLDelight) gözlenir: queueCount, satır iyimser durumu"]
+
+strings:
+  h2_progress: "%1$d / %2$d teslim edildi"
+  h2_cd_queue: "Bekleyen kayıtlar"
+  h2_cd_sourcing: "Sefer bilgisi"
+  h2_row_address: "%1$s, Daire %2$s"
+  h2_item_count: "%1$d ekleme"
+  h2_status_pending: "Bekliyor"
+  h2_status_delivered: "Teslim Edildi ✓"
+  h2_status_pending_sync: "(senkronize bekleniyor)"
+  h2_row_action: "Okut / Kod Gir"
+  h2_search_by_code: "Kod ile Ara"
+  h2_empty_title: "Bugün teslimat yok."
+  h2_empty_body: "Sefer listesi oluşunca burada görünecek."
+  h2_error_title: "Liste yüklenemedi"
+  h2_error_body: "İnternet bağlantını kontrol edip tekrar dene."
+  h2_error_retry: "Tekrar dene"
+
+sampleData:
+  tourDateLabel: "Cumartesi, 3 Ekim"
+  deliveredCount: 1
+  totalCount: 4
+  queueCount: 1
+  deliveries:
+    - { sequence: 1, blockName: "A Blok", apartmentNo: "4", title: "A Blok, Daire 4", customerFirstName: "Mehmet", deliveryCode: "#DAL2", itemCount: 2, rowStatus: Delivered, deliveredAtTime: "09:42" }
+    - { sequence: 2, blockName: "A Blok", apartmentNo: "12", title: "A Blok, Daire 12", customerFirstName: "Elif", deliveryCode: "#DAL1", itemCount: 3, rowStatus: Pending, deliveryNote: "Kapı zili çalışmıyor, lütfen arayın." }
+    - { sequence: 3, blockName: "B Blok", apartmentNo: "7", title: "B Blok, Daire 7", customerFirstName: "Zeynep", deliveryCode: "#DAL3", itemCount: 1, rowStatus: Pending }
+    - { sequence: 4, blockName: "C Blok", apartmentNo: "14", title: "C Blok, Daire 14", customerFirstName: "Ayşe", deliveryCode: "#DAL4", itemCount: 2, rowStatus: Pending, deliveryNote: "Kapıcıya bırakılabilir" }
+
+open:
+  - "Kalem özeti akışta birebir '3 ekleme' — 'ekleme' mi 'ürün/kalem' mi kastedildi? H5 'Toplam 3 ürün' diyor; terim birliği gerekiyor."
+  - "Tarih formatı: akış örneği '16 Ağustos Cumartesi', ortak örnek veri 'Cumartesi, 3 Ekim' — biçim tek bir yerde sabitlenmeli."
+  - "Boş liste ve liste-yüklenemedi metinleri akışta yok, öneri."
+  - "'Son güncelleme: 2 dakika önce' (courier_last_tour_sync_at, düşük öncelik) çizilmedi."
+  - "Tur listesi kalıcı önbelleklenmez (§6.4 Seçenek B): uygulama kapanıp çevrimdışı açılırsa liste boş/hata kalır — kuyruk yine çalışır."

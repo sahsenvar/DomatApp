@@ -1,0 +1,100 @@
+id: B3
+title: Sepet
+source: DomatApp_Akis_B_Kesif_Sepet_v1.0.md#B3
+route: { name: MainGraph.CartRoute, status: proposed }
+purpose: >
+  Kalemleri gözden geçirmek, miktar değiştirmek/silmek, tahmini toplamı görmek ve 'Siparişi Tamamla' ile
+  Akış C'ye geçmek. Sepet tamamen cihazda (cart_items); pencereye özeldir.
+frame: { width: 390, height: 844 }
+
+regions:
+  - id: header
+    component: ScreenHeader
+    props: { title: str.b3_title, showBack: true }
+  - id: window-warning
+    component: InfoBanner
+    visibleWhen: "windowClosesInMinutes <= cart_window_warning_threshold_minutes (5)"
+    props: { tone: warning, body: str.b3_closing_soon }
+  - id: window-closed
+    component: InfoBanner
+    visibleWhen: "windowClosed (istemci sayacı 0 ya da sunucu 409 window_closed)"
+    props: { tone: neutral, title: str.b3_closed_title, body: str.b3_closed_body }
+  - id: items
+    component: FormSection
+    repeat: "productGroups"
+    props: { title: "{productName}" }
+    content:
+      - { component: CartLine, repeat: "group.lines", props: { name: "{variantName}", unitPrice: "{unitPrice}", quantity: "{quantity}", amount: "{lineTotal}" } }
+    note: "Ana ürün başlığı altında varyant satırları gruplanır."
+  - id: community
+    component: CommunityProgressCard
+    props: { title: str.b3_community_title, caption: "str.b3_community_caption({currentTier}, {previewTier})" }
+    note: "Sepet toplamı üzerinden kişisel önizleme; gerçek sayaca yazmaz."
+  - id: total
+    component: SummaryRow
+    props: { label: str.b3_total_label, detail: str.b3_total_estimate, amount: "{estimatedTotal}", emphasis: true }
+  - id: empty
+    visibleWhen: "cartItems.isEmpty()"
+    content:
+      - { component: StatusHero, props: { tone: neutral, icon: shopping_basket, title: str.b3_empty_title, subtitle: str.b3_empty_body } }
+      - { component: SecondaryButton, props: { text: str.b3_empty_cta } }
+  - id: cta
+    component: BottomActionBar
+    visibleWhen: "cartItems.isNotEmpty()"
+    content:
+      - { component: PrimaryButton, props: { text: str.b3_checkout, enabled: "!windowClosed" } }
+
+states:
+  - id: default
+    description: "Domates (Tarla 2 file, Çeri 1 kutu) + Salatalık (1 file); önizleme ve tahmini toplam."
+  - id: closing-soon
+    description: "Kapanışa 5 dk'dan az: üstte uyarı şeridi."
+  - id: window-closed
+    description: "Pencere kapandı: bilgi kartı, sepet duruyor, Siparişi Tamamla pasif."
+  - id: empty
+    description: "Boş sepet: eyleme yönlendiren boş durum; alt CTA yok."
+
+data:
+  uiState:
+    - "productGroups: List<CartGroupUi>"
+    - "communityCaption: String"
+    - "estimatedTotal: String"
+    - "windowState: Open | ClosingSoon | Closed"
+actions: [BackClicked, QuantityIncreased, QuantityDecreased, LineDeleted, CheckoutClicked, BrowseClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: BrowseClicked, backTo: "MainGraph.HomeRoute (B1)" }
+  - { on: CheckoutClicked, goTo: "misafirse AuthFlowGraph (J1, origin=Checkout) sonuç için; girişliyse adres yoksa J3 checkout modu, varsa C4", note: "Devir sözleşmesi: POST /v1/cart/merge (B3 Edge Case 1)" }
+api: ["POST /v1/cart/preview", "GET /v1/neighborhoods/{id}/window", "POST /v1/events (cart_item_removed, cart_item_quantity_changed)", "POST /v1/cart/merge (Akış C başında)"]
+
+strings:
+  b3_title: "Sepetim"
+  b3_closing_soon: "Pencere birkaç dakika içinde kapanıyor — siparişini tamamlamak istersen acele et."
+  b3_closed_title: "Bu haftanın siparişleri kapandı."
+  b3_closed_body: "Sepetin burada duruyor, gelecek hafta pencere açılınca güncel fiyatlarla devam edebilirsin."
+  b3_community_title: "Bu sepetle topluluk"
+  b3_community_caption: "Şu an %1$s kademede · sen eklersen %2$s kademeye geçilir"
+  b3_total_label: "Tahmini toplam"
+  b3_total_estimate: "tahmini, sipariş anındaki tier'a göre değişebilir"
+  b3_empty_title: "Sepetin boş."
+  b3_empty_body: "Bu haftanın ürünlerine göz at."
+  b3_empty_cta: "Pazar'a Dön"
+  b3_checkout: "Siparişi Tamamla"
+
+sampleData:
+  productGroups:
+    - productName: "Domates"
+      lines:
+        - { variantName: "Tarla", unitPrice: "₺96 / file", quantity: 2, lineTotal: "₺192,00" }
+        - { variantName: "Çeri", unitPrice: "₺45 / kutu", quantity: 1, lineTotal: "₺45,00" }
+    - productName: "Salatalık"
+      lines:
+        - { variantName: "Standart", unitPrice: "₺54 / file", quantity: 1, lineTotal: "₺54,00" }
+  communityCaption: "Şu an 2. kademede · sen eklersen 3. kademeye geçilir"
+  estimatedTotal: "₺291,00"
+
+open:
+  - "Kademe önizleme metni akışta yalnızca kalıp olarak var ('Bu sepetle topluluk şu an X tier'da / sen eklersen Y tier'a geçilir'); kullanıcı dilinde 'tier' yerine 'kademe' önerildi, 'tahmini' etiketinde akıştaki 'tier' birebir korundu — terim birliği kararı gerekiyor."
+  - "Sepetteki ikincil geri sayım göstergesi (akış: 'daha küçük, ikincil') ayrı çizilmedi; 5 dk eşiğinde uyarı şeridi yeterli sayıldı — onay gerekiyor."
+  - "Tek varyantlı üründe varyant adı ('Standart') akışta tanımsız."
+  - "Boş sepet illüstrasyonu yerine StatusHero ikonu (shopping_basket) — kütüphane dışı görsel eklenmedi."

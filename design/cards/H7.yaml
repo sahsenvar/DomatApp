@@ -1,0 +1,92 @@
+id: H7
+title: Sefer Bilgisi Ayarla
+source: claude/DomatApp_Akis_H_Dagitici_Arayuzu_v1.1.md#H7
+route: { name: EmployeeGraph.SourcingLabelRoute, status: proposed, presentation: fullScreenModal }
+purpose: >
+  Haftanın tedarik kaynağını (sourcingLabel) girmek; müşterinin D2'de göreceği şeffaflık satırını önizlemek. Tek kayıt o penceredeki
+  TÜM teslimatlara uygulanır.
+frame: { width: 390, height: 844 }
+
+regions:   # yukarıdan aşağı
+  - id: header
+    component: ScreenHeader
+    props: { title: str.h7_title, showBack: true }
+
+  - id: source
+    component: FormSection
+    props: { title: str.h7_source_label }
+    content:
+      - { component: ChoiceChip, repeat: "shortcuts", props: { text: "{label}", selected: "{selected}" } }
+      - { component: ChoiceChip, props: { text: str.h7_other, selected: "{otherSelected}" } }
+      - { component: DomatTextField, visibleWhen: "otherSelected", props: { label: str.h7_other_field_label, value: "{freeText}", state: "{freeTextState}", singleLine: true } }
+    note: "Çipler sarmalanan satır (FlowRow), gap sp2. Kısayollar Hal Fiyat Analizi'ndeki bilinen noktalardan."
+
+  - id: preview
+    component: FormSection
+    props: { title: str.h7_preview_title }
+    content:
+      - { component: InlineNote, props: { tone: neutral, text: "str.h7_preview_text({sourcingLabel})" }, note: "D2 şeffaflık satırı birebir: nötr gri 'i' ikonu + tek satır." }
+      - { component: text, style: body-medium, text: str.h7_preview_empty, visibleWhen: "sourcingLabel == null" }
+
+  - id: cta
+    component: BottomActionBar
+    content:
+      - { component: PrimaryButton, props: { text: str.h7_save, size: Large, enabled: "sourcingLabel != null && changed", loading: "saving" } }
+      - { component: InlineNote, props: { tone: neutral, text: str.h7_footer_note } }
+
+  - id: error
+    component: Snackbar
+    visibleWhen: "saveFailed"
+    props: { text: str.h7_save_error }
+
+states:
+  - id: empty
+    description: "Bu hafta henüz etiket yok: hiçbir çip seçili değil, önizleme yer tutucu metni, Kaydet pasif."
+  - id: shortcut-selected
+    description: "'Ataşehir Hali' seçili; önizleme 'Bu hafta Ataşehir Hali'den tedarik edildi.'; Kaydet etkin."
+  - id: other
+    description: "'Diğer' seçili, serbest metin alanı 'Tuzla Pazarı' ile dolu; önizleme güncel."
+  - id: saving
+    description: "PATCH sürüyor: Kaydet loading."
+  - id: save-error
+    description: "PATCH başarısız: seçim korunur, snackbar."
+
+data:
+  uiState:
+    - "shortcuts: List<{label, selected}>"
+    - "otherSelected: Boolean"
+    - "freeText: String"
+    - "sourcingLabel: String?"
+    - "saving: Boolean"
+    - "saveFailed: Boolean"
+actions: [ShortcutSelected(label), OtherSelected, FreeTextChanged, SaveClicked, BackClicked]
+navigation:
+  - { on: BackClicked, back: true }
+  - { on: "PATCH 200", back: true, note: "H2'ye döner (öneri: H2'de kısa Snackbar ile teyit)." }
+api: ["PATCH /v1/courier/window/{windowId}/sourcing-label { sourcingLabel }", "Mevcut değer: GET /v1/courier/tour → sourcingLabel"]
+
+strings:
+  h7_title: "Bu Haftaki Tedarik Bilgisi"
+  h7_source_label: "Tedarik noktası"
+  h7_other: "Diğer"
+  h7_other_field_label: "Tedarik noktası adı"
+  h7_preview_title: "Müşteri böyle görecek"
+  h7_preview_text: "Bu hafta %1$s'den tedarik edildi."
+  h7_preview_empty: "Bir tedarik noktası seç."
+  h7_save: "Kaydet"
+  h7_footer_note: "Bu bilgi bu haftaki TÜM teslimatlara uygulanır."
+  h7_save_error: "Kaydedilemedi. Tekrar dene."
+
+sampleData:
+  shortcuts:
+    - { label: "Çanakkale Tarlası", selected: false }
+    - { label: "Ataşehir Hali", selected: true }
+    - { label: "Bayrampaşa Hali", selected: false }
+  freeText: "Tuzla Pazarı"
+  sourcingLabel: "Ataşehir Hali"
+
+open:
+  - "Ek uyumu: D'nin sabit kalıbı '[X]'den' — 'Ataşehir Hali'den' yanlış ('Hali'nden'); D'nin örneği 'Ataşehir Hal'den'. Kısayol etiketleri 'Ataşehir Hal' biçimine çekilmeli ya da ek kodda üretilmeli."
+  - "'Tedarik noktası', 'Diğer', 'Müşteri böyle görecek', boş önizleme ve kayıt hatası metinleri akışta yok, öneri."
+  - "Kaydetten sonra H2'de teyit (Snackbar) ve etiketin sonradan silinip null'a dönebilmesi tanımsız."
+  - "Yetki sınırı (§8 soru 5): teslimat yapan ile tedarik kararını veren ayrışırsa H7'nin PIN'den ayrı yetki isteyip istemeyeceği açık."
