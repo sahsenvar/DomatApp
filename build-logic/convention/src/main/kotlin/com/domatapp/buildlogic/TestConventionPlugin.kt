@@ -27,13 +27,11 @@ class TestConventionPlugin : Plugin<Project> {
                 (this as ExtensionAware).extensions.configure(KotlinMultiplatformAndroidLibraryExtension::class.java) {
                     withHostTest { }
                 }
-                sourceSets {
-                    commonTest {
-                        dependencies {
-                            implementation(libs.findLibrary("test-kotlin").get())
-                            implementation(libs.findLibrary("test-coroutines").get())
-                        }
-                    }
+                // Plain API, not the `sourceSets { commonTest { } }` DSL accessors: those need
+                // org.gradle.kotlin.dsl.invoke and did not resolve here (CI, PR #22).
+                sourceSets.getByName("commonTest").dependencies {
+                    implementation(libs.findLibrary("test-kotlin").get())
+                    implementation(libs.findLibrary("test-coroutines").get())
                 }
             }
         }
