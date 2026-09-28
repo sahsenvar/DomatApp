@@ -1,5 +1,5 @@
 # Ekran başına ilk deneme ölçümleri — öğrenme döngüsünün işe yarayıp yaramadığını gösterir.
-# design-verify skill'i her ekran kodlandığında bir kayıt ekler. Retro akıştan akışa eğilime bakar.
+# ui-test-verify skill'i her ekran kodlandığında bir kayıt ekler. Retro akıştan akışa eğilime bakar.
 #
 # Alanlar:
 #   screen            ekran kimliği (C4, B3 …)

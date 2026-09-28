@@ -18,6 +18,9 @@ onaysız değiştirmez (yanlış yorumlanmış bir hata kalıcı kurala dönüş
 python3 ai/design/scripts/learnings.py check
 python3 ai/design/scripts/learnings.py report
 ```
+Cowork'ün kaydı (`claude/DomatApp_Ogrenme_Kaydi_Cowork.md`, `CW-…`) repo'da değildir; Cowork iki kaydı
+birlikte okur. Burada yalnızca repo kaydı işlenir; Cowork kaynaklı bir örüntü görürsen öneriyi Cowork'e
+yönelt (aşağıda). Kayıtların nerede durduğu: `design/README.md` → Hata kaydı.
 Ayrıca `ai/design/screen-metrics.yaml`: akıştan akışa `first_pass_diff`, `fix_rounds`, `text_check_fails`,
 `core_changes` eğilimi. İyileşme yoksa döngü çalışmıyor demektir — nedenini ara.
 
@@ -27,7 +30,7 @@ Tercih sırası (güçlüden zayıfa): **check** (otomatik kontrol) > **code** (
 **contract** (`design/README.md`, `components.yaml`) > **skill** (tuzak tablosu) > **note**.
 
 - `≥2 kez` ve önlemi yok/not → önlem öner.
-- `≥2 kez` ve önlemi yalnızca skill metni → kontrole ya da koda çevrilebilir mi? (ör. L-010 builder'daki `fixWidth`).
+- `≥2 kez` ve önlemi yalnızca skill metni → kontrole ya da koda çevrilebilir mi? (ör. L-010 Cowork `builder.js`'deki `fixWidth`).
 - **Geç fark edilenler** (yapıldığı aşamadan ≥2 aşama sonra) → hatanın yapıldığı aşamaya kontrol ekle.
   Örnek: Figma'da yapılıp doğrulamada bulunan hatalar için Figma aşamasında bir tarama (use_figma ile
   kütüphane dışı örnek, dolgu opaklığı, 48 dp altı hedef, focused varyantı kullanımı).
@@ -37,10 +40,11 @@ Tercih sırası (güçlüden zayıfa): **check** (otomatik kontrol) > **code** (
 
 Her öneri için: kayıt kimlikleri, önlem türü, değişecek dosya ve **önerilen metin/diff**. İki hedef:
 
-- **Repo (Claude Code tarafı):** `.claude/skills/*`, `design/README.md`, `components.yaml`, `ai/design/scripts/*`
+- **Repo (Claude Code tarafı):** `.claude/skills/*` (`figma-to-package`, `package-to-compose`, `ui-test-verify`,
+  `design-system-change`, bu skill), `design/README.md`, `components.yaml`, kart şeması, `ai/design/scripts/*`
   → diff olarak göster; Sahan onaylarsa uygula ve commit et.
-- **Claude Projects tarafı** (`domatapp-flow-to-card` skill'i): tam SKILL.md metnini hazırla ve
-  `ai/design/proposals/<tarih>-flow-to-card.md`'ye yaz; Sahan Projects oturumunda skill güncelleme kartıyla onaylar.
+- **Cowork tarafı** (`flow-to-card`, `card-to-figma`, `builder.js`, proje dokümanları): repo'ya yazılmaz.
+  Öneriyi Figma › Handoff notuna yaz; Cowork uygular, Sahan onaylar.
 
 ## 4. Kaydı kapat
 

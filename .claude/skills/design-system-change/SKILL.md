@@ -41,7 +41,7 @@ Liste rapora ve `components.yaml → usedIn`'e yazılır.
 
 ## 4. Figma
 
-`figma-screens` skill'indeki tuzak tablosuna uy (klon referansları, resize, opaklık…). Bileşen seti:
+[`ai/design/figma-plugin-api.md`](../../../ai/design/figma-plugin-api.md) tuzak tablosuna uy (klon referansları, resize, opaklık…). Bileşen seti:
 property adları Kotlin parametreleriyle birebir; renk/boşluk/köşe yalnızca değişken; pasif içerik düğüm
 opaklığı 0,38; dokunma hedefi ≥ 48 dp. Sonra `get_screenshot` ile varyantları gözle kontrol et.
 
@@ -53,7 +53,7 @@ için `@Preview`. `promote`'ta eski kopyayı sil ve çağıranları taşı.
 ## 6. Etkilenen ekranları yeniden doğrula
 
 - Figma: etkilenen çerçevelerin PNG'lerini yeniden indir (örnekler güncellenir, PNG'ler güncellenmez).
-- Kod: `design-verify` → etkilenen **tüm** paketler. Paketi olmayan eski ekranlar (ör. LocationSelection)
+- Kod: `ui-test-verify` → etkilenen **tüm** paketler. Paketi olmayan eski ekranlar (ör. LocationSelection)
   için önizleme görüntüsünü önce/sonra karşılaştır ve raporla.
 
 ## Örnek iş: ikon seti birleştirme (kural 12)
@@ -64,5 +64,7 @@ Etkilenen ekranlar listelenir, tüm paketler yeniden doğrulanır. Tamamlanınca
 
 ## Son adım: retro (zorunlu)
 
-Karşılaşılan hataları `ai/design/learnings.yaml`'a yaz; `components.yaml`'da `note`/`usedIn` güncel olsun.
-`python3 ai/design/scripts/learnings.py check` geçmeli.
+Kayıt, düzeltilecek skill'in yanında durur, hatayı fark eden tarafın değil (`design/README.md` → Hata kaydı).
+Bu skill'in, bileşen kütüphanesinin ya da script'lerin hataları → `ai/design/learnings.yaml`; Cowork
+skill'lerinin (`card-to-figma`, `builder.js`) hataları → Handoff notuna yaz, Cowork kendi kaydına işler.
+`components.yaml`'da `note`/`usedIn` güncel olsun. `python3 ai/design/scripts/learnings.py check` geçmeli.

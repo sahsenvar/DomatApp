@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.domatapp.kmp.test)
     alias(libs.plugins.domatapp.cmp.library)
     alias(libs.plugins.domatapp.kmp.di)
     alias(libs.plugins.ksp)
