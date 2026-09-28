@@ -33,6 +33,10 @@ gradlePlugin {
             id = libs.plugins.domatapp.kmp.di.get().pluginId
             implementationClass = "com.domatapp.buildlogic.DiConventionPlugin"
         }
+        register("kmpTest") {
+            id = libs.plugins.domatapp.kmp.test.get().pluginId
+            implementationClass = "com.domatapp.buildlogic.TestConventionPlugin"
+        }
         register("cmpLibrary") {
             id = libs.plugins.domatapp.cmp.library.get().pluginId
             implementationClass = "com.domatapp.buildlogic.CmpLibraryConventionPlugin"

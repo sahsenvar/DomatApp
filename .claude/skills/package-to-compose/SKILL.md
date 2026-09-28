@@ -1,10 +1,10 @@
 ---
-name: figma-to-compose
+name: package-to-compose
 description: >
   Implement a DomatApp screen in Compose from its approved design package (design/screens/<ID>/) and the
   design contract (design/README.md, design/components.yaml, design/tokens/DESIGN.md). Use whenever the
   task is "implement screen C4", "tasarımı koda dök", "B3'ü yaz", a Figma URL for a DomatApp screen, or
-  building UI that must match a design. Verification is done with the design-verify skill.
+  building UI that must match a design. Verification and test generation are done with the ui-test-verify skill.
 ---
 
 # Tasarım paketi → Compose
@@ -69,7 +69,7 @@ döndürür; açıklama olarak oku, kopyalama.
 
 ## 5. Doğrulama
 
-`design-verify` skill'ini çalıştır. Kabul: derleme uyarısız, tarama temiz, tüm durumlar OK, fark sayfaları
+`ui-test-verify` skill'ini çalıştır (doğrulama + test üretimi). Kabul: derleme uyarısız, tarama temiz, tüm durumlar OK, fark sayfaları
 gözle kontrol edildi.
 
 ## Son adım: retro (zorunlu)
@@ -77,4 +77,6 @@ gözle kontrol edildi.
 - `ai/design/screen-metrics.yaml`'a ekran kaydı ekle (ilk render farkı, tur sayısı, metin hatası, core değişikliği).
 - Karşılaşılan her hatayı `ai/design/learnings.yaml`'a yaz (aynı kök neden varsa `occurrences`++).
   Özellikle: paketten çıkaramadığın/tahmin ettiğin her şey bir `contract-gap` kaydıdır.
+- Kayıt, düzeltilecek skill'in yanında durur (`design/README.md` → Hata kaydı): kart içeriği ya da Figma
+  çizimi kaynaklı hatayı Handoff notuna yaz (Cowork'ün kaydı); repo skill'i / script / kart şeması hatası buraya.
 - `python3 ai/design/scripts/learnings.py check` geçmeli. Skill'leri kendin değiştirme.

@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.domatapp.kmp.library)
+    alias(libs.plugins.domatapp.kmp.test)
 }
 
 kotlin {

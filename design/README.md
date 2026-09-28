@@ -8,10 +8,38 @@ referans verir.
 |---|---|---|
 | `tokens/DESIGN.md` | Renk, tipografi, boşluk, köşe token'ları | **Evet** — Compose teması ve Figma variables buradan türetilir |
 | `components.yaml` | Figma bileşeni ↔ Compose sembolü ↔ parametre eşlemesi + `spec` (iç ölçüler) | **Evet** — bileşen kataloğu |
-| `cards/<ID>.yaml` | Akış dokümanından türetilen ekran kartı | Hayır — akış dokümanının türevi |
+| `cards/<ID>.yaml` | Akış dokümanından türetilen ekran kartı | Yazarı Cowork (Figma › Handoff), repo'ya Claude Code işler. Kod için sözleşme. |
 | `screens/<ID>/` | Onaylanmış tasarım paketi (görsel + yapı) | Figma'nın o anki anlık görüntüsü |
 
-Zincir: **akış → kart → Figma → paket → kod → doğrulama.** Hatalar ve öğrenilenler: `ai/design/learnings.yaml`.
+Zincir: **akış → kart → Figma → [devir] → paket → Compose → UI/test doğrulama.**
+
+| Adım | Skill | Sahibi |
+|---|---|---|
+| Akış → kart | `flow-to-card` | Cowork (kart taslağı Figma › Handoff notunda) |
+| Kart → Figma (+ prototip) | `card-to-figma` + `builder.js` | Cowork (proje dokümanında) |
+| **Devir** | — | Cowork → Claude Code, Figma › **Handoff** sayfası |
+| Figma → paket | `figma-to-package` | Claude Code |
+| Paket → Compose | `package-to-compose` | Claude Code |
+| UI + test + doğrulama | `ui-test-verify` | Claude Code |
+| Bileşen kütüphanesi | `design-system-change` | Claude Code |
+| Retro | `design-chain-retro` | Claude Code (repo kaydı) + Cowork (iki kaydı birlikte okur) |
+
+**Repo'ya yalnızca Claude Code yazar.** Kart repo'da kalır çünkü kodun sözleşmesidir; Claude Code onu Handoff
+notundan **olduğu gibi** işler, içeriğini değiştirmez. Gerekçe ve karar:
+`ai/design/proposals/2026-09-28-zincir-yeniden-duzen.md`.
+
+## Hata kaydı {#hata-kaydi}
+
+**Kayıt, düzeltilecek skill'in yanında durur, hatayı fark eden tarafın değil.**
+- Repo skill'lerinin (`figma-to-package`, `package-to-compose`, `ui-test-verify`, `design-system-change`,
+  script'ler) hataları → `ai/design/learnings.yaml` (`L-…`).
+- Cowork skill'lerinin (`flow-to-card`, `card-to-figma`, `builder.js`) ve proje dokümanı kurallarının hataları →
+  proje dokümanı `claude/DomatApp_Ogrenme_Kaydi_Cowork.md` (`CW-…`, aynı alanlar).
+- Hatayı bulan taraf sahibi değilse Handoff notuna yazar; sahibi kendi kaydına işler.
+- `stage_caused: card | figma` olan bir hata, kart ya da Figma çizimi kaynaklıysa Cowork'e aittir. Kart
+  **şeması** ya da `check_card.py` kaynaklıysa repo'ya aittir.
+
+Mevcut L-001…L-042 kayıtları repo'da kalır, taşınmaz.
 
 ## Sözleşme kuralları
 
@@ -25,6 +53,9 @@ Her kuralın yanında onu doğuran öğrenim kaydı (`L-…`) var.
 3. **Her kart `sampleData` içerir** — tasarımda ve önizlemede görünen dinamik veri (isim, tutar, kod, liste);
    dinamik veri yoksa `sampleData: {}`. Kart kontrolü: `ai/design/scripts/check_card.py` (bileşenler manifestte,
    `str.` referansları tanımlı, odak durumu yok). (L-023, L-025)
+3a. **Kart `acceptance` içerir** — `{ id: AC-n, text, test: maestro | unit | roborazzi | manual }`; kaynağı akış
+   dokümanındaki edge case kararlarıdır. `ui-test-verify` testleri bu maddelerden üretir. Eksikse
+   `check_card.py` uyarır (eski kartlar için hata değil); `id` benzersiz, `test` listede olmalı.
 
 ### Durumlar
 4. **Odak (focus) bir ekran durumu değildir.** Tasarım durumlarında alanlar odaksız çizilir. Zorunlu hallerde

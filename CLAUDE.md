@@ -12,6 +12,17 @@ This is a reversal. Until Gezgin gained iOS targets, the rule here was "Jetpack 
 
 UI work starts from the design contract in `design/` — see `design/README.md`. In short:
 
+- **Design work arrives as a note on the Figma › Handoff page** (file `5hpUTmJJ1ie3E9boGSPXje`).
+  Tasarım işi Figma › Handoff sayfasındaki bir notla gelir. Notu oku, DURUM etiketini güncelle, kartları birebir
+  işle, açık konularda tahmin etme, sor.
+- **Ownership — only Claude Code writes to this repo.** Cowork owns flow → card (`flow-to-card`) and
+  card → Figma (`card-to-figma` + `builder.js`, kept in Cowork's project docs, not here), then hands off on the
+  Handoff page. Claude Code owns everything after the handoff: Figma → package (`figma-to-package`),
+  package → Compose (`package-to-compose`), UI + tests + verification (`ui-test-verify`), plus the component
+  library (`design-system-change`) and the repo side of the retro. Cards live in `design/cards/` because they are
+  the code's contract, but their author is Cowork: they are copied from the Handoff note verbatim, never edited
+  here. Decision record: `ai/design/proposals/2026-09-28-zincir-yeniden-duzen.md`.
+
 - `design/tokens/DESIGN.md` is the **single source of truth** for colors, typography, spacing and radii.
   `:core:design` (Compose theme) and the Figma variables are derived from it; change the token file first.
 - `design/components.yaml` maps every Figma component to its Compose symbol and parameters. It stands in
@@ -26,13 +37,17 @@ UI work starts from the design contract in `design/` — see `design/README.md`.
   Component-internal *sizes* (button height, icon size, border width) may stay inside component files.
 - Strings come from the card's `strings:` keys into `core/resource/src/commonMain/composeResources/values/strings.xml`.
 - Contract rules (numbered, each linked to the learning that produced it): `design/README.md`.
-- Skills (`.claude/skills/`, auto-discovered): `figma-screens` (card → Figma → package),
-  `figma-to-compose` (package → Compose), `design-verify` (Roborazzi + diff + text check + visual review),
+- Skills (`.claude/skills/`, auto-discovered): `figma-to-package` (Handoff note → cards → design package),
+  `package-to-compose` (package → Compose), `ui-test-verify` (Roborazzi + diff + text check + visual review,
+  Maestro flows and ViewModel unit tests from the card's `acceptance`/`actions`/`navigation`, then the PR and
+  the Handoff note's DURUM → `incelemede · PR #n`),
   `design-system-change` (component/icon/token changes: spec → Figma → code → affected screens),
   `design-chain-retro` (review the learning log and propose skill/contract/check updates).
-- **Learning loop:** every design skill ends by logging the failures it hit in `ai/design/learnings.yaml`
-  (English fields, Turkish content; validate with `python3 ai/design/scripts/learnings.py check`) and, for
-  screens, first-pass numbers in `ai/design/screen-metrics.yaml`. Skills are not edited ad hoc — changes go
+- **Learning loop:** a failure is logged next to the skill that has to be fixed, not by whoever noticed it
+  (`design/README.md` → *Hata kaydı*). Repo skills and scripts log to `ai/design/learnings.yaml`
+  (English fields, Turkish content; validate with `python3 ai/design/scripts/learnings.py check`); Cowork's
+  skills log to Cowork's own record, reported to it through the Handoff note. Screens also record
+  first-pass numbers in `ai/design/screen-metrics.yaml`. Skills are not edited ad hoc — changes go
   through `design-chain-retro` and Sahan's approval.
 
 Note: shared UI components live in `:core:presentation` (`component/`), the theme in `:core:design`.
@@ -188,6 +203,11 @@ This plugin (located in `build-logic/`) automatically:
 - Sets `compileSdk = 36`, `minSdk = 30`
 
 **Do NOT manually add** `namespace`, `compileSdk`, or `minSdk` in module build files when using this plugin.
+
+`domatapp.kmp.test` (`TestConventionPlugin`) is the opt-in for unit tests: it calls `withHostTest { }` on the
+Android target (host tests are off by default under `com.android.kotlin.multiplatform.library`, and Android
+advises against enabling them from a convention every module applies) and adds `kotlin-test` +
+`kotlinx-coroutines-test` to `commonTest`. Only `feature:*:presentation` modules apply it.
 
 ### iOS Framework Strategy
 
@@ -1088,10 +1108,18 @@ All dependencies are managed in `gradle/libs.versions.toml`:
 
 ## Testing
 
-Test source sets are currently disabled across core and feature modules. Do not automatically add test dependencies or generate test files unless explicitly requested.
+Tests exist in exactly three places. Do not add test dependencies or test files anywhere else unless
+explicitly requested.
 
-Exception: `:composeApp` has Roborazzi screenshot tests, **generated** from `@Preview`s — no hand-written test
-files. A screen preview named `<ID>@<state>` is what the design comparison script matches.
+- **`feature:*:presentation` — ViewModel unit tests** in `src/commonTest`, enabled by `domatapp.kmp.test`
+  (kotlin-test + kotlinx-coroutines-test). Written by the `ui-test-verify` skill from the screen card: every
+  `actions` item → expected state/effect, every `navigation` edge → the matching effect, every `acceptance`
+  item with `test: unit`. Run with `./gradlew :feature:<name>:presentation:testAndroidHostTest` (the iOS
+  simulator test tasks need macOS). Core, domain and data modules still have no test source sets.
+- **`maestro/domatapp/<ID>.yaml` — Maestro flows**, one per screen, from the card's `acceptance` items with
+  `test: maestro`.
+- **`:composeApp` — Roborazzi screenshot tests**, **generated** from `@Preview`s — no hand-written test
+  files. A screen preview named `<ID>@<state>` is what the design comparison script matches.
 
 ## CI (`.github/workflows/ci.yml`)
 
@@ -1116,7 +1144,7 @@ Two independent jobs, both `ubuntu-latest`:
   for now.
 
 Both jobs use `gradle/actions/setup-gradle` for dependency + configuration-cache caching. Neither
-runs tests — see *Testing* above.
+runs tests yet — see *Testing* above.
 
 ## Dependency Injection (Koin Annotations)
 

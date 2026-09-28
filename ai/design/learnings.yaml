@@ -547,3 +547,42 @@ entries:
     seen_in: [H1]
     measure: { kind: note, ref: "figma-screens retro önerisi" }
     status: mitigated
+
+  - id: L-041
+    date: 2026-09-27
+    stage_caused: flow
+    stage_detected: card
+    type: misinterpretation
+    symptom: "Giriş/kayıt ekranları (C1–C3) ödeme akışının (Akış C / CheckoutGraph) içine yazılmıştı; Hesap sekmesinden giriş yapmak isteyen kullanıcı için ayrı bir giriş kapısı yoktu."
+    root_cause: "Akış dokümanı, kimlik doğrulamayı ilk ihtiyaç duyulan yere (checkout) gömdü; kart ve Figma katmanı bu sınırı sorgulamadan devraldı."
+    fix: "Ayrı Akış J (AuthFlowGraph) açıldı: J1 telefon, J2 OTP, J3 adres (kayıtta atlanabilir / checkout modu), J4 KVKK metni. B3 ve I1 aynı akışı sonuç için çağırıyor; C1–C3 kartları kaldırıldı."
+    occurrences: 1
+    seen_in: [C1, C2, C3, B3, I1]
+    measure: { kind: note, ref: "retro önerisi: kart yazımından önce 'bu ekran birden fazla giriş noktasından çağrılıyor mu?' kontrolü — evetse ayrı @FlowGraph" }
+    status: mitigated
+
+  - id: L-042
+    date: 2026-09-27
+    stage_caused: figma
+    stage_detected: figma
+    type: tool-pitfall
+    symptom: "Akış J Figma çağrısı 'HUG can only be set on auto-layout frames' hatasıyla düştü; iskelet (loading) çerçeveleri auto-layout değildi."
+    root_cause: "builder.js iskelet çerçevesini düz frame olarak yaratıp çocuklarda layoutSizing=HUG kullanıyordu."
+    fix: "İskeletler sabit boyutlu auto-layout frame olarak yaratıldı, genişlik FILL."
+    occurrences: 1
+    seen_in: [J4]
+    measure: { kind: note, ref: "figma-screens retro önerisi: builder skeleton() yardımcısı" }
+    status: mitigated
+
+  - id: L-043
+    date: 2026-09-28
+    stage_caused: tooling
+    stage_detected: code
+    type: process-skipped
+    symptom: "PR #21'e L-041/L-042 girmedi; Cowork'ün Mac köprüsüyle yaptığı commit dosya bazında doğrulanmadan PR'a gitti."
+    root_cause: "Repo'ya iki yüzey (Cowork + Claude Code) yazıyordu; Cowork tarafında commit sonrası doğrulama yoktu."
+    fix: "Eksik kayıtlar bu PR'da eklendi."
+    occurrences: 1
+    seen_in: [PR-21]
+    measure: { kind: contract, ref: "ai/design/proposals/2026-09-28-zincir-yeniden-duzen.md (repo'ya yalnızca Claude Code yazar)" }
+    status: mitigated

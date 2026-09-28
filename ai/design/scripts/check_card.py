@@ -10,6 +10,8 @@ Kontroller:
   - kullanılmayan strings anahtarları (uyarı)
   - durum kimlikleri benzersiz; odak (focus/focused) bir durum değil (kural 4)
   - NEW: bileşenler listelenir (tasarımdan önce design-system-change gerekir)
+  - acceptance: yoksa uyarı (eski kartlar bozulmasın); varsa her madde {id, text, test}, id benzersiz,
+    test ∈ maestro | unit | roborazzi | manual (öneri 2026-09-28, R-4)
 """
 import glob, os, re, sys
 import yaml
@@ -18,6 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.a
 os.chdir(ROOT)
 MANIFEST = set((yaml.safe_load(open("design/components.yaml")).get("components") or {}).keys())
 REQUIRED = ["id", "title", "source", "route", "purpose", "regions", "states", "strings", "sampleData", "navigation"]
+ACCEPTANCE_TESTS = ["maestro", "unit", "roborazzi", "manual"]
 
 
 def components(node, out):
@@ -61,6 +64,22 @@ def check(path):
     for s in ids:
         if s and re.search(r"focus", s):
             errs.append(f"durum '{s}': odak bir ekran durumu değil (kural 4)")
+    acceptance = card.get("acceptance")
+    if acceptance is None:
+        warns.append("'acceptance' yok (ui-test-verify testleri kabul maddelerinden üretir)")
+    elif not isinstance(acceptance, list) or not acceptance:
+        errs.append("'acceptance' boş olmayan bir liste olmalı")
+    else:
+        seen = set()
+        for i, a in enumerate(acceptance):
+            if not isinstance(a, dict) or not a.get("id") or not a.get("text"):
+                errs.append(f"acceptance[{i}]: {{id, text, test}} olmalı")
+                continue
+            if a["id"] in seen:
+                errs.append(f"acceptance '{a['id']}' tekrar ediyor")
+            seen.add(a["id"])
+            if a.get("test") not in ACCEPTANCE_TESTS:
+                errs.append(f"acceptance '{a['id']}': test='{a.get('test')}' geçersiz ({' | '.join(ACCEPTANCE_TESTS)})")
     return errs, warns, new
 
 

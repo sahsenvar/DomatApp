@@ -3,7 +3,7 @@
 
   python3 ai/design/scripts/build_structure.py raw1.json [raw2.json ...]
 
-Her raw dosya, figma-screens/export.js'in döndürdüğü JSON'dur ({"C1": {"default": {...}}, ...}).
+Her raw dosya, figma-to-package/export.js'in döndürdüğü JSON'dur ({"C1": {"default": {...}}, ...}).
 Birden fazla dosya verilebilir (20 KB sınırı yüzünden ekranlar ayrı çağrılarda dışa aktarılır).
 Aynı ekranın durumları birleştirilir; componentsUsed ve image alanları eklenir.
 """
