@@ -33,7 +33,7 @@ bölümüne yaz ve sor.
 
 ## 1. Paketi dışa aktar
 
-use_figma çağrılarında `design-system-change` → [Figma tuzakları](../design-system-change/SKILL.md#figma-tuzaklari)
+use_figma çağrılarında [`ai/design/figma-plugin-api.md`](../../../ai/design/figma-plugin-api.md)
 tablosuna uy (özellikle L-013 çıktı sınırı, L-018 geri alma, L-020 gizli metin).
 
 1. **structure** — `export.js` (ONLY + MAN ayarla). Çıktı 20 KB sınırı: `TOO_LONG` dönerse ekranı böl (L-013).

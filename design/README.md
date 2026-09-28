@@ -41,6 +41,8 @@ notundan **olduğu gibi** işler, içeriğini değiştirmez. Gerekçe ve karar:
 
 Mevcut L-001…L-042 kayıtları repo'da kalır, taşınmaz.
 
+Figma Plugin API tuzakları (use_figma kullanan her iş, iki taraf için de tek kopya): `ai/design/figma-plugin-api.md`.
+
 ## Sözleşme kuralları
 
 Her kuralın yanında onu doğuran öğrenim kaydı (`L-…`) var.
