@@ -607,8 +607,8 @@ entries:
     type: environment
     symptom: "download_assets'in verdiği PNG URL'si curl ile indirilemedi: bulut oturumunun ağ politikası www.figma.com'a CONNECT'i reddetti (403). J1–J4 states/*.png üretilemedi."
     root_cause: "figma-to-package adım 2 (download_assets → curl) Figma varlık sunucusuna doğrudan erişim varsayıyor; oturum ortamının izinli alan adlarında www.figma.com yok."
-    fix: "Paketin geri kalanı (structure, card, source, annotations) üretildi; PNG'ler için ortam ağ ayarına www.figma.com eklenmesi istendi."
+    fix: "Paketin geri kalanı önce üretildi; Sahan ortam ağ ayarına www.figma.com'u ekledi, 17 PNG aynı gün indirildi."
     occurrences: 1
     seen_in: [J1, J2, J3, J4]
-    measure: null
-    status: open
+    measure: { kind: note, ref: "retro önerisi: figma-to-package §1.2'ye ön koşul — bulut ortamında www.figma.com izinli olmalı" }
+    status: mitigated
