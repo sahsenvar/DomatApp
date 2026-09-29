@@ -18,3 +18,8 @@ Cowork repo'ya yazmaz; Cowork'ün bulduğu satır Handoff notuyla gelir, Claude 
 | L-014 | Düğümlere özel alan eklenemez (`node._x`). | `Map` kullan. |
 | L-020 | `opacity: 0` ile gizlenen metin "görünür" sayılır, pakete sızar. | Gizlemek için `visible = false`. |
 | — | Yazı tipi yüklenmeden metin düzenlenemez. | Her çağrının başında kullanılan fontları `loadFontAsync` ile yükle. |
+| L-040 | `flowStartingPoints` "duplicate input nodeIds" verir; Figma bağlantı kurulan çerçeveye kendiliğinden başlangıç ekler. | Başlangıçları en sonda nodeId'ye göre tekilleştirip tek seferde yaz. |
+| L-042 | HUG yalnızca auto-layout çerçevede ayarlanabilir. | Çocuklarında HUG kullanılacak çerçeveyi auto-layout yap (sabit boyut + FILL genişlik). |
+| — | Prototip bağlantısı sayfalar arasında çalışmaz. | Prototipteki tüm ekranlar tek sayfada (Screens). |
+| — | Metin yalnızca STRING değişkene bağlanır. | Sayaçlarda FLOAT değişken + STRING ikizi. |
+| — | `figma.currentPage =` desteklenmez. | `await figma.setCurrentPageAsync(page)`. |

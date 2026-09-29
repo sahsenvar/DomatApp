@@ -586,3 +586,29 @@ entries:
     seen_in: [PR-21]
     measure: { kind: contract, ref: "ai/design/proposals/2026-09-28-zincir-yeniden-duzen.md (repo'ya yalnızca Claude Code yazar)" }
     status: mitigated
+
+  - id: L-044
+    date: 2026-09-29
+    stage_caused: tooling
+    stage_detected: package
+    type: tool-pitfall
+    symptom: "export.js Akış J çerçevelerini bulamazdı: çerçeveler 'Screens' sayfasında bir SECTION ('Akış J') içinde, betik yalnızca page.children'a bakıyor ve sayfayı name.startsWith('Screens · Akış C') ile seçiyor."
+    root_cause: "export.js her akışın ayrı 'Screens · Akış X' sayfasında, sayfanın doğrudan çocuğu olarak çizildiğini varsayıyor; Figma düzeni tek 'Screens' sayfası + akış başına SECTION'a geçti (prototip bağlantısı sayfalar arasında çalışmadığı için)."
+    fix: "Çağrıda SCREENS_PAGE = 'Screens' (tam ad eşleşmesi) ve page.findAll(FRAME, ebeveyni PAGE|SECTION) kullanıldı; export.js'nin kendisi değiştirilmedi."
+    occurrences: 1
+    seen_in: [J1, J2, J3, J4]
+    measure: null
+    status: open
+
+  - id: L-045
+    date: 2026-09-29
+    stage_caused: tooling
+    stage_detected: package
+    type: environment
+    symptom: "download_assets'in verdiği PNG URL'si curl ile indirilemedi: bulut oturumunun ağ politikası www.figma.com'a CONNECT'i reddetti (403). J1–J4 states/*.png üretilemedi."
+    root_cause: "figma-to-package adım 2 (download_assets → curl) Figma varlık sunucusuna doğrudan erişim varsayıyor; oturum ortamının izinli alan adlarında www.figma.com yok."
+    fix: "Paketin geri kalanı (structure, card, source, annotations) üretildi; PNG'ler için ortam ağ ayarına www.figma.com eklenmesi istendi."
+    occurrences: 1
+    seen_in: [J1, J2, J3, J4]
+    measure: null
+    status: open

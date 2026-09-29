@@ -1,0 +1,198 @@
+{
+ "screen": "J4",
+ "note": "Figma use_figma ile dışa aktarıldı; \"manifest\" alanı design/components.yaml anahtarıdır. Katman adı \"<Bileşen> · <bölge-id>\" biçimindedir; bölge-id ekran kartındaki regions[].id ile eşleşir. \"texts\" = örnekte görünen metinler (check_design_texts.py bunları kullanır).",
+ "states": {
+  "content": {
+   "figmaNodeId": "90:9028",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/content.png",
+   "componentsUsed": [
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J4@content",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "KVKK Aydınlatma Metni"
+      },
+      "texts": [
+       "KVKK Aydınlatma Metni"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "content",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "text · version",
+          "text": "Sürüm 1.0 · 1 Eylül 2026",
+          "style": "body-small"
+         },
+         {
+          "layer": "text · body",
+          "text": "<KVKK aydınlatma metni — hukuk tarafından sağlanacak. Veri sorumlusu, işlenen kişisel veriler (telefon, ad-soyad, e-posta, adres, ödeme/fatura bilgisi), işleme amaçları, aktarım, saklama süresi ve KVKK md. 11 kapsamındaki haklar bölümlerini içerir.>",
+          "style": "body-medium"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "loading": {
+   "figmaNodeId": "90:9042",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/loading.png",
+   "componentsUsed": [
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J4@loading",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "KVKK Aydınlatma Metni"
+      },
+      "texts": [
+       "KVKK Aydınlatma Metni"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "content",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "skeleton · body",
+          "layout": "HORIZONTAL",
+          "children": []
+         },
+         {
+          "layer": "skeleton · body",
+          "layout": "HORIZONTAL",
+          "children": []
+         },
+         {
+          "layer": "skeleton · body",
+          "layout": "HORIZONTAL",
+          "children": []
+         },
+         {
+          "layer": "skeleton · body",
+          "layout": "HORIZONTAL",
+          "children": []
+         },
+         {
+          "layer": "skeleton · body",
+          "layout": "HORIZONTAL",
+          "children": []
+         },
+         {
+          "layer": "skeleton · body",
+          "layout": "HORIZONTAL",
+          "children": []
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "error": {
+   "figmaNodeId": "90:9061",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/error.png",
+   "componentsUsed": [
+    "ScreenHeader",
+    "SecondaryButton",
+    "StatusHero"
+   ],
+   "tree": {
+    "layer": "J4@error",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "KVKK Aydınlatma Metni"
+      },
+      "texts": [
+       "KVKK Aydınlatma Metni"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "content",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "StatusHero · error",
+          "component": "Feedback/StatusHero",
+          "manifest": "StatusHero",
+          "props": {
+           "subtitle": "İnternet bağlantını kontrol edip tekrar dene.",
+           "title": "Metin yüklenemedi",
+           "tone": "error"
+          },
+          "texts": [
+           "Metin yüklenemedi",
+           "İnternet bağlantını kontrol edip tekrar dene."
+          ]
+         },
+         {
+          "layer": "SecondaryButton · error",
+          "component": "Button/Secondary",
+          "manifest": "SecondaryButton",
+          "props": {
+           "showIcon": false,
+           "text": "Tekrar dene",
+           "enabled": "true"
+          },
+          "texts": [
+           "Tekrar dene"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

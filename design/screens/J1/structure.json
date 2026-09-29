@@ -1,0 +1,396 @@
+{
+ "screen": "J1",
+ "note": "Figma use_figma ile dışa aktarıldı; \"manifest\" alanı design/components.yaml anahtarıdır. Katman adı \"<Bileşen> · <bölge-id>\" biçimindedir; bölge-id ekran kartındaki regions[].id ile eşleşir. \"texts\" = örnekte görünen metinler (check_design_texts.py bunları kullanır).",
+ "states": {
+  "default": {
+   "figmaNodeId": "90:8541",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/default.png",
+   "componentsUsed": [
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J1@default",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Giriş yap veya kayıt ol"
+      },
+      "texts": [
+       "Giriş yap veya kayıt ol"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "empty"
+        },
+        "texts": [
+         "Telefon numarası"
+        ]
+       },
+       {
+        "layer": "text · kvkk-notice",
+        "text": "Devam ederek KVKK Aydınlatma Metni'ni okuduğunu kabul etmiş olursun."
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Kod Gönder"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "default-account": {
+   "figmaNodeId": "90:8566",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/default-account.png",
+   "componentsUsed": [
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J1@default-account",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Giriş yap veya kayıt ol"
+      },
+      "texts": [
+       "Giriş yap veya kayıt ol"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Telefon numaranla giriş yap. Hesabın yoksa aynı adımla oluşturulur.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "empty"
+        },
+        "texts": [
+         "Telefon numarası"
+        ]
+       },
+       {
+        "layer": "text · kvkk-notice",
+        "text": "Devam ederek KVKK Aydınlatma Metni'ni okuduğunu kabul etmiş olursun."
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Kod Gönder"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "ready": {
+   "figmaNodeId": "90:8591",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/ready.png",
+   "componentsUsed": [
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J1@ready",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Giriş yap veya kayıt ol"
+      },
+      "texts": [
+       "Giriş yap veya kayıt ol"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "default"
+        },
+        "texts": [
+         "+90",
+         "532 123 45 67",
+         "Telefon numarası"
+        ]
+       },
+       {
+        "layer": "text · kvkk-notice",
+        "text": "Devam ederek KVKK Aydınlatma Metni'ni okuduğunu kabul etmiş olursun."
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "texts": [
+         "Kod Gönder"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "phone-invalid": {
+   "figmaNodeId": "90:8620",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/phone-invalid.png",
+   "componentsUsed": [
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J1@phone-invalid",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Giriş yap veya kayıt ol"
+      },
+      "texts": [
+       "Giriş yap veya kayıt ol"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "error"
+        },
+        "texts": [
+         "+90",
+         "532 12",
+         "Telefon numarası",
+         "Geçerli bir cep telefonu numarası gir (5XX XXX XX XX)."
+        ]
+       },
+       {
+        "layer": "text · kvkk-notice",
+        "text": "Devam ederek KVKK Aydınlatma Metni'ni okuduğunu kabul etmiş olursun."
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Kod Gönder"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "sending": {
+   "figmaNodeId": "90:8650",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/sending.png",
+   "componentsUsed": [
+    "PhoneNumberField",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J1@sending",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Giriş yap veya kayıt ol"
+      },
+      "texts": [
+       "Giriş yap veya kayıt ol"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · rationale",
+        "text": "Siparişini tamamlamak için telefon numaranı doğrulayalım. Teslimat kodun ve dağıtıcımızın seninle iletişimi için gerekli.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "PhoneNumberField · phone",
+        "component": "Input/PhoneNumber",
+        "manifest": "PhoneNumberField",
+        "props": {
+         "state": "default"
+        },
+        "texts": [
+         "+90",
+         "532 123 45 67",
+         "Telefon numarası"
+        ]
+       },
+       {
+        "layer": "text · kvkk-notice",
+        "text": "Devam ederek KVKK Aydınlatma Metni'ni okuduğunu kabul etmiş olursun."
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kod Gönder",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "true"
+        },
+        "texts": []
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

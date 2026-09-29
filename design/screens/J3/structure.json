@@ -1,0 +1,793 @@
+{
+ "screen": "J3",
+ "note": "Figma use_figma ile dışa aktarıldı; \"manifest\" alanı design/components.yaml anahtarıdır. Katman adı \"<Bileşen> · <bölge-id>\" biçimindedir; bölge-id ekran kartındaki regions[].id ile eşleşir. \"texts\" = örnekte görünen metinler (check_design_texts.py bunları kullanır).",
+ "states": {
+  "default": {
+   "figmaNodeId": "90:8783",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/default.png",
+   "componentsUsed": [
+    "DomatDropdown",
+    "DomatTextField",
+    "GhostButton",
+    "InfoRow",
+    "PrimaryButton",
+    "ScreenHeader",
+    "Snackbar"
+   ],
+   "tree": {
+    "layer": "J3@default",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": false,
+       "title": "Adresini ekle"
+      },
+      "texts": [
+       "Adresini ekle"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · intro",
+        "text": "Siparişlerinde tekrar sorulmasın. İstersen sonra da ekleyebilirsin.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "InfoRow · site",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Dalyan Sitesi",
+         "label": "Site",
+         "trailingAction": "false"
+        },
+        "texts": [
+         "Site",
+         "Dalyan Sitesi"
+        ]
+       },
+       {
+        "layer": "FormSection · address-form",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Adres bilgileri",
+          "style": "title-large"
+         },
+         {
+          "layer": "DomatDropdown · block",
+          "component": "Input/Dropdown",
+          "manifest": "DomatDropdown",
+          "props": {
+           "state": "empty"
+          },
+          "texts": [
+           "Blok"
+          ]
+         },
+         {
+          "layer": "TextField · apartment",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Sipariş özetini e-postayla da almak istersen.",
+           "showPrefix": false,
+           "value": " ",
+           "showSupporting": false,
+           "label": "Daire no",
+           "state": "empty"
+          },
+          "texts": [
+           "Daire no"
+          ]
+         },
+         {
+          "layer": "TextField · note",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Dağıtıcımız bu notu teslimat listesinde görür.",
+           "showPrefix": false,
+           "value": " ",
+           "showSupporting": true,
+           "label": "Teslimat notu (isteğe bağlı)",
+           "state": "empty"
+          },
+          "texts": [
+           "Teslimat notu (isteğe bağlı)",
+           "Dağıtıcımız bu notu teslimat listesinde görür."
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kaydet",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Kaydet"
+        ]
+       },
+       {
+        "layer": "GhostButton · skip",
+        "component": "Button/Ghost",
+        "manifest": "GhostButton",
+        "props": {
+         "text": "Şimdi değil",
+         "enabled": "true"
+        },
+        "texts": [
+         "Şimdi değil"
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "Snackbar · snackbar",
+      "component": "Feedback/Snackbar",
+      "manifest": "Snackbar",
+      "props": {
+       "showAction": false,
+       "action": "Geri al",
+       "text": "Hesabın oluşturuldu."
+      },
+      "texts": [
+       "Hesabın oluşturuldu."
+      ]
+     }
+    ]
+   }
+  },
+  "dropdown-open": {
+   "figmaNodeId": "90:8829",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/dropdown-open.png",
+   "componentsUsed": [
+    "DomatDropdown",
+    "DomatTextField",
+    "GhostButton",
+    "InfoRow",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J3@dropdown-open",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": false,
+       "title": "Adresini ekle"
+      },
+      "texts": [
+       "Adresini ekle"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · intro",
+        "text": "Siparişlerinde tekrar sorulmasın. İstersen sonra da ekleyebilirsin.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "InfoRow · site",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Dalyan Sitesi",
+         "label": "Site",
+         "trailingAction": "false"
+        },
+        "texts": [
+         "Site",
+         "Dalyan Sitesi"
+        ]
+       },
+       {
+        "layer": "FormSection · address-form",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Adres bilgileri",
+          "style": "title-large"
+         },
+         {
+          "layer": "DomatDropdown · block",
+          "component": "Input/Dropdown",
+          "manifest": "DomatDropdown",
+          "props": {
+           "state": "open"
+          },
+          "texts": [
+           "A Blok",
+           "Blok",
+           "B Blok",
+           "C Blok",
+           "Listede bulamadım"
+          ]
+         },
+         {
+          "layer": "TextField · apartment",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Sipariş özetini e-postayla da almak istersen.",
+           "showPrefix": false,
+           "value": " ",
+           "showSupporting": false,
+           "label": "Daire no",
+           "state": "empty"
+          },
+          "texts": [
+           "Daire no"
+          ]
+         },
+         {
+          "layer": "TextField · note",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Dağıtıcımız bu notu teslimat listesinde görür.",
+           "showPrefix": false,
+           "value": " ",
+           "showSupporting": true,
+           "label": "Teslimat notu (isteğe bağlı)",
+           "state": "empty"
+          },
+          "texts": [
+           "Teslimat notu (isteğe bağlı)",
+           "Dağıtıcımız bu notu teslimat listesinde görür."
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kaydet",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Kaydet"
+        ]
+       },
+       {
+        "layer": "GhostButton · skip",
+        "component": "Button/Ghost",
+        "manifest": "GhostButton",
+        "props": {
+         "text": "Şimdi değil",
+         "enabled": "true"
+        },
+        "texts": [
+         "Şimdi değil"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "block-not-found": {
+   "figmaNodeId": "90:8884",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/block-not-found.png",
+   "componentsUsed": [
+    "DomatDropdown",
+    "DomatTextField",
+    "GhostButton",
+    "InfoRow",
+    "InlineNote",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J3@block-not-found",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": false,
+       "title": "Adresini ekle"
+      },
+      "texts": [
+       "Adresini ekle"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · intro",
+        "text": "Siparişlerinde tekrar sorulmasın. İstersen sonra da ekleyebilirsin.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "InfoRow · site",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Dalyan Sitesi",
+         "label": "Site",
+         "trailingAction": "false"
+        },
+        "texts": [
+         "Site",
+         "Dalyan Sitesi"
+        ]
+       },
+       {
+        "layer": "FormSection · address-form",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Adres bilgileri",
+          "style": "title-large"
+         },
+         {
+          "layer": "DomatDropdown · block",
+          "component": "Input/Dropdown",
+          "manifest": "DomatDropdown",
+          "props": {
+           "state": "closed"
+          },
+          "texts": [
+           "Listede bulamadım",
+           "Blok"
+          ]
+         },
+         {
+          "layer": "TextField · block-free",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Sipariş özetini e-postayla da almak istersen.",
+           "showPrefix": false,
+           "value": " ",
+           "showSupporting": false,
+           "label": "Blok adı",
+           "state": "empty"
+          },
+          "texts": [
+           "Blok adı"
+          ]
+         },
+         {
+          "layer": "InlineNote · block-manual-review",
+          "component": "Feedback/InlineNote",
+          "manifest": "InlineNote",
+          "props": {
+           "text": "Bu bilgiyi elle kontrol edeceğiz, teslimat gününe kadar seninle iletişime geçebiliriz.",
+           "tone": "warning"
+          },
+          "texts": [
+           "Bu bilgiyi elle kontrol edeceğiz, teslimat gününe kadar seninle iletişime geçebiliriz."
+          ]
+         },
+         {
+          "layer": "TextField · apartment",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Sipariş özetini e-postayla da almak istersen.",
+           "showPrefix": false,
+           "value": " ",
+           "showSupporting": false,
+           "label": "Daire no",
+           "state": "empty"
+          },
+          "texts": [
+           "Daire no"
+          ]
+         },
+         {
+          "layer": "TextField · note",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Dağıtıcımız bu notu teslimat listesinde görür.",
+           "showPrefix": false,
+           "value": " ",
+           "showSupporting": true,
+           "label": "Teslimat notu (isteğe bağlı)",
+           "state": "empty"
+          },
+          "texts": [
+           "Teslimat notu (isteğe bağlı)",
+           "Dağıtıcımız bu notu teslimat listesinde görür."
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kaydet",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Kaydet"
+        ]
+       },
+       {
+        "layer": "GhostButton · skip",
+        "component": "Button/Ghost",
+        "manifest": "GhostButton",
+        "props": {
+         "text": "Şimdi değil",
+         "enabled": "true"
+        },
+        "texts": [
+         "Şimdi değil"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "filled": {
+   "figmaNodeId": "90:8937",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/filled.png",
+   "componentsUsed": [
+    "DomatDropdown",
+    "DomatTextField",
+    "GhostButton",
+    "InfoRow",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J3@filled",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": false,
+       "title": "Adresini ekle"
+      },
+      "texts": [
+       "Adresini ekle"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "text · intro",
+        "text": "Siparişlerinde tekrar sorulmasın. İstersen sonra da ekleyebilirsin.",
+        "style": "body-medium"
+       },
+       {
+        "layer": "InfoRow · site",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Dalyan Sitesi",
+         "label": "Site",
+         "trailingAction": "false"
+        },
+        "texts": [
+         "Site",
+         "Dalyan Sitesi"
+        ]
+       },
+       {
+        "layer": "FormSection · address-form",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Adres bilgileri",
+          "style": "title-large"
+         },
+         {
+          "layer": "DomatDropdown · block",
+          "component": "Input/Dropdown",
+          "manifest": "DomatDropdown",
+          "props": {
+           "state": "closed"
+          },
+          "texts": [
+           "B Blok",
+           "Blok"
+          ]
+         },
+         {
+          "layer": "TextField · apartment",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "supportingText": "Sipariş özetini e-postayla da almak istersen.",
+           "prefix": "+90",
+           "label": "Daire no",
+           "showPrefix": false,
+           "value": "12",
+           "showSupporting": false,
+           "state": "default"
+          },
+          "texts": [
+           "12",
+           "Daire no"
+          ]
+         },
+         {
+          "layer": "TextField · note",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Dağıtıcımız bu notu teslimat listesinde görür.",
+           "showPrefix": false,
+           "label": "Teslimat notu (isteğe bağlı)",
+           "value": "Kapı zili çalışmıyor, lütfen arayın.",
+           "showSupporting": true,
+           "state": "default"
+          },
+          "texts": [
+           "Kapı zili çalışmıyor, lütfen arayın.",
+           "Teslimat notu (isteğe bağlı)",
+           "Dağıtıcımız bu notu teslimat listesinde görür."
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Kaydet",
+         "size": "Large",
+         "enabled": "true",
+         "loading": "false"
+        },
+        "texts": [
+         "Kaydet"
+        ]
+       },
+       {
+        "layer": "GhostButton · skip",
+        "component": "Button/Ghost",
+        "manifest": "GhostButton",
+        "props": {
+         "text": "Şimdi değil",
+         "enabled": "true"
+        },
+        "texts": [
+         "Şimdi değil"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "checkout-mode": {
+   "figmaNodeId": "90:8986",
+   "size": [
+    390,
+    844
+   ],
+   "image": "states/checkout-mode.png",
+   "componentsUsed": [
+    "DomatDropdown",
+    "DomatTextField",
+    "InfoRow",
+    "InlineNote",
+    "PrimaryButton",
+    "ScreenHeader"
+   ],
+   "tree": {
+    "layer": "J3@checkout-mode",
+    "layout": "VERTICAL",
+    "children": [
+     {
+      "layer": "ScreenHeader · header",
+      "component": "Bar/ScreenHeader",
+      "manifest": "ScreenHeader",
+      "props": {
+       "showBack": true,
+       "title": "Teslimat Adresi"
+      },
+      "texts": [
+       "Teslimat Adresi"
+      ]
+     },
+     {
+      "layer": "body",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "InfoRow · site",
+        "component": "Data/InfoRow",
+        "manifest": "InfoRow",
+        "props": {
+         "value": "Dalyan Sitesi",
+         "label": "Site",
+         "trailingAction": "false"
+        },
+        "texts": [
+         "Site",
+         "Dalyan Sitesi"
+        ]
+       },
+       {
+        "layer": "FormSection · address-form",
+        "layout": "VERTICAL",
+        "children": [
+         {
+          "layer": "title",
+          "text": "Adres bilgileri",
+          "style": "title-large"
+         },
+         {
+          "layer": "DomatDropdown · block",
+          "component": "Input/Dropdown",
+          "manifest": "DomatDropdown",
+          "props": {
+           "state": "empty"
+          },
+          "texts": [
+           "Blok"
+          ]
+         },
+         {
+          "layer": "TextField · apartment",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Sipariş özetini e-postayla da almak istersen.",
+           "showPrefix": false,
+           "value": " ",
+           "showSupporting": false,
+           "label": "Daire no",
+           "state": "empty"
+          },
+          "texts": [
+           "Daire no"
+          ]
+         },
+         {
+          "layer": "TextField · note",
+          "component": "Input/TextField",
+          "manifest": "DomatTextField",
+          "props": {
+           "prefix": "+90",
+           "supportingText": "Dağıtıcımız bu notu teslimat listesinde görür.",
+           "showPrefix": false,
+           "value": " ",
+           "showSupporting": true,
+           "label": "Teslimat notu (isteğe bağlı)",
+           "state": "empty"
+          },
+          "texts": [
+           "Teslimat notu (isteğe bağlı)",
+           "Dağıtıcımız bu notu teslimat listesinde görür."
+          ]
+         }
+        ]
+       },
+       {
+        "layer": "InlineNote · invoice",
+        "component": "Feedback/InlineNote",
+        "manifest": "InlineNote",
+        "props": {
+         "text": "Fatura bilgin bir sonraki adımda alınacak.",
+         "tone": "neutral"
+        },
+        "texts": [
+         "Fatura bilgin bir sonraki adımda alınacak."
+        ]
+       }
+      ]
+     },
+     {
+      "layer": "BottomActionBar · cta",
+      "layout": "VERTICAL",
+      "children": [
+       {
+        "layer": "PrimaryButton · cta",
+        "component": "Button/Primary",
+        "manifest": "PrimaryButton",
+        "props": {
+         "text": "Devam Et",
+         "size": "Large",
+         "enabled": "false",
+         "loading": "false"
+        },
+        "texts": [
+         "Devam Et"
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

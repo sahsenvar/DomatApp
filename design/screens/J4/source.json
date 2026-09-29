@@ -1,0 +1,17 @@
+{
+ "tool": "Figma",
+ "fileKey": "5hpUTmJJ1ie3E9boGSPXje",
+ "fileUrl": "https://www.figma.com/design/5hpUTmJJ1ie3E9boGSPXje",
+ "page": "Screens › Akış J",
+ "frames": {
+  "content": "90:9028",
+  "loading": "90:9042",
+  "error": "90:9061"
+ },
+ "handoffNote": "93:210",
+ "library": "Components sayfası (aynı dosya, yayınlanmamış yerel kütüphane)",
+ "exportedAt": "2026-09-29T08:10Z",
+ "cardVersion": "design/cards/J4.yaml",
+ "tokensSource": "design/tokens/DESIGN.md",
+ "componentsManifest": "design/components.yaml v1.3"
+}
