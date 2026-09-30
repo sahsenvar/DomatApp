@@ -10,6 +10,13 @@
         "."
       ]
     },
+    "domat-jira": {
+      "type": "http",
+      "url": "https://mcp.atlassian.com/v1/mcp",
+      "headers": {
+        "Authorization": "Basic ${JIRA_BASIC_AUTH}"
+      }
+    },
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=uscecumnpksbrhyylgpl&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"

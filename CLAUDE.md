@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Language: always talk to Sahan in Turkish** — every chat reply, question and summary. Code, identifiers,
+commit messages and this file stay in English unless a file's own convention says otherwise (e.g. the Turkish
+content fields of `ai/design/learnings.yaml`).
+
 ## Project Overview
 
 DomatApp is a **Kotlin Multiplatform (KMP)** application targeting Android and iOS with strict **Feature-Based Modularization** and **Clean Architecture**. The UI is **Compose Multiplatform, shared by both platforms** - one set of screens in `commonMain`, hosted by a `ComponentActivity` on Android and a `ComposeUIViewController` on iOS.
