@@ -52,6 +52,24 @@ UI work starts from the design contract in `design/` — see `design/README.md`.
 
 Note: shared UI components live in `:core:presentation` (`component/`), the theme in `:core:design`.
 
+## Jira (DomatApp board)
+
+"Jira", "the board" or "SCRUM-n" in this repo mean the **DomatApp board on Sahan's personal site**
+(`sahsenvar.atlassian.net`, project `SCRUM`). Use the **`domat-jira`** MCP server from `.mcp.json`
+(`mcp__domat-jira__*` tools). Do **not** use the claude.ai Atlassian connector (`mcp__Atlassian_Rovo__*`)
+for it: that connector is authorized for the company site, which has no SCRUM project, so every lookup comes
+back empty rather than failing.
+
+`domat-jira` is Atlassian's official Rovo MCP server with API-token auth. It needs, in the Claude Code
+environment settings (not GitHub secrets — cloud sessions do not see those):
+
+- `JIRA_BASIC_AUTH` = base64 of `<email>:<api token>` (`.mcp.json` substitutes variables but cannot encode);
+- `mcp.atlassian.com` allowed under Network access;
+- API-token access enabled in the site's Rovo MCP server admin settings.
+
+If `domat-jira` is missing from the session, say which of these is the likely cause instead of falling back
+to the connector.
+
 ## Build Commands
 
 ### Android
