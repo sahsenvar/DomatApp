@@ -72,7 +72,15 @@ environment settings (not GitHub secrets — cloud sessions do not see those):
 - API-token access enabled in the site's Rovo MCP server admin settings.
 
 If `domat-jira` is missing from the session, say which of these is the likely cause instead of falling back
-to the connector.
+to the connector. `sahsenvar.atlassian.net` is also allowlisted, so `ai/jira/jira.py` (REST, same
+`JIRA_BASIC_AUTH`) works without the MCP server.
+
+**Working on a task = the `jira-task` skill.** When a session starts or switches to a SCRUM-n task, it moves
+the task to "Devam Ediyor" and registers itself as the task's comment watcher (issue property
+`claude-watch` → a session-bound Routine). A Jira Automation rule fires the *Jira yorum dağıtıcı (SCRUM)*
+Routine on every comment, which wakes whichever session holds that property. This is event-based; do not
+replace it with polling. Comments Claude posts go through `jira.py comment` so they carry the `[claude]`
+prefix that keeps a session from waking itself.
 
 ## Build Commands
 
