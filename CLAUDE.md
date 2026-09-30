@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Language: always talk to Sahan in Turkish** — every chat reply, question and summary. Code, identifiers,
+commit messages and this file stay in English unless a file's own convention says otherwise (e.g. the Turkish
+content fields of `ai/design/learnings.yaml`).
+
 ## Project Overview
 
 DomatApp is a **Kotlin Multiplatform (KMP)** application targeting Android and iOS with strict **Feature-Based Modularization** and **Clean Architecture**. The UI is **Compose Multiplatform, shared by both platforms** - one set of screens in `commonMain`, hosted by a `ComponentActivity` on Android and a `ComposeUIViewController` on iOS.
@@ -51,6 +55,24 @@ UI work starts from the design contract in `design/` — see `design/README.md`.
   through `design-chain-retro` and Sahan's approval.
 
 Note: shared UI components live in `:core:presentation` (`component/`), the theme in `:core:design`.
+
+## Jira (DomatApp board)
+
+"Jira", "the board" or "SCRUM-n" in this repo mean the **DomatApp board on Sahan's personal site**
+(`sahsenvar.atlassian.net`, project `SCRUM`). Use the **`domat-jira`** MCP server from `.mcp.json`
+(`mcp__domat-jira__*` tools). Do **not** use the claude.ai Atlassian connector (`mcp__Atlassian_Rovo__*`)
+for it: that connector is authorized for the company site, which has no SCRUM project, so every lookup comes
+back empty rather than failing.
+
+`domat-jira` is Atlassian's official Rovo MCP server with API-token auth. It needs, in the Claude Code
+environment settings (not GitHub secrets — cloud sessions do not see those):
+
+- `JIRA_BASIC_AUTH` = base64 of `<email>:<api token>` (`.mcp.json` substitutes variables but cannot encode);
+- `mcp.atlassian.com` allowed under Network access;
+- API-token access enabled in the site's Rovo MCP server admin settings.
+
+If `domat-jira` is missing from the session, say which of these is the likely cause instead of falling back
+to the connector.
 
 ## Build Commands
 
