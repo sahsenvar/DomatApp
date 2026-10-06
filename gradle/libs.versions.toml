@@ -38,7 +38,7 @@ ktorfitx = "3.4.2-3.3.3"
 # what Resolver.getSymbolsWithAnnotation returns and requires processors to opt in via
 # registerProcessorForNewFeatures + KSVisitorNext. Every processor here is now third-party
 # (KtorfitX, KMapper, KspPreferences, Gezgin), so a bump waits on all of them, not on this repo.
-ksp = "2.3.11"
+ksp = "2.3.12"
 # Gezgin - type-safe, annotation-driven navigation on top of AndroidX Navigation 3
 # (github.com/sahsenvar/Gezgin). Gezgin's own `api` dependency is what pins the Navigation 3 and
 # lifecycle-navigation3 versions now, so this repo no longer declares androidx.navigation3 itself.
