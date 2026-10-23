@@ -26,3 +26,6 @@ iosApp/Packages/Shared/*.xcframework/
 
 # Written by the Firebase CLI / MCP server on every run. Local debug output, not source.
 firebase-debug*.log
+
+# JVM heap dumps (written on OutOfMemoryError). Can be gigabytes; never source.
+*.hprof
