@@ -56,23 +56,19 @@ UI work starts from the design contract in `design/` — see `design/README.md`.
 
 Note: shared UI components live in `:core:presentation` (`component/`), the theme in `:core:design`.
 
-## Jira (DomatApp board)
+## Tasks, agents and review
 
-"Jira", "the board" or "SCRUM-n" in this repo mean the **DomatApp board on Sahan's personal site**
-(`sahsenvar.atlassian.net`, project `SCRUM`). Use the **`domat-jira`** MCP server from `.mcp.json`
-(`mcp__domat-jira__*` tools). Do **not** use the claude.ai Atlassian connector (`mcp__Atlassian_Rovo__*`)
-for it: that connector is authorized for the company site, which has no SCRUM project, so every lookup comes
-back empty rather than failing.
+Work is tracked in **YouTrack**, project `DA` (issue ids like `DA-12`). The Jira `SCRUM` board is no longer
+used. The AI agent team (PM, Designer, Mobile, BE, QA, Reviewer Guy) runs from the private
+`sahsenvar/domatapp-agents` repository: its router turns YouTrack, GitHub and Figma events into agent
+sessions, and each agent reaches YouTrack through the official YouTrack MCP server with its own token.
+Nothing in this repository configures YouTrack access.
 
-`domat-jira` is Atlassian's official Rovo MCP server with API-token auth. It needs, in the Claude Code
-environment settings (not GitHub secrets — cloud sessions do not see those):
-
-- `JIRA_BASIC_AUTH` = base64 of `<email>:<api token>` (`.mcp.json` substitutes variables but cannot encode);
-- `mcp.atlassian.com` allowed under Network access;
-- API-token access enabled in the site's Rovo MCP server admin settings.
-
-If `domat-jira` is missing from the session, say which of these is the likely cause instead of falling back
-to the connector.
+- Branches are the lower-cased task id (`da-12`); commit messages start with it (`DA-12: …`, QA findings
+  `DA-12 F1: …`). PRs are squash-merged.
+- PRs opened by an agent's GitHub App may only touch that role's paths (`.github/role-paths.json`, checked
+  by the `role-paths` workflow). Merging needs Sahan's code-owner approval (`CODEOWNERS`).
+- Project-specific review rules live in `REVIEW.md`; Reviewer Guy reads it before every review.
 
 ## Build Commands
 
@@ -441,6 +437,12 @@ There is **no RemoteConfig support**. The `@RetrieveRemoteConfig` / `@ObserveRem
 annotations, the `FirebaseRemoteConfigClient` and the `dev.gitlive:firebase-config` dependency were
 removed: nothing in the codebase ever used them. Feature flags are an open design question, not an
 existing capability — do not reintroduce a wrapper for them speculatively.
+
+The one remote setting that does exist is the **minimum supported app version** (force update). It is not
+remote config: it is a single-row `app_config` table in Supabase, owned by BE and read-only for clients.
+Incompatible API changes ship in this order: new app release, store approval, minimum version raised (BE
+prepares, Sahan approves), then the backend change. The version check itself must never break: an app that
+cannot read it cannot even show the update screen.
 
 ### What `core:config` still owns
 

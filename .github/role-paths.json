@@ -1,0 +1,21 @@
+{
+  "domat-be[bot]": [
+    "supabase/**"
+  ],
+  "domat-designer[bot]": [
+    "design/**",
+    "ai/design/**"
+  ],
+  "domat-mobile[bot]": [
+    "**",
+    "!supabase/**",
+    "!design/**",
+    "!ai/design/**",
+    "!.github/**",
+    "!REVIEW.md"
+  ],
+  "domat-pm[bot]": [],
+  "domat-qa[bot]": [
+    "**"
+  ]
+}

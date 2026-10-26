@@ -1,0 +1,26 @@
+name: role-paths
+# pull_request_target: the workflow, the script and the rules always come from the base
+# branch, so a PR cannot loosen its own check. No PR code is executed here: the job
+# only lists the files the PR changes.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  role-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Fetch the PR head (not checked out)
+        run: git fetch --no-tags origin "+refs/pull/${{ github.event.pull_request.number }}/head:refs/remotes/pr/head"
+      - name: Check changed paths against the base branch rules
+        run: >
+          python3 .github/scripts/role_paths.py
+          "${{ github.event.pull_request.user.login }}"
+          "${{ github.event.pull_request.base.sha }}"
+          "${{ github.event.pull_request.head.sha }}"
