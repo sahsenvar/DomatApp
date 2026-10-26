@@ -1,10 +1,14 @@
 {
   "domat-be[bot]": [
-    "supabase/**"
+    "supabase/**",
+    "!.github/**",
+    "!REVIEW.md"
   ],
   "domat-designer[bot]": [
     "design/**",
-    "ai/design/**"
+    "ai/design/**",
+    "!.github/**",
+    "!REVIEW.md"
   ],
   "domat-mobile[bot]": [
     "**",
@@ -15,7 +19,5 @@
     "!REVIEW.md"
   ],
   "domat-pm[bot]": [],
-  "domat-qa[bot]": [
-    "**"
-  ]
+  "domat-qa[bot]": []
 }

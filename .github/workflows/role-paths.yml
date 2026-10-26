@@ -1,10 +1,12 @@
 name: role-paths
-# pull_request_target: the workflow, the script and the rules always come from the base
-# branch, so a PR cannot loosen its own check. No PR code is executed here: the job
-# only lists the files the PR changes.
+# pull_request_target: the workflow, the script and the rules always come from the default
+# branch, never from the PR or from whatever base it names, so a PR cannot loosen its own check.
+# No PR code is executed here: the job only lists the files the PR changes. Event values reach
+# the script through env, not ${{ }} inside `run`, because branch names are attacker-chosen.
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    # edited: a PR retargeted to another base is checked again.
+    types: [opened, edited, synchronize, reopened, ready_for_review]
 permissions:
   contents: read
 jobs:
@@ -13,14 +15,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
           persist-credentials: false
       - name: Fetch the PR head (not checked out)
-        run: git fetch --no-tags origin "+refs/pull/${{ github.event.pull_request.number }}/head:refs/remotes/pr/head"
-      - name: Check changed paths against the base branch rules
-        run: >
-          python3 .github/scripts/role_paths.py
-          "${{ github.event.pull_request.user.login }}"
-          "${{ github.event.pull_request.base.sha }}"
-          "${{ github.event.pull_request.head.sha }}"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: git fetch --no-tags origin "+refs/pull/${PR_NUMBER}/head:refs/remotes/pr/head"
+      - name: Check changed paths against the default branch rules
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 .github/scripts/role_paths.py "$AUTHOR" "$BASE_REF" "$DEFAULT_BRANCH" "$HEAD_SHA"
