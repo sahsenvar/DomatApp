@@ -26,8 +26,14 @@ def main():
     if author not in rules:
         print(f"{author}: not an agent App, nothing to check")
         return 0
-    files = subprocess.run(["git", "diff", "--name-only", f"{base}...{head}"], check=True,
-                           capture_output=True, text=True).stdout.split()
+    # -z + --no-renames + core.quotePath=false so paths with spaces, non-ASCII, or
+    # renames (which become delete-old + add-new, both checked) can't slip the gate.
+    out = subprocess.run(
+        ["git", "-c", "core.quotePath=false", "diff", "--no-renames", "--name-only", "-z",
+         f"{base}...{head}"],
+        check=True, capture_output=True,
+    ).stdout
+    files = [p.decode("utf-8", "surrogateescape") for p in out.split(b"\0") if p]
     bad = [f for f in files if not allowed(f, rules[author])]
     for f in bad:
         print(f"::error file={f}::{author} may not change {f} (K-105)")
